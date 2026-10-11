@@ -49,6 +49,36 @@ Saving requires a GitHub account with write access to this repository **and** a 
 
 `admin/config.yml` → `backend.branch`: `redesign-v2` during the redesign; change to `main` when the redesign is approved and merged.
 
+## Visitor comments, ratings, ideas and consultations
+
+Visitors can comment on or ask about a project, rate it (1–5 stars), send an
+idea (Ideas page) or a private consultation (Contact page). Everything is
+stored in a free Supabase project (`bubapix`, Frankfurt) and **nothing is
+published before you approve it**.
+
+- Moderate at `/admin/community/` (Hebrew). Sign in with your Supabase account
+  (created once in the Supabase dashboard: Authentication → Users → Add user,
+  with "Auto Confirm"). Only addresses listed in the `admin_emails` table get
+  access; the database itself enforces this.
+- Pending / Approved / Rejected / Archive, search, type filter, approve,
+  reject, reply on the site, edit text (marked "edited"), delete, and real
+  rating numbers. Ratings cannot be changed by anyone.
+- Private consultations can never be published (blocked in the database).
+  Ideas can be published only if the visitor ticked the consent box.
+- Email addresses are kept in a separate table and are never public.
+- Spam protection: hidden trap field, minimum fill time, link limit, per-visitor
+  and site-wide rate limits, one rating per project per connection. IP
+  addresses are not stored, only a keyed one-way hash.
+- Free-plan note: a Supabase free project is **paused after 7 days without
+  activity**; restore it from the Supabase dashboard (data is kept).
+- Code: `js/community.js` (site), `admin/community/` (moderation),
+  `supabase/functions/community/` (the only way in), `supabase/migrations/`
+  (database rules). The key in `build.js` is the public "anon" key; never put
+  the service_role key in this repository.
+
+Testimonials are added in the site admin and are shown only when "The client
+approved publishing" and "Show on the site" are both on.
+
 ## How the build works
 
 `node build.js` turns `content/` into all pages, in both languages, plus `404.html`, `sitemap.xml` and `robots.txt`. The workflow `.github/workflows/build-pages.yml` runs it automatically:

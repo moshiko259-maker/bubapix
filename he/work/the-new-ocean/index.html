@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-WZRJfWvsnNCPcxzZwvyhovnZGqhZaC+8gPGPRbx6wTk='; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src https://ouskvcsmcddgdukcofex.supabase.co; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; object-src 'none'; base-uri 'self'; form-action 'self'">
   
   <title>הים החדש — BubaPix</title>
   <meta name="description" content="סרט אנימציה קצר ומקורי של BubaPix.">
@@ -27,6 +28,8 @@
   <script>document.documentElement.classList.add("js");</script>
   <link rel="stylesheet" href="../../../css/styles.css">
   <script src="../../../js/main.js" defer></script>
+  <script type="application/json" id="community-data">{"url":"https://ouskvcsmcddgdukcofex.supabase.co","key":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91c2t2Y3NtY2RkZ2R1a2NvZmV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NDUxNjAsImV4cCI6MjEwNzMyMTE2MH0.SnJUMrnVZ_XzqBYRJP0DoySp8Fc9qg4BBQA9xQE8giA","lang":"he","t":{"sectionTitle":"דירוגים ותגובות","rateTitle":"דרגו את הפרויקט","rateStar":"{n} מתוך 5","rateThanks":"תודה. הדירוג שלכם נשמר.","ratingSummary":"{avg} מתוך 5, לפי {count} דירוגים","ratingNotEnough":"עדיין אין מספיק דירוגים כדי להציג ממוצע.","commentsTitle":"תגובות ושאלות","commentsEmpty":"עדיין אין תגובות.","typeLabel":"אני רוצה","typeComment":"להשאיר תגובה","typeQuestion":"לשאול שאלה","questionTag":"שאלה","nameLabel":"שם לתצוגה","messageLabel":"ההודעה שלכם","emailLabel":"מייל (לא חובה, רק לתשובה פרטית)","send":"שליחה","sending":"שולחים…","sentPending":"תודה. ההודעה תופיע כאן אחרי שנבדוק אותה.","reply":"תשובה מ־BubaPix","edited":"נערך","privacy":"אנחנו שומרים רק את מה שכתבתם כאן, כדי לבדוק ולענות. כתובת המייל לעולם לא מתפרסמת, ושום דבר לא מופיע באתר לפני בדיקה.","privacyLink":"איך אנחנו שומרים על הפרטים שלכם","noscript":"תגובות, דירוגים וטפסים דורשים JavaScript.","unavailable":"האפשרות הזאת לא זמינה כרגע. נסו שוב מאוחר יותר.","errors":{"too_fast":"קחו רגע למלא את הטופס, ואז שלחו שוב.","missing":"מלאו שם והודעה.","too_long":"הטקסט ארוך מדי.","email":"בדקו את כתובת המייל.","email_required":"הוסיפו כתובת מייל כדי שנוכל לענות.","links":"אפשר לצרף עד שני קישורים.","rate_limited":"נשלחו יותר מדי הודעות מהחיבור הזה. נסו שוב מאוחר יותר.","busy":"אנחנו מקבלים הרבה הודעות כרגע. נסו שוב מאוחר יותר.","already_rated":"כבר דירגתם את הפרויקט הזה.","invalid":"משהו בטופס אינו תקין. בדקו ונסו שוב.","network":"אין חיבור. בדקו את החיבור ונסו שוב.","server":"משהו השתבש אצלנו. נסו שוב מאוחר יותר."},"ideaSent":"תודה. קיבלנו את הרעיון ונבדוק אותו.","consultSent":"תודה. ההודעה נשלחה באופן פרטי לסטודיו."}}</script>
+  <script src="../../../js/community.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">דלגו לתוכן</a>
@@ -55,6 +58,39 @@
         <p class="lede">סרט אנימציה קצר ומקורי של BubaPix.</p>
       </header>
       <figure class="project-cover"><img src="../../../assets/work/the-new-ocean-poster.jpg" srcset="../../../assets/resized/the-new-ocean-poster-c97fc484eb-640.webp 640w, ../../../assets/resized/the-new-ocean-poster-c97fc484eb-1280.webp 1280w, ../../../assets/work/the-new-ocean-poster.jpg 1376w" sizes="(max-width: 1440px) 100vw, 1440px" alt="פוסטר של הסרט הים החדש." width="1376" height="768" fetchpriority="high" decoding="async"></figure>
+      <section class="project-section community" aria-labelledby="community-title" data-project="the-new-ocean">
+        <h2 id="community-title" class="section-label">דירוגים ותגובות</h2>
+        <noscript><p class="muted">תגובות, דירוגים וטפסים דורשים JavaScript.</p></noscript>
+        <div class="community-body" data-community hidden>
+          <div class="rating">
+            <p class="rating-summary" data-rating-summary></p>
+            <div class="rate" data-rate>
+              <p class="community-h" id="rate-title">דרגו את הפרויקט</p>
+              <div class="stars" role="group" aria-labelledby="rate-title"><button type="button" class="star" data-value="1" aria-label="1 מתוך 5">★</button><button type="button" class="star" data-value="2" aria-label="2 מתוך 5">★</button><button type="button" class="star" data-value="3" aria-label="3 מתוך 5">★</button><button type="button" class="star" data-value="4" aria-label="4 מתוך 5">★</button><button type="button" class="star" data-value="5" aria-label="5 מתוך 5">★</button></div>
+            </div>
+            <p class="form-status" role="status" aria-live="polite" data-rate-status></p>
+          </div>
+          <div class="comments-block">
+            <h3 class="community-h">תגובות ושאלות</h3>
+            <ol class="comments" data-list="comments"></ol>
+            <p class="muted" data-empty hidden>עדיין אין תגובות.</p>
+          </div>
+          <form class="cform" data-form="comment" data-project="the-new-ocean" novalidate>
+          <fieldset class="cform-type">
+            <legend>אני רוצה</legend>
+            <label><input type="radio" name="kind" value="comment" checked> להשאיר תגובה</label>
+            <label><input type="radio" name="kind" value="question"> לשאול שאלה</label>
+          </fieldset>
+          <label class="field"><span>שם לתצוגה</span><input name="name" maxlength="60" required autocomplete="nickname"></label>
+          <label class="field"><span>ההודעה שלכם</span><textarea name="message" maxlength="2000" rows="5" required></textarea></label>
+          <label class="field"><span>מייל (לא חובה, רק לתשובה פרטית)</span><input type="email" name="email" maxlength="254" autocomplete="email" dir="ltr"></label>
+          <div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div>
+          <p class="form-note">אנחנו שומרים רק את מה שכתבתם כאן, כדי לבדוק ולענות. כתובת המייל לעולם לא מתפרסמת, ושום דבר לא מופיע באתר לפני בדיקה. <a href="../../privacy/index.html">איך אנחנו שומרים על הפרטים שלכם</a></p>
+          <button type="submit" class="button">שליחה</button>
+          <p class="form-status" role="status" aria-live="polite"></p>
+        </form>
+        </div>
+      </section>
       <nav class="pager" aria-label="עבודות">
         <span></span>
         <a class="pager-next" href="../../work/bradley-and-the-grumples/index.html"><span>הפרויקט הבא</span>BRADLEY &amp; THE GRUMPLES</a>
@@ -70,6 +106,8 @@
         <li><a href="../../services/index.html">שירותים</a></li>
         <li><a href="../../about/index.html">אודות</a></li>
         <li><a href="../../contact/index.html">יצירת קשר</a></li>
+        <li><a href="../../ideas/index.html">רעיונות</a></li>
+        <li><a href="../../privacy/index.html">פרטיות</a></li>
       </ul>
     </nav>
     <div class="footer-meta">

@@ -7,7 +7,7 @@
 // Reads   content/*.json, content/projects/*.json, content/testimonials/*.json,
 //         content/pages/*.json  (all edited in the admin panel at /admin/)
 //         src/i18n/en.json, src/i18n/he.json  (interface labels)
-// Writes  index.html, work/…, services/, about/, testimonials/, contact/,
+// Writes  index.html, work/…, services/, about/, testimonials/, contact/, ideas/, privacy/,
 //         pages/…, and the same under he/; plus 404.html, sitemap.xml, robots.txt.
 //
 // Pages that no longer exist (for example a deleted project) are removed.
@@ -26,7 +26,19 @@ const site = {
   url: "https://moshiko259-maker.github.io/bubapix/",
   // Optional: paste an analytics snippet here later (for example a free,
   // privacy-friendly service). Leave empty to load no analytics at all.
+  // Note: the pages carry a Content-Security-Policy. An analytics snippet
+  // pasted here turns that policy off, because it would block the snippet.
   analyticsHead: "",
+  // Visitor comments, ratings and forms (Supabase, free plan).
+  // The key below is the PUBLIC "anon" key: it is designed to be visible in
+  // the browser and can only call what the database rules allow (send a
+  // message for review, read approved messages, rate once). Never put the
+  // "service_role" key or any other secret here.
+  community: {
+    url: "https://ouskvcsmcddgdukcofex.supabase.co",
+    anonKey:
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91c2t2Y3NtY2RkZ2R1a2NvZmV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NDUxNjAsImV4cCI6MjEwNzMyMTE2MH0.SnJUMrnVZ_XzqBYRJP0DoySp8Fc9qg4BBQA9xQE8giA",
+  },
 };
 // --------------------------------------------------------------------
 
@@ -170,8 +182,10 @@ function contentFor(lang) {
           photo: imgWithAlt(m.photo, m.name, `team member ${i + 1}`),
         })),
     },
+    // A testimonial is shown only when it is visible AND the client's
+    // permission to publish it has been confirmed in the admin panel.
     testimonials: raw.testimonials
-      .filter(visible)
+      .filter((q) => visible(q) && q.consent_confirmed === true)
       .sort(byOrder)
       .map((q) => ({ quote: pick(q, "quote", lang), name: q.name || "", role: pick(q, "role", lang) }))
       .filter((q) => q.quote && q.name),
@@ -234,6 +248,8 @@ for (const lang of ["en", "he"]) {
   add("about/", render.about(contextFor(lang, "about/", data)));
   if (data.testimonials.length) add("testimonials/", render.testimonials(contextFor(lang, "testimonials/", data)));
   add("contact/", render.contact(contextFor(lang, "contact/", data)));
+  add("ideas/", render.ideas(contextFor(lang, "ideas/", data)));
+  add("privacy/", render.privacy(contextFor(lang, "privacy/", data)));
   data.pages.forEach((p) => {
     const pagePath = `pages/${p.slug}/`;
     add(pagePath, render.customPage(contextFor(lang, pagePath, data), p));
@@ -278,7 +294,7 @@ outputs.set("robots.txt", `User-agent: *\nDisallow: ${sitePath}admin/\n\nSitemap
   // Remove pages this script wrote last time but no longer produces.
   let removed = 0;
   for (const rel of previous) {
-    if (outputs.has(rel) || !/^(he\/)?((work|services|about|testimonials|contact|pages)\/.*)?index\.html$/.test(rel)) continue;
+    if (outputs.has(rel) || !/^(he\/)?((work|services|about|testimonials|contact|ideas|privacy|pages)\/.*)?index\.html$/.test(rel)) continue;
     const full = path.join(root, rel);
     if (fs.existsSync(full)) {
       fs.unlinkSync(full);

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data:; connect-src https://ouskvcsmcddgdukcofex.supabase.co; base-uri 'none'; form-action 'none'">
+  <title>BubaPix — ניהול תגובות ופניות</title>
+  <link rel="stylesheet" href="admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js" integrity="sha384-Rj26LVGvoeRVR6+mwQmFfcR3QOBEwT+ZmuCWpuiqeTzJpCs0ER4ITAWGb4Hiy3Ok" crossorigin="anonymous" defer></script>
+  <script src="admin.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <h1>BubaPix · ניהול תגובות ופניות</h1>
+    <div class="top-actions">
+      <a href="../">ניהול תוכן האתר</a>
+      <button type="button" id="logout" class="link" hidden>יציאה</button>
+    </div>
+  </header>
+
+  <noscript><p class="box">דף הניהול דורש JavaScript.</p></noscript>
+
+  <!-- Login: a real Supabase account; only addresses on the admin list get access. -->
+  <section id="login" class="box narrow" hidden>
+    <h2>כניסה</h2>
+    <form id="login-form" novalidate>
+      <label class="field"><span>מייל</span><input type="email" name="email" autocomplete="username" dir="ltr" required></label>
+      <label class="field"><span>סיסמה</span><input type="password" name="password" autocomplete="current-password" dir="ltr" required></label>
+      <button type="submit" class="btn primary">כניסה</button>
+      <p class="status" id="login-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <main id="app" hidden>
+    <nav class="tabs" aria-label="מצב">
+      <button type="button" class="tab" data-status="pending" aria-pressed="true">ממתינות <span class="count"></span></button>
+      <button type="button" class="tab" data-status="approved" aria-pressed="false">מאושרות <span class="count"></span></button>
+      <button type="button" class="tab" data-status="rejected" aria-pressed="false">נדחו <span class="count"></span></button>
+      <button type="button" class="tab" data-status="archived" aria-pressed="false">בארכיון <span class="count"></span></button>
+      <button type="button" class="tab" data-status="ratings" aria-pressed="false">דירוגים</button>
+    </nav>
+
+    <div class="filters" id="filters">
+      <label class="field inline"><span>סוג</span>
+        <select id="kind">
+          <option value="">הכול</option>
+          <option value="comment">תגובות</option>
+          <option value="question">שאלות</option>
+          <option value="idea">רעיונות</option>
+          <option value="consult">פניות פרטיות</option>
+        </select>
+      </label>
+      <label class="field inline grow"><span>חיפוש</span><input type="search" id="search" placeholder="שם, טקסט, מייל או פרויקט"></label>
+      <button type="button" class="btn" id="reload">רענון</button>
+    </div>
+
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+    <ol class="items" id="items"></ol>
+
+    <section id="ratings" hidden>
+      <p class="hint">הדירוגים מוצגים כפי שהמבקרים נתנו אותם. אי אפשר לשנות אותם מכאן. באתר מוצג ממוצע רק מ־3 דירוגים ומעלה.</p>
+      <table class="table">
+        <thead><tr><th>פרויקט</th><th>מדרגים</th><th>ממוצע</th><th>★1</th><th>★2</th><th>★3</th><th>★4</th><th>★5</th></tr></thead>
+        <tbody id="ratings-body"></tbody>
+      </table>
+    </section>
+
+    <aside class="box hint">
+      <strong>המלצות לקוחות</strong> נוצרות ונערכות ב<a href="../#/collections/testimonials">ניהול תוכן האתר</a>.
+      המלצה מתפרסמת רק אם סימנתם שהלקוח אישר את הפרסום, וגם שהיא גלויה.
+    </aside>
+  </main>
+
+  <template id="item-template">
+    <li class="item">
+      <div class="item-head">
+        <span class="badge kind"></span>
+        <span class="project"></span>
+        <span class="lang"></span>
+        <time class="date"></time>
+        <span class="badge flag consent" hidden>אישר/ה פרסום</span>
+        <span class="badge flag private" hidden>לא לפרסום</span>
+        <span class="badge flag edited" hidden>נערך</span>
+      </div>
+      <p class="name"></p>
+      <p class="body"></p>
+      <p class="email" hidden>מייל: <a></a></p>
+      <div class="reply" hidden><strong>התשובה שלכם:</strong> <span></span></div>
+      <div class="editor" hidden>
+        <label class="field"><span class="editor-label"></span><textarea rows="4"></textarea></label>
+        <div class="row"><button type="button" class="btn primary save">שמירה</button><button type="button" class="btn cancel">ביטול</button></div>
+      </div>
+      <div class="row actions">
+        <button type="button" class="btn primary" data-act="approved">אישור ופרסום</button>
+        <button type="button" class="btn" data-act="rejected">דחייה</button>
+        <button type="button" class="btn" data-act="archived">לארכיון</button>
+        <button type="button" class="btn" data-act="pending">החזרה להמתנה</button>
+        <button type="button" class="btn" data-act="reply">תשובה באתר</button>
+        <button type="button" class="btn" data-act="edit">עריכת טקסט</button>
+        <button type="button" class="btn danger" data-act="delete">מחיקה</button>
+      </div>
+      <p class="note"></p>
+    </li>
+  </template>
+</body>
+</html>

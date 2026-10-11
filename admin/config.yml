@@ -176,7 +176,7 @@ collections:
   - name: testimonials
     label: "Testimonials / המלצות"
     label_singular: "Testimonial / המלצה"
-    description: "The Testimonials page appears only when at least one testimonial is shown. Add real quotes only, with permission."
+    description: "Add real quotes only. A testimonial is shown only when 'The client approved publishing' AND 'Show on the site' are both on. / רק ציטוטים אמיתיים. המלצה מוצגת רק כשגם 'הלקוח אישר פרסום' וגם 'להציג באתר' מסומנים."
     folder: content/testimonials
     extension: json
     format: json
@@ -195,6 +195,7 @@ collections:
       - { name: role_he, label: "Role or company, Hebrew / תפקיד או חברה בעברית", widget: string, required: false }
       - { name: quote_en, label: "Quote, English / ציטוט באנגלית", widget: text, required: false }
       - { name: quote_he, label: "Quote, Hebrew / ציטוט בעברית", widget: text, required: false }
+      - { name: consent_confirmed, label: "The client approved publishing this quote / הלקוח אישר לפרסם את ההמלצה", widget: boolean, default: false, hint: "Turn on only after the client agreed, in writing, that this exact text and name may be published. Keep the written approval in your own email, not here (this content is public on GitHub). / סמנו רק אחרי שהלקוח הסכים בכתב לפרסום הטקסט והשם. שמרו את האישור במייל שלכם, לא כאן (התוכן כאן ציבורי ב־GitHub)." }
       - { name: visible, label: "Show on the site / להציג באתר", widget: boolean, default: true }
       - { name: order, label: "Order / סדר", widget: number, value_type: int, min: 1, default: 10 }
 

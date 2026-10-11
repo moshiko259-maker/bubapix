@@ -2,6 +2,7 @@
 // build.js calls these once per page and language. Visible interface labels
 // come from src/i18n/<lang>.json; everything else comes from content/*.
 
+const crypto = require("crypto");
 const md = require("./markdown.js");
 
 function e(s) {
@@ -53,7 +54,41 @@ function tile(ctx, p, { sizes, eager = false } = {}) {
         </a>`;
 }
 
-function layout(ctx, { title, description, image, main, current = "" }) {
+// Content-Security-Policy: the browser runs only our own scripts (plus the
+// two small inline ones, allowed by their exact fingerprint) and talks only to
+// the services listed here. This limits the damage if malicious text ever
+// slipped through.
+function csp(ctx, inlineScripts) {
+  const hashes = inlineScripts.map((code) => `'sha256-${crypto.createHash("sha256").update(code).digest("base64")}'`);
+  return [
+    "default-src 'self'",
+    `script-src 'self' ${hashes.join(" ")}`,
+    "style-src 'self' https://fonts.googleapis.com",
+    "font-src https://fonts.gstatic.com",
+    "img-src 'self' data:",
+    "media-src 'self'",
+    `connect-src ${ctx.site.community ? ctx.site.community.url : "'none'"}`,
+    "frame-src https://www.youtube-nocookie.com https://player.vimeo.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join("; ");
+}
+
+// Settings and labels for js/community.js. Stored as JSON (not run as code).
+function communityData(ctx) {
+  const { t, site, lang } = ctx;
+  const c = site.community;
+  const json = JSON.stringify({
+    url: c.url,
+    key: c.anonKey,
+    lang,
+    t: { ...t.community, ideaSent: t.ideas.sent, consultSent: t.consult.sent },
+  }).replace(/</g, "\\u003c");
+  return `<script type="application/json" id="community-data">${json}</script>`;
+}
+
+function layout(ctx, { title, description, image, main, current = "", community = false }) {
   const { t, lang, dir, site, data } = ctx;
   const link = makeLink(ctx);
   const otherHref = ctx.otherBase + ctx.path + (ctx.preview ? "index.html" : "") + (lang === "he" ? "?lang=en" : "");
@@ -75,16 +110,22 @@ function layout(ctx, { title, description, image, main, current = "" }) {
   const footerPages = data.pages.filter((p) => !p.menu);
 
   // On English pages: send visitors who chose Hebrew before to the Hebrew page.
-  const redirect =
+  const redirectCode =
     lang === "en"
-      ? `<script>try{if(localStorage.getItem("bubapix-lang")==="he"&&!/[?&]lang=en\\b/.test(location.search)){location.replace(${JSON.stringify(ctx.otherBase + ctx.path + (ctx.preview ? "index.html" : ""))}+location.hash)}}catch(e){}</script>`
+      ? `try{if(localStorage.getItem("bubapix-lang")==="he"&&!/[?&]lang=en\\b/.test(location.search)){location.replace(${JSON.stringify(ctx.otherBase + ctx.path + (ctx.preview ? "index.html" : ""))}+location.hash)}}catch(e){}`
       : "";
+  const redirect = redirectCode ? `<script>${redirectCode}</script>` : "";
+  const jsFlag = `document.documentElement.classList.add("js");`;
+  const withCommunity = community && site.community;
+  const policy = site.analyticsHead
+    ? ""
+    : `\n  <meta http-equiv="Content-Security-Policy" content="${csp(ctx, [redirectCode, jsFlag].filter(Boolean))}">`;
 
   return `<!doctype html>
 <html lang="${lang}" dir="${dir}">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">${policy}
   ${redirect}
   <title>${e(title)}</title>
   <meta name="description" content="${e(description)}">
@@ -106,9 +147,11 @@ function layout(ctx, { title, description, image, main, current = "" }) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Heebo:wght@400..700&display=swap">
-  <script>document.documentElement.classList.add("js");</script>
+  <script>${jsFlag}</script>
   <link rel="stylesheet" href="${ctx.assetBase}css/styles.css">
-  <script src="${ctx.assetBase}js/main.js" defer></script>${site.analyticsHead ? `
+  <script src="${ctx.assetBase}js/main.js" defer></script>${withCommunity ? `
+  ${communityData(ctx)}
+  <script src="${ctx.assetBase}js/community.js" defer></script>` : ""}${site.analyticsHead ? `
   ${site.analyticsHead}` : ""}
 </head>
 <body>
@@ -135,6 +178,8 @@ ${main}
         <li><a href="${link("")}">${e(t.nav.home)}</a></li>
         ${nav.map(([path, label]) => `<li><a href="${link(path)}">${e(label)}</a></li>`).join("\n        ")}${footerPages.map((p) => `
         <li><a href="${link(`pages/${p.slug}/`)}">${e(p.title)}</a></li>`).join("")}
+        <li><a href="${link("ideas/")}"${current === "ideas" ? ' aria-current="page"' : ""}>${e(t.nav.ideas)}</a></li>
+        <li><a href="${link("privacy/")}"${current === "privacy" ? ' aria-current="page"' : ""}>${e(t.nav.privacy)}</a></li>
       </ul>
     </nav>
     <div class="footer-meta">
@@ -238,6 +283,72 @@ function videoBlock(ctx, p) {
   return "";
 }
 
+// ---------------------------------------------------------------------------
+// Visitor participation (comments, questions, ratings, ideas, consultations)
+// Forms are hidden until js/community.js starts; without JavaScript a short
+// note is shown instead. Visitor text is always inserted as plain text.
+// ---------------------------------------------------------------------------
+
+function participationForm(ctx, kind, { project = "" } = {}) {
+  const { t } = ctx;
+  const link = makeLink(ctx);
+  const c = t.community;
+  const emailRequired = kind === "consult";
+  const messageLabel = kind === "idea" ? t.ideas.ideaLabel : c.messageLabel;
+  const emailLabel = emailRequired ? t.consult.emailLabel : c.emailLabel;
+  const type = kind === "comment"
+    ? `
+          <fieldset class="cform-type">
+            <legend>${e(c.typeLabel)}</legend>
+            <label><input type="radio" name="kind" value="comment" checked> ${e(c.typeComment)}</label>
+            <label><input type="radio" name="kind" value="question"> ${e(c.typeQuestion)}</label>
+          </fieldset>`
+    : `
+          <input type="hidden" name="kind" value="${kind}">`;
+  return `<form class="cform" data-form="${kind}"${project ? ` data-project="${e(project)}"` : ""} novalidate>${type}
+          <label class="field"><span>${e(c.nameLabel)}</span><input name="name" maxlength="60" required autocomplete="nickname"></label>
+          <label class="field"><span>${e(messageLabel)}</span><textarea name="message" maxlength="2000" rows="5" required></textarea></label>
+          <label class="field"><span>${e(emailLabel)}</span><input type="email" name="email" maxlength="254" autocomplete="email" dir="ltr"${emailRequired ? " required" : ""}></label>
+          <div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div>${kind === "idea" ? `
+          <label class="check"><input type="checkbox" name="publicOk"> <span>${e(t.ideas.publicOk)}</span></label>` : ""}
+          <p class="form-note">${e(c.privacy)} <a href="${link("privacy/")}">${e(c.privacyLink)}</a></p>
+          <button type="submit" class="button">${e(c.send)}</button>
+          <p class="form-status" role="status" aria-live="polite"></p>
+        </form>`;
+}
+
+function noscript(ctx) {
+  return `<noscript><p class="muted">${e(ctx.t.community.noscript)}</p></noscript>`;
+}
+
+function communitySection(ctx, p) {
+  const c = ctx.t.community;
+  const stars = [1, 2, 3, 4, 5]
+    .map((n) => `<button type="button" class="star" data-value="${n}" aria-label="${e(c.rateStar.replace("{n}", n))}">★</button>`)
+    .join("");
+  return `
+      <section class="project-section community" aria-labelledby="community-title" data-project="${e(p.slug)}">
+        <h2 id="community-title" class="section-label">${e(c.sectionTitle)}</h2>
+        ${noscript(ctx)}
+        <div class="community-body" data-community hidden>
+          <div class="rating">
+            <p class="rating-summary" data-rating-summary></p>
+            <div class="rate" data-rate>
+              <p class="community-h" id="rate-title">${e(c.rateTitle)}</p>
+              <div class="stars" role="group" aria-labelledby="rate-title">${stars}</div>
+            </div>
+            <p class="form-status" role="status" aria-live="polite" data-rate-status></p>
+          </div>
+          <div class="comments-block">
+            <h3 class="community-h">${e(c.commentsTitle)}</h3>
+            <ol class="comments" data-list="comments"></ol>
+            <p class="muted" data-empty hidden>${e(c.commentsEmpty)}</p>
+          </div>
+          ${participationForm(ctx, "comment", { project: p.slug })}
+        </div>
+      </section>`;
+}
+
 function project(ctx, p, prev, next) {
   const { t } = ctx;
   const link = makeLink(ctx);
@@ -252,6 +363,7 @@ function project(ctx, p, prev, next) {
     description: p.text || ctx.data.seoDescription,
     image: p.cover,
     current: "work",
+    community: true,
     main: `
     <article class="page project">
       <header class="page-head">
@@ -269,7 +381,7 @@ function project(ctx, p, prev, next) {
         <ul class="gallery">${p.gallery.map((g) => `
           <li>${img(ctx, g, { sizes: "(max-width: 860px) 100vw, 50vw" })}</li>`).join("")}
         </ul>
-      </section>` : ""}
+      </section>` : ""}${communitySection(ctx, p)}
       <nav class="pager" aria-label="${e(t.work.title)}">
         ${prev ? `<a class="pager-prev" href="${link(`work/${prev.slug}/`)}"><span>${e(t.work.previous)}</span>${e(prev.title)}</a>` : "<span></span>"}
         ${next ? `<a class="pager-next" href="${link(`work/${next.slug}/`)}"><span>${e(t.work.next)}</span>${e(next.title)}</a>` : "<span></span>"}
@@ -357,13 +469,68 @@ function contact(ctx) {
     title: pageTitle(ctx, t.contact.title),
     description: c.intro || data.seoDescription,
     current: "contact",
+    community: true,
     main: `
     <div class="page">
       <header class="page-head"><h1 class="page-title">${e(t.contact.title)}</h1>${c.intro ? `
         <p class="lede">${e(c.intro)}</p>` : ""}</header>
       ${rows.length || social
         ? `<dl class="contact-list">${rows.map(([k, v]) => `<div><dt>${e(k)}</dt><dd>${v}</dd></div>`).join("")}${social}</dl>`
-        : `<p class="muted">${e(t.contact.pending)}</p>`}
+        : ""}
+      <section class="section-inner community" aria-labelledby="consult-title">
+        <h2 id="consult-title" class="section-label">${e(t.consult.title)}</h2>
+        <p class="lede">${e(t.consult.intro)}</p>
+        ${noscript(ctx)}
+        <div class="community-body" data-community hidden>
+          ${participationForm(ctx, "consult")}
+        </div>
+        <p><a class="text-link" href="${makeLink(ctx)("ideas/")}">${e(t.ideas.link)}</a></p>
+      </section>
+    </div>`,
+  });
+}
+
+function ideas(ctx) {
+  const { t, data } = ctx;
+  return layout(ctx, {
+    title: pageTitle(ctx, t.ideas.title),
+    description: t.ideas.intro,
+    current: "ideas",
+    community: true,
+    main: `
+    <div class="page">
+      <header class="page-head"><h1 class="page-title">${e(t.ideas.title)}</h1>
+        <p class="lede">${e(t.ideas.intro)}</p></header>
+      <section class="community">
+        ${noscript(ctx)}
+        <div class="community-body" data-community hidden>
+          ${participationForm(ctx, "idea")}
+          <div class="comments-block">
+            <h2 class="section-label">${e(t.ideas.published)}</h2>
+            <ol class="comments" data-list="ideas"></ol>
+            <p class="muted" data-empty hidden>${e(t.ideas.empty)}</p>
+          </div>
+        </div>
+      </section>
+    </div>`,
+  });
+}
+
+function privacy(ctx) {
+  const { t } = ctx;
+  return layout(ctx, {
+    title: pageTitle(ctx, t.privacy.title),
+    description: t.privacy.items[0],
+    current: "privacy",
+    main: `
+    <div class="page">
+      <header class="page-head"><h1 class="page-title">${e(t.privacy.title)}</h1></header>
+      <div class="prose prose-large">
+        <ul>${t.privacy.items.map((x) => `
+          <li>${e(x)}</li>`).join("")}
+        </ul>
+        <p><a class="text-link" href="${makeLink(ctx)("contact/")}">${e(t.consult.title)}</a></p>
+      </div>
     </div>`,
   });
 }
@@ -413,4 +580,4 @@ function notFound(site, en, he, preview) {
 `;
 }
 
-module.exports = { home, work, project, services, about, testimonials, contact, customPage, notFound };
+module.exports = { home, work, project, services, about, testimonials, contact, ideas, privacy, customPage, notFound };

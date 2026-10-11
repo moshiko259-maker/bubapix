@@ -22,7 +22,9 @@
     "testimonials": "Testimonials",
     "contact": "Contact",
     "switchLabel": "עברית",
-    "switchTitle": "Hebrew version"
+    "switchTitle": "Hebrew version",
+    "ideas": "Ideas",
+    "privacy": "Privacy"
   },
   "home": {
     "selectedWork": "Selected work",
@@ -67,5 +69,72 @@
   "footer": {
     "top": "Back to top",
     "logoAlt": "BubaPix Animation Productions logo"
+  },
+  "community": {
+    "sectionTitle": "Ratings and comments",
+    "rateTitle": "Rate this project",
+    "rateStar": "{n} out of 5",
+    "rateThanks": "Thank you. Your rating was saved.",
+    "ratingSummary": "{avg} out of 5, from {count} ratings",
+    "ratingNotEnough": "Not enough ratings yet to show an average.",
+    "commentsTitle": "Comments and questions",
+    "commentsEmpty": "No comments yet.",
+    "typeLabel": "I want to",
+    "typeComment": "Leave a comment",
+    "typeQuestion": "Ask a question",
+    "questionTag": "Question",
+    "nameLabel": "Name to display",
+    "messageLabel": "Your message",
+    "emailLabel": "Email (optional, only for a private reply)",
+    "send": "Send",
+    "sending": "Sending…",
+    "sentPending": "Thank you. Your message will appear here after it is reviewed.",
+    "reply": "Reply from BubaPix",
+    "edited": "edited",
+    "privacy": "We keep only what you write here, to review and answer it. Your email is never published, and nothing appears on the site before it is reviewed.",
+    "privacyLink": "How we handle your details",
+    "noscript": "Comments, ratings and forms need JavaScript.",
+    "unavailable": "This feature is not available right now. Please try again later.",
+    "errors": {
+      "too_fast": "Please take a moment to fill in the form, then send again.",
+      "missing": "Please fill in your name and message.",
+      "too_long": "The text is too long.",
+      "email": "Please check the email address.",
+      "email_required": "Please add an email address so we can reply.",
+      "links": "Please include no more than two links.",
+      "rate_limited": "Too many messages from this connection. Please try again later.",
+      "busy": "We are receiving many messages right now. Please try again later.",
+      "already_rated": "You have already rated this project.",
+      "invalid": "Something in the form is not valid. Please check it and try again.",
+      "network": "Could not connect. Please check your connection and try again.",
+      "server": "Something went wrong on our side. Please try again later."
+    }
+  },
+  "ideas": {
+    "title": "Ideas",
+    "intro": "Have a creative idea or a collaboration in mind? Send it here. Ideas stay private unless you allow us to share them.",
+    "ideaLabel": "Your idea",
+    "publicOk": "BubaPix may publish my idea and display name on this page.",
+    "sent": "Thank you. We received your idea and will review it.",
+    "published": "Shared ideas",
+    "empty": "No shared ideas yet.",
+    "link": "Send an idea or a collaboration proposal"
+  },
+  "consult": {
+    "title": "Private consultation",
+    "intro": "Ask a question or tell us about a project. Your message goes only to the studio and is never published.",
+    "emailLabel": "Email (required, for our reply)",
+    "sent": "Thank you. Your message was sent privately to the studio."
+  },
+  "privacy": {
+    "title": "Privacy",
+    "items": [
+      "What we collect: the display name you choose, your message, and your email address if you give it. We ask for nothing else.",
+      "Why: to review and answer your message. Comments and questions, and ideas you allow us to share, are published with your display name only after review. Private consultations are never published.",
+      "Your email address is never published. We use it only to answer you.",
+      "Ratings are anonymous. To allow one rating per project and to stop spam, we keep a one-way coded form of your internet address, never the address itself.",
+      "Where: the data is stored with Supabase in Frankfurt, Germany (European Union).",
+      "To ask us to remove something you sent, write to us through the private consultation form."
+    ]
   }
 }
