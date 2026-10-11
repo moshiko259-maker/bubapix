@@ -1,0 +1,13 @@
+{
+  "title_en": "DRAFT TEST (not published)",
+  "title_he": "טיוטת בדיקה (לא פורסמה)",
+  "visible": true,
+  "featured": false,
+  "order": 99,
+  "categories": [],
+  "text_en": "Automatic test of the draft preview. This project exists only in a draft branch.",
+  "text_he": "בדיקה אוטומטית של תצוגה מקדימה לטיוטה. הפרויקט קיים רק בענף טיוטה.",
+  "description_en": "", "description_he": "",
+  "cover": "", "cover_alt_en": "", "cover_alt_he": "",
+  "video_url": "", "video_file": "", "gallery": [], "details": []
+}
