@@ -89,8 +89,11 @@ function csp(ctx, inlineScripts) {
     `script-src 'self' ${hashes.join(" ")}`,
     "style-src 'self' https://fonts.googleapis.com",
     "font-src https://fonts.gstatic.com",
-    "img-src 'self' data:",
-    "media-src 'self'",
+    // Preview builds are viewed on raw.githack.com, which serves pages
+    // itself but REDIRECTS images and videos to raw.githubusercontent.com.
+    // Only preview builds allow that address; the live site stays 'self'.
+    `img-src 'self' data:${ctx.preview ? " https://raw.githubusercontent.com" : ""}`,
+    `media-src 'self'${ctx.preview ? " https://raw.githubusercontent.com" : ""}`,
     `connect-src ${ctx.site.community ? ctx.site.community.url : "'none'"}`,
     "frame-src https://www.youtube-nocookie.com https://player.vimeo.com",
     "object-src 'none'",
@@ -230,10 +233,10 @@ const pageTitle = (ctx, title) => `${title} — ${ctx.t.meta.titleSuffix}`;
 function home(ctx) {
   const { t, data } = ctx;
   const link = makeLink(ctx);
+  // Homepage pictures are for looking only: they do not open project pages
+  // (projects are reached from the Work page).
   const items = data.homeGallery.map((g, i) =>
     galleryItem(ctx, g.image, {
-      href: g.project ? link(`work/${g.project.slug}/`) : "",
-      label: g.project ? g.project.title : "",
       caption: g.caption,
       lead: i === 0,
       eager: i === 0,

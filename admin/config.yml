@@ -373,6 +373,32 @@ collections:
           - { name: hero_image, label: "Large opening image (optional) / תמונת פתיחה גדולה (לא חובה)", widget: image, required: false, hint: "Shown first, full width, never cropped. If it is also a project image, it is shown only once. / מוצגת ראשונה ברוחב מלא. אם היא גם תמונה של פרויקט, תוצג פעם אחת בלבד." }
           - { name: hero_alt_en, label: "Main image description, English / תיאור התמונה באנגלית", widget: string, required: false }
           - { name: hero_alt_he, label: "Main image description, Hebrew / תיאור התמונה בעברית", widget: string, required: false }
+          - name: gallery
+            label: "Homepage gallery / הגלריה בדף הבית"
+            label_singular: "image / תמונה"
+            widget: list
+            required: false
+            collapsed: auto
+            thumbnail: image
+            summary: "{{fields.alt_en}}"
+            hint: "Pictures shown on the homepage, for looking only (they do not open project pages). Drag to change the order. Turn off 'Show' to hide one without deleting it. / תמונות לתצוגה בלבד, בלי קישור לעמודי פרויקטים. גררו לשינוי הסדר."
+            fields:
+              - { name: image, label: "Image / תמונה", widget: image }
+              - { name: visible, label: "Show / להציג", widget: boolean, default: true, required: false }
+              - { name: alt_en, label: "Description for blind visitors, English / תיאור לעיוורים, אנגלית", widget: string, required: false }
+              - { name: alt_he, label: "Description for blind visitors, Hebrew / תיאור לעיוורים, עברית", widget: string, required: false }
+              - { name: title_en, label: "Title, English (optional) / כותרת, אנגלית", widget: string, required: false }
+              - { name: title_he, label: "Title, Hebrew (optional) / כותרת, עברית", widget: string, required: false }
+              - { name: note_en, label: "Note, English (optional) / הערה, אנגלית", widget: text, required: false }
+              - { name: note_he, label: "Note, Hebrew (optional) / הערה, עברית", widget: text, required: false }
+              - name: caption
+                label: "Show the title and note under the picture / להציג כותרת והערה מתחת לתמונה"
+                widget: select
+                default: hidden
+                required: false
+                options:
+                  - { label: "No (kept, not shown) / לא (נשמר, לא מוצג)", value: hidden }
+                  - { label: "Yes / כן", value: everywhere }
           - { name: tagline_en, label: "Tagline, English / סלוגן באנגלית", widget: string, required: false }
           - { name: tagline_he, label: "Tagline, Hebrew / סלוגן בעברית", widget: string, required: false }
           - { name: intro_en, label: "Short intro under the gallery, English (optional) / משפט פתיחה מתחת לגלריה, אנגלית", widget: text, required: false }

@@ -7,5 +7,95 @@
   "intro_en": "",
   "intro_he": "",
   "seo_description_en": "BubaPix is an AI-powered film and animation studio. We create films, characters and original worlds.",
-  "seo_description_he": "BubaPix הוא סטודיו לקולנוע ולאנימציה מבוסס AI. אנחנו יוצרים סרטים, דמויות ועולמות מקוריים."
+  "seo_description_he": "BubaPix הוא סטודיו לקולנוע ולאנימציה מבוסס AI. אנחנו יוצרים סרטים, דמויות ועולמות מקוריים.",
+  "gallery": [
+    {
+      "image": "/assets/work/the-new-ocean-poster.jpg",
+      "alt_en": "THE NEW OCEAN poster by BubaPix: colourful characters on a beach between a tropical island and an underwater reef.",
+      "alt_he": "הפוסטר של THE NEW OCEAN מאת BubaPix: דמויות צבעוניות על חוף בין אי טרופי לשונית מתחת למים.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/the-new-ocean-poster-boat.jpg",
+      "alt_en": "THE NEW OCEAN poster by BubaPix: characters on a beach and on boats, and an underwater reef.",
+      "alt_he": "הפוסטר של THE NEW OCEAN מאת BubaPix: דמויות על חוף ועל סירות, ושונית מתחת למים.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/plastic-bag-whale.jpg",
+      "alt_en": "A whale made of plastic bags, swimming underwater.",
+      "alt_he": "לווייתן עשוי שקיות פלסטיק, שוחה מתחת למים.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/plastic-turtle.jpg",
+      "alt_en": "A turtle made of disposable plastic and a foam box, swimming above seagrass.",
+      "alt_he": "צב עשוי כלים חד־פעמיים וקופסת קלקר, שוחה מעל עשב ים.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/pufferfish.jpg",
+      "alt_en": "A yellow pufferfish with big eyes and pink lips above a coral reef.",
+      "alt_he": "דג אבו־נפחא צהוב עם עיניים גדולות ושפתיים ורודות, מעל שונית אלמוגים.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/green-creature.jpg",
+      "alt_en": "A small fluffy green creature with two antennae.",
+      "alt_he": "יצור קטן ופרוותי בצבע ירוק עם שתי אנטנות.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/white-creature.jpg",
+      "alt_en": "A small fluffy white creature with big brown eyes.",
+      "alt_he": "יצור קטן ופרוותי בצבע לבן עם עיניים חומות גדולות.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/gray-family.jpg",
+      "alt_en": "A family of gray characters: two adults, a child and a dog.",
+      "alt_he": "משפחה של דמויות אפורות: שני מבוגרים, ילד וכלב.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    }
+  ]
 }

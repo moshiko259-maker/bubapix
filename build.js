@@ -271,7 +271,15 @@ function contentFor(lang) {
   };
   const hero = imgWithAlt(s.hero_image, pick(s, "hero_alt", lang), "opening image");
   const pictureCaption = (im) => (im.caption === "everywhere" && (im.title || im.note) ? { title: im.title, note: im.note } : null);
-  for (const p of projects.filter((x) => x.featured)) {
+  // Homepage gallery chosen in the admin (Homepage > Homepage gallery). These
+  // pictures are shown on their own, without links. When the list is empty,
+  // the chosen projects' pictures are used instead.
+  for (const [i, g] of (Array.isArray(s.gallery) ? s.gallery : []).entries()) {
+    if (!g || g.visible === false) continue;
+    const im = picture(g, "BubaPix", `homepage gallery image ${i + 1}`);
+    if (im) addHome(im, null, pictureCaption(im));
+  }
+  for (const p of homeGallery.length ? [] : projects.filter((x) => x.featured)) {
     const nameCaption = p.titleInGallery ? { title: p.name, note: "" } : null;
     const coverCaption = p.cover ? nameCaption : pictureCaption(p.thumb) || nameCaption;
     // The opening image, if it belongs to this project, takes the project's place.
