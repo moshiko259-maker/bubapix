@@ -15,8 +15,8 @@
   --accent: #2f3de0;     /* ultramarine: focus, numbers, active states */
   --night: #0e1424;      /* final section */
 
-  --font-display: "Frank Ruhl Libre", "Times New Roman", serif;
-  --font-body: "IBM Plex Sans Hebrew", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-display: "Rubik", "Heebo", system-ui, sans-serif;
+  --font-body: "Heebo", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
 
   --gutter: clamp(1rem, 4vw, 3.5rem);
   --max: 1440px;
@@ -222,10 +222,10 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 
 .hero-title {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: clamp(2.75rem, 7.6vw, 7.5rem);
-  line-height: 0.94;
-  letter-spacing: -0.035em;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
 }
 :lang(he) .hero-title { letter-spacing: 0; line-height: 1.02; }
 .hero-title .line { display: block; }

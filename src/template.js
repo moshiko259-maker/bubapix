@@ -126,7 +126,7 @@ module.exports = function render({ t, lang, dir, base, urls, other, site }) {
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400..900&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Heebo:wght@400..700&display=swap">
 
   <link rel="preload" as="image" href="${scene(base, heroScene)}">
   <script>document.documentElement.classList.add("js");</script>
