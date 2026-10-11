@@ -49,7 +49,28 @@ Saving requires a GitHub account with write access to this repository **and** a 
 
 `admin/config.yml` → `backend.branch`: `redesign-v2` during the redesign; change to `main` when the redesign is approved and merged.
 
+## Projects (admin: Projects / פרויקטים)
+
+- **New** → type the project name → **Save**. That creates the project and its
+  own page at `/work/<name>/`. Everything else is optional.
+- Optional parts, shown only when filled in: cover or poster, synopsis, and
+  page sections in any order (drag to reorder, "Hide this section" to hide
+  without deleting): words from the creators, behind the scenes, image
+  gallery, videos, text, details list.
+- Each image can have a title and a note (Hebrew and English) and a choice of
+  where they appear: hidden, project page only, or also under the image on
+  the homepage. "Also show this image in the homepage gallery" adds it there.
+- A project with no image yet is not shown anywhere, so nothing appears
+  half-finished. "Show on the site" off hides a project without deleting it.
+- Pages that stop being shown are never deleted; they turn into a short
+  "page not found" notice that search engines ignore.
+- Image picking offers only your own uploaded files (stock photo sites are
+  turned off). There are no categories.
+
 ## Visitor comments, ratings, ideas and consultations
+
+**All four are off by default.** Turn them on in Settings › Visitor
+participation, after creating your sign-in for the moderation page.
 
 Visitors can comment on or ask about a project, rate it (1–5 stars), send an
 idea (Ideas page) or a private consultation (Contact page). Everything is

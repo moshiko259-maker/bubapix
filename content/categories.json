@@ -1,29 +1,3 @@
 {
-  "categories": [
-    {
-      "slug": "animation",
-      "name_en": "Animation",
-      "name_he": "אנימציה"
-    },
-    {
-      "slug": "short-films",
-      "name_en": "Short films",
-      "name_he": "סרטים קצרים"
-    },
-    {
-      "slug": "commercials",
-      "name_en": "Commercials",
-      "name_he": "פרסומות"
-    },
-    {
-      "slug": "music-videos",
-      "name_en": "Music videos",
-      "name_he": "קליפים"
-    },
-    {
-      "slug": "trailers",
-      "name_en": "Trailers",
-      "name_he": "טריילרים"
-    }
-  ]
+  "categories": []
 }

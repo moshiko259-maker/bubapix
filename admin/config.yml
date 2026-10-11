@@ -34,6 +34,9 @@ slug:
   clean_accents: true
 
 media_libraries:
+  # No stock photo sites: only your own original images can be used.
+  stock_assets:
+    providers: []
   default:
     config:
       max_file_size: 25000000   # 25 MB per file (GitHub is not made for large videos)
@@ -49,128 +52,240 @@ media_libraries:
 
 collections:
   # ---------------------------------------------------------------------
+  # Projects. "New" creates a project from its name only; every other part
+  # is optional and appears on the site only when filled in. A project
+  # without any image is not shown on the site at all (never half-finished).
   - name: projects
     label: "Projects / פרויקטים"
     label_singular: "Project / פרויקט"
-    description: "Each project gets its own page under /work/. Use Duplicate to copy an existing project."
+    description: "To create a project: press New, type the project name, then Save. Only the name is needed; add images and texts whenever you like. Every part is optional and is shown only when filled in. A project appears on the site only once it has at least one image. / ליצירת פרויקט: לוחצים New, מקלידים את שם הפרויקט ושומרים. כל השאר אופציונלי, ומוצג רק כשממלאים אותו."
+    icon: movie
     folder: content/projects
     extension: json
     format: json
     create: true
     delete: true
+    duplicate: true
     identifier_field: title_en
-    summary: "{{title_en}} · {{title_he}}"
+    slug:
+      template: "{{title_en}}"
+      editable: [create]
+      hint: "Web address of the page, filled in from the name. English letters, numbers and dashes only. / כתובת העמוד באתר, נוצרת מהשם. אותיות באנגלית, מספרים ומקפים בלבד."
+      pattern: ['^[a-z0-9][a-z0-9-]*$', "Use English letters, numbers and dashes / אותיות באנגלית, מספרים ומקפים בלבד"]
+    summary: "{{title_en}}"
+    thumbnail: cover
     sortable_fields:
       fields: [order, title_en]
       default:
         field: order
         direction: ascending
     fields:
+      # ---- Basics
       - name: title_en
-        label: "Name, English / שם באנגלית"
+        label: "Project name / שם הפרויקט"
         widget: string
-        hint: "Also used for the page address, e.g. /work/the-new-ocean/."
+        required: false
+        hint: "Exactly as it should appear, e.g. THE NEW OCEAN. Shown on both the English and the Hebrew site. The page address is made from this name; a name in Hebrew letters only gets a short random address. / בדיוק כפי שיופיע, מוצג גם באתר העברי. כתובת העמוד נוצרת מהשם; לשם באותיות עבריות בלבד תיווצר כתובת קצרה אקראית."
       - name: title_he
-        label: "Name, Hebrew / שם בעברית"
+        label: "Different name for the Hebrew site (optional) / שם שונה לאתר העברי (לא חובה)"
         widget: string
+        required: false
+        hint: "Leave empty to use the name above. / השאירו ריק כדי להשתמש בשם שלמעלה."
+      - name: show_title
+        label: "Show the name on the project page / להציג את השם בעמוד הפרויקט"
+        widget: boolean
+        default: true
         required: false
       - name: visible
         label: "Show on the site / להציג באתר"
         widget: boolean
         default: true
+        required: false
+        hint: "Turn off to hide the project without deleting it. / כבו כדי להסתיר בלי למחוק."
       - name: featured
-        label: "Show on the homepage / להציג בדף הבית"
+        label: "Show in the homepage gallery / להציג בגלריה של דף הבית"
         widget: boolean
-        default: false
+        default: true
+        required: false
       - name: order
-        label: "Order (1 = first) / סדר (1 = ראשון)"
+        label: "Order on the site (1 = first) / סדר באתר (1 = ראשון)"
         widget: number
         value_type: int
         min: 1
         default: 10
-      - name: categories
-        label: "Categories / קטגוריות"
-        widget: relation
-        collection: settings
-        file: categories
-        value_field: "categories.*.slug"
-        search_fields: ["categories.*.name_en", "categories.*.name_he"]
-        display_fields: ["categories.*.name_en"]
-        multiple: true
         required: false
-      - name: text_en
-        label: "Short text, English / טקסט קצר באנגלית"
-        widget: string
+      - name: title_in_gallery
+        label: "Show the name under the image in galleries / להציג את השם מתחת לתמונה בגלריות"
+        widget: boolean
+        default: false
         required: false
-      - name: text_he
-        label: "Short text, Hebrew / טקסט קצר בעברית"
-        widget: string
-        required: false
-      - name: description_en
-        label: "Description, English / תיאור באנגלית"
-        widget: markdown
-        required: false
-        buttons: [bold, italic, link, heading-two, heading-three, bulleted-list, numbered-list]
-        editor_components: []
-      - name: description_he
-        label: "Description, Hebrew / תיאור בעברית"
-        widget: markdown
-        required: false
-        buttons: [bold, italic, link, heading-two, heading-three, bulleted-list, numbered-list]
-        editor_components: []
       - name: cover
-        label: "Main image / תמונה ראשית"
+        label: "Cover image or poster / תמונת שער או פוסטר"
         widget: image
         required: false
-        hint: "Shown whole on the project page; tiles show it in a 16:9 frame."
+        hint: "Shown whole, never cropped. / מוצגת בשלמותה, בלי חיתוך."
       - name: cover_alt_en
-        label: "Main image description, English / תיאור התמונה באנגלית"
+        label: "Cover description for blind visitors, English / תיאור התמונה לעיוורים, אנגלית"
         widget: string
         required: false
       - name: cover_alt_he
-        label: "Main image description, Hebrew / תיאור התמונה בעברית"
+        label: "Cover description for blind visitors, Hebrew / תיאור התמונה לעיוורים, עברית"
         widget: string
         required: false
-      - name: video_url
-        label: "Video link (YouTube or Vimeo) / קישור לסרטון"
+      - name: text_en
+        label: "Short line under the name, English (optional) / שורה קצרה מתחת לשם, אנגלית"
         widget: string
         required: false
-        pattern: ['^$|^https://(www\.)?(youtube\.com|youtu\.be|vimeo\.com)/', "Use a YouTube or Vimeo address / כתובת YouTube או Vimeo"]
-        hint: "Free and without size limits. Recommended for videos."
-      - name: video_file
-        label: "Short video file (MP4, up to 25 MB) / קובץ וידאו קצר"
-        widget: file
+      - name: text_he
+        label: "Short line under the name, Hebrew (optional) / שורה קצרה מתחת לשם, עברית"
+        widget: string
         required: false
-        accept: "video/mp4,video/webm"
-        hint: "Only for short clips. Longer videos: upload to YouTube or Vimeo and paste the link above."
-      - name: gallery
-        label: "More images / תמונות נוספות"
-        label_singular: "image / תמונה"
+      - name: description_en
+        label: "Synopsis, English / תקציר, אנגלית"
+        widget: markdown
+        required: false
+        buttons: [bold, italic, link, bulleted-list, numbered-list]
+        editor_components: []
+      - name: description_he
+        label: "Synopsis, Hebrew / תקציר, עברית"
+        widget: markdown
+        required: false
+        buttons: [bold, italic, link, bulleted-list, numbered-list]
+        editor_components: []
+
+      # ---- Optional sections, in any order
+      - name: sections
+        label: "Page sections / אזורים בעמוד"
+        label_singular: "section / אזור"
         widget: list
         required: false
-        allow_reorder: true
-        allow_duplicate: true
-        collapsed: true
-        thumbnail: image
-        hint: "Drag to change the order."
-        fields:
-          - { name: image, label: "Image / תמונה", widget: image }
-          - { name: alt_en, label: "Description, English / תיאור באנגלית", widget: string, required: false }
-          - { name: alt_he, label: "Description, Hebrew / תיאור בעברית", widget: string, required: false }
-      - name: details
-        label: "Details (optional) / פרטים"
-        label_singular: "detail / פרט"
-        widget: list
+        collapsed: auto
+        hint: "Add only what you need. Drag to change the order. Turn on 'Hide' to hide a section without deleting it. / הוסיפו רק מה שצריך, גררו לשינוי הסדר."
+        types:
+          - name: creators
+            label: "Words from the creators / דברי היוצרים"
+            widget: object
+            summary: "{{fields.heading_en}}"
+            fields:
+              - &hidden { name: hidden, label: "Hide this section / להסתיר את האזור", widget: boolean, default: false, required: false }
+              - &heading_en { name: heading_en, label: "Heading, English (optional) / כותרת, אנגלית", widget: string, required: false, hint: "Empty: the usual heading is used. / ריק: תוצג הכותרת הרגילה." }
+              - &heading_he { name: heading_he, label: "Heading, Hebrew (optional) / כותרת, עברית", widget: string, required: false }
+              - name: items
+                label: "Creators / יוצרים"
+                label_singular: "creator / יוצר"
+                widget: list
+                collapsed: auto
+                summary: "{{fields.name}}"
+                fields:
+                  - { name: name, label: "Name / שם", widget: string, hint: "For example Moshe Appelbaum or Dani Moskona. / לדוגמה משה אפלבוים או דני מוסקונה." }
+                  - { name: role_en, label: "Role, English (optional) / תפקיד, אנגלית", widget: string, required: false }
+                  - { name: role_he, label: "Role, Hebrew (optional) / תפקיד, עברית", widget: string, required: false }
+                  - { name: text_en, label: "Text, English / טקסט, אנגלית", widget: text, required: false }
+                  - { name: text_he, label: "Text, Hebrew / טקסט, עברית", widget: text, required: false }
+          - name: behind
+            label: "Behind the scenes / מאחורי הקלעים"
+            widget: object
+            fields:
+              - *hidden
+              - *heading_en
+              - *heading_he
+              - { name: body_en, label: "Text, English: process, tools, techniques / טקסט, אנגלית", widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list, numbered-list], editor_components: [] }
+              - { name: body_he, label: "Text, Hebrew / טקסט, עברית", widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list, numbered-list], editor_components: [] }
+              - &images
+                name: images
+                label: "Images / תמונות"
+                label_singular: "image / תמונה"
+                widget: list
+                required: false
+                collapsed: auto
+                thumbnail: image
+                summary: "{{fields.title_en}}"
+                hint: "Drag to change the order. / גררו לשינוי הסדר."
+                fields:
+                  - { name: image, label: "Image / תמונה", widget: image }
+                  - { name: alt_en, label: "Description for blind visitors, English / תיאור לעיוורים, אנגלית", widget: string, required: false }
+                  - { name: alt_he, label: "Description for blind visitors, Hebrew / תיאור לעיוורים, עברית", widget: string, required: false }
+                  - { name: title_en, label: "Title, English (optional) / כותרת, אנגלית", widget: string, required: false }
+                  - { name: title_he, label: "Title, Hebrew (optional) / כותרת, עברית", widget: string, required: false }
+                  - { name: note_en, label: "Note, English (optional) / הערה, אנגלית", widget: text, required: false }
+                  - { name: note_he, label: "Note, Hebrew (optional) / הערה, עברית", widget: text, required: false }
+                  - name: caption
+                    label: "Where to show the title and note / היכן להציג כותרת והערה"
+                    widget: select
+                    default: hidden
+                    required: false
+                    options:
+                      - { label: "Hidden (kept, not shown) / מוסתר (נשמר, לא מוצג)", value: hidden }
+                      - { label: "On the project page only / בעמוד הפרויקט בלבד", value: project }
+                      - { label: "Also under the image on the homepage / גם מתחת לתמונה בדף הבית", value: everywhere }
+                  - { name: on_home, label: "Also show this image in the homepage gallery / להציג גם בגלריה של דף הבית", widget: boolean, default: false, required: false }
+          - name: gallery
+            label: "Image gallery / גלריית תמונות"
+            widget: object
+            fields:
+              - *hidden
+              - *heading_en
+              - *heading_he
+              - *images
+          - name: videos
+            label: "Videos / סרטונים"
+            widget: object
+            fields:
+              - *hidden
+              - *heading_en
+              - *heading_he
+              - name: items
+                label: "Videos / סרטונים"
+                label_singular: "video / סרטון"
+                widget: list
+                collapsed: auto
+                summary: "{{fields.title_en}} {{fields.url}}"
+                fields:
+                  - name: url
+                    label: "YouTube or Vimeo link (recommended) / קישור YouTube או Vimeo (מומלץ)"
+                    widget: string
+                    required: false
+                    pattern: ['^$|^https://(www\.|m\.)?(youtube\.com|youtu\.be|vimeo\.com)/', "Use a YouTube or Vimeo address / כתובת YouTube או Vimeo"]
+                  - { name: file, label: "Or a short MP4 file, up to 25 MB / או קובץ MP4 קצר", widget: file, required: false, accept: "video/mp4,video/webm" }
+                  - { name: title_en, label: "Title, English (optional) / כותרת, אנגלית", widget: string, required: false }
+                  - { name: title_he, label: "Title, Hebrew (optional) / כותרת, עברית", widget: string, required: false }
+          - name: text
+            label: "Text section / אזור טקסט"
+            widget: object
+            summary: "{{fields.heading_en}}"
+            fields:
+              - *hidden
+              - { name: heading_en, label: "Heading, English (optional) / כותרת, אנגלית", widget: string, required: false }
+              - { name: heading_he, label: "Heading, Hebrew (optional) / כותרת, עברית", widget: string, required: false }
+              - { name: body_en, label: "Text, English / טקסט, אנגלית", widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list, numbered-list], editor_components: [] }
+              - { name: body_he, label: "Text, Hebrew / טקסט, עברית", widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list, numbered-list], editor_components: [] }
+          - name: details
+            label: "Details list / רשימת פרטים"
+            widget: object
+            fields:
+              - *hidden
+              - *heading_en
+              - *heading_he
+              - name: items
+                label: "Details / פרטים"
+                label_singular: "detail / פרט"
+                widget: list
+                collapsed: auto
+                summary: "{{fields.label_en}}: {{fields.value_en}}"
+                hint: "For example Year, Length, Tools. Real information only. / לדוגמה שנה, אורך, כלים. מידע אמיתי בלבד."
+                fields:
+                  - { name: label_en, label: "Label, English / כותרת, אנגלית", widget: string, required: false }
+                  - { name: label_he, label: "Label, Hebrew / כותרת, עברית", widget: string, required: false }
+                  - { name: value_en, label: "Value, English / ערך, אנגלית", widget: string, required: false }
+                  - { name: value_he, label: "Value, Hebrew / ערך, עברית", widget: string, required: false }
+
+      # ---- Less common options
+      - name: comments
+        label: "Allow visitor comments on this project / לאפשר תגובות גולשים בפרויקט"
+        widget: boolean
+        default: true
         required: false
-        allow_reorder: true
-        collapsed: true
-        summary: "{{fields.label_en}}: {{fields.value_en}}"
-        hint: "For example Year, Client, Role. Only add real information."
-        fields:
-          - { name: label_en, label: "Label, English / כותרת באנגלית", widget: string }
-          - { name: label_he, label: "Label, Hebrew / כותרת בעברית", widget: string, required: false }
-          - { name: value_en, label: "Value, English / ערך באנגלית", widget: string }
-          - { name: value_he, label: "Value, Hebrew / ערך בעברית", widget: string, required: false }
+        hint: "Works only when comments are turned on in Settings › Visitor participation (off by default). / פועל רק כשהתגובות מופעלות בהגדרות (כבוי כברירת מחדל)."
 
   # ---------------------------------------------------------------------
   - name: testimonials
@@ -246,33 +361,53 @@ collections:
         file: content/site.json
         format: json
         fields:
-          - { name: hero_image, label: "Main image / תמונה ראשית", widget: image, hint: "Shown full width at the top of the homepage. Never cropped." }
+          - { name: hero_image, label: "Large opening image (optional) / תמונת פתיחה גדולה (לא חובה)", widget: image, required: false, hint: "Shown first, full width, never cropped. If it is also a project image, it is shown only once. / מוצגת ראשונה ברוחב מלא. אם היא גם תמונה של פרויקט, תוצג פעם אחת בלבד." }
           - { name: hero_alt_en, label: "Main image description, English / תיאור התמונה באנגלית", widget: string, required: false }
           - { name: hero_alt_he, label: "Main image description, Hebrew / תיאור התמונה בעברית", widget: string, required: false }
           - { name: tagline_en, label: "Tagline, English / סלוגן באנגלית", widget: string, required: false }
           - { name: tagline_he, label: "Tagline, Hebrew / סלוגן בעברית", widget: string, required: false }
-          - { name: intro_en, label: "Short intro, English / משפט פתיחה באנגלית", widget: text, required: false }
-          - { name: intro_he, label: "Short intro, Hebrew / משפט פתיחה בעברית", widget: text, required: false }
+          - { name: intro_en, label: "Short intro under the gallery, English (optional) / משפט פתיחה מתחת לגלריה, אנגלית", widget: text, required: false }
+          - { name: intro_he, label: "Short intro under the gallery, Hebrew (optional) / משפט פתיחה מתחת לגלריה, עברית", widget: text, required: false }
           - { name: seo_description_en, label: "Search description, English / תיאור לחיפוש באנגלית", widget: string, required: false, hint: "Shown by Google under the site name. About 150 characters." }
           - { name: seo_description_he, label: "Search description, Hebrew / תיאור לחיפוש בעברית", widget: string, required: false }
 
-      - name: categories
-        label: "Work categories / קטגוריות עבודות"
-        file: content/categories.json
+      - name: participation
+        label: "Visitor participation / השתתפות גולשים"
+        file: content/participation.json
         format: json
         fields:
-          - name: categories
-            label: "Categories / קטגוריות"
-            label_singular: "category / קטגוריה"
-            widget: list
-            allow_reorder: true
-            collapsed: true
-            summary: "{{fields.name_en}} · {{fields.name_he}}"
-            hint: "Only categories used by at least one project appear as filters."
-            fields:
-              - { name: slug, label: "Short ID (a-z and dashes) / מזהה קצר", widget: string, pattern: ['^[a-z0-9][a-z0-9-]*$', "Use a-z, 0-9 and dashes"], hint: "For example music-videos. Don't change it after use." }
-              - { name: name_en, label: "Name, English / שם באנגלית", widget: string }
-              - { name: name_he, label: "Name, Hebrew / שם בעברית", widget: string, required: false }
+          - { name: comments, label: "Comments and questions on project pages / תגובות ושאלות בעמודי פרויקטים", widget: boolean, default: false, required: false, hint: "All four are off by default. Turn one on only after you created your sign-in for the moderation page (/admin/community/), so you can read and approve what visitors send. Comments are published only after you approve them. / ארבעתן כבויות כברירת מחדל. הפעילו רק אחרי שיצרתם כניסה לדף ניהול התגובות. תגובות מתפרסמות רק אחרי אישור." }
+          - { name: ratings, label: "Star ratings on project pages / דירוג בכוכבים בעמודי פרויקטים", widget: boolean, default: false, required: false }
+          - { name: ideas, label: "Ideas page / עמוד רעיונות", widget: boolean, default: false, required: false }
+          - { name: consult, label: "Private message form on the Contact page / טופס פנייה פרטית בעמוד יצירת קשר", widget: boolean, default: false, required: false }
+
+      - name: labels
+        label: "Interface texts / טקסטי ממשק"
+        file: content/labels.json
+        format: json
+        fields:
+          - { name: work_heading_en, label: "Gallery heading, English (usual: Work) / כותרת הגלריה, אנגלית", widget: string, required: false, hint: "Leave any field on this page empty to keep the usual text. / שדה ריק משאיר את הטקסט הרגיל." }
+          - { name: work_heading_he, label: "Gallery heading, Hebrew (usual: עבודות) / כותרת הגלריה, עברית", widget: string, required: false }
+          - { name: nav_work_en, label: "Menu: Work, English / תפריט: עבודות, אנגלית", widget: string, required: false }
+          - { name: nav_work_he, label: "Menu: Work, Hebrew / תפריט: עבודות, עברית", widget: string, required: false }
+          - { name: nav_services_en, label: "Menu: Services, English / תפריט: שירותים, אנגלית", widget: string, required: false }
+          - { name: nav_services_he, label: "Menu: Services, Hebrew / תפריט: שירותים, עברית", widget: string, required: false }
+          - { name: nav_about_en, label: "Menu: About, English / תפריט: אודות, אנגלית", widget: string, required: false }
+          - { name: nav_about_he, label: "Menu: About, Hebrew / תפריט: אודות, עברית", widget: string, required: false }
+          - { name: nav_contact_en, label: "Menu: Contact, English / תפריט: יצירת קשר, אנגלית", widget: string, required: false }
+          - { name: nav_contact_he, label: "Menu: Contact, Hebrew / תפריט: יצירת קשר, עברית", widget: string, required: false }
+          - { name: synopsis_en, label: "Project heading: Synopsis, English / כותרת: תקציר, אנגלית", widget: string, required: false }
+          - { name: synopsis_he, label: "Project heading: Synopsis, Hebrew / כותרת: תקציר, עברית", widget: string, required: false }
+          - { name: creators_en, label: "Project heading: Words from the creators, English / כותרת: דברי היוצרים, אנגלית", widget: string, required: false }
+          - { name: creators_he, label: "Project heading: Words from the creators, Hebrew / כותרת: דברי היוצרים, עברית", widget: string, required: false }
+          - { name: behind_en, label: "Project heading: Behind the scenes, English / כותרת: מאחורי הקלעים, אנגלית", widget: string, required: false }
+          - { name: behind_he, label: "Project heading: Behind the scenes, Hebrew / כותרת: מאחורי הקלעים, עברית", widget: string, required: false }
+          - { name: gallery_en, label: "Project heading: Images, English / כותרת: תמונות, אנגלית", widget: string, required: false }
+          - { name: gallery_he, label: "Project heading: Images, Hebrew / כותרת: תמונות, עברית", widget: string, required: false }
+          - { name: video_en, label: "Project heading: Video, English / כותרת: וידאו, אנגלית", widget: string, required: false }
+          - { name: video_he, label: "Project heading: Video, Hebrew / כותרת: וידאו, עברית", widget: string, required: false }
+          - { name: details_en, label: "Project heading: Details, English / כותרת: פרטים, אנגלית", widget: string, required: false }
+          - { name: details_he, label: "Project heading: Details, Hebrew / כותרת: פרטים, עברית", widget: string, required: false }
 
       - name: services
         label: "Services page / עמוד שירותים"

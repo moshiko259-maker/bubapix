@@ -10,9 +10,9 @@
 // Writes  index.html, work/…, services/, about/, testimonials/, contact/, ideas/, privacy/,
 //         pages/…, and the same under he/; plus 404.html, sitemap.xml, robots.txt.
 //
-// Pages that no longer exist (for example a deleted project) are removed.
-// Only files this script wrote before are ever removed; the list is kept in
-// .generated-files.json.
+// Pages that are no longer produced (for example a hidden project) are not
+// deleted: they are replaced by a short "page not found" notice. The list of
+// pages this script writes is kept in .generated-files.json.
 
 const fs = require("fs");
 const path = require("path");
@@ -84,10 +84,45 @@ const raw = {
   about: readJsonOr("content/about.json", { team: [] }),
   contact: readJsonOr("content/contact.json", { social: [] }),
   categories: readJsonOr("content/categories.json", { categories: [] }).categories || [],
+  // Visitor participation switches (admin: Settings > Visitor participation).
+  // Everything is off unless switched on there.
+  participation: readJsonOr("content/participation.json", {}),
+  // Optional replacements for headings and menu names (Settings > Interface texts).
+  labels: readJsonOr("content/labels.json", {}),
   projects: readFolder("content/projects"),
   testimonials: readFolder("content/testimonials"),
   pages: readFolder("content/pages"),
 };
+
+// Headings and menu names changed in the admin replace the usual labels.
+{
+  const L = raw.labels || {};
+  const set = (lang, obj, key, field) => {
+    const v = String(L[`${field}_${lang}`] || "").trim();
+    if (v) obj[key] = v;
+  };
+  for (const lang of ["en", "he"]) {
+    const tl = t[lang];
+    set(lang, tl.home, "workTitle", "work_heading");
+    set(lang, tl.nav, "work", "nav_work");
+    set(lang, tl.work, "title", "nav_work");
+    set(lang, tl.nav, "services", "nav_services");
+    set(lang, tl.services, "title", "nav_services");
+    set(lang, tl.nav, "about", "nav_about");
+    set(lang, tl.about, "title", "nav_about");
+    set(lang, tl.nav, "contact", "nav_contact");
+    set(lang, tl.contact, "title", "nav_contact");
+    for (const k of ["synopsis", "creators", "behind", "gallery", "video", "details"]) set(lang, tl.work, k, k);
+  }
+}
+
+const participation = {
+  comments: raw.participation.comments === true,
+  ratings: raw.participation.ratings === true,
+  ideas: raw.participation.ideas === true,
+  consult: raw.participation.consult === true,
+};
+participation.any = participation.comments || participation.ratings || participation.ideas || participation.consult;
 
 const images = createImages(root);
 const safeSlug = (s) => /^[a-z0-9][a-z0-9-]*$/.test(s);
@@ -130,36 +165,135 @@ function contentFor(lang) {
     .map((c) => ({ slug: c.slug, name: pick(c, "name", lang) || c.slug }));
   const catBySlug = new Map(categories.map((c) => [c.slug, c]));
 
+  // One picture with its optional title and note.
+  //   caption: "hidden" (default) | "project" (project page) | "everywhere"
+  //   on_home: also show it in the homepage gallery
+  const picture = (g, fallbackAlt, where) => {
+    if (!g) return null;
+    const im = images.image(typeof g === "string" ? g : g.image, where);
+    if (!im) return null;
+    const o = typeof g === "string" ? {} : g;
+    const title = pick(o, "title", lang);
+    im.caption = ["project", "everywhere"].includes(o.caption) ? o.caption : "hidden";
+    // A title marked "hidden" stays hidden everywhere, also from screen readers.
+    im.alt = pick(o, "alt", lang) || (im.caption !== "hidden" ? title : "") || fallbackAlt;
+    im.title = title;
+    im.note = pick(o, "note", lang);
+    im.onHome = o.on_home === true;
+    return im;
+  };
+
   const projects = raw.projects
     .filter((p) => visible(p) && safeSlug(p.slug))
     .sort(byOrder)
     .map((p) => {
-      const title = pick(p, "title", lang) || p.slug;
-      if (p.video_url && !parseVideo(p.video_url)) images.warnings.push(`project "${p.slug}": video link is not a YouTube or Vimeo address`);
-      const videoFile = typeof p.video_file === "string" && /\.(mp4|webm)$/i.test(p.video_file) && fs.existsSync(path.join(root, p.video_file.replace(/^\/+/, "")))
-        ? p.video_file.replace(/^\/+/, "")
-        : "";
+      // The name is written once and used on both sites, unless a different
+      // Hebrew name is given. It can be hidden (image-only projects).
+      const name = lang === "he" ? String(p.title_he || "").trim() || String(p.title_en || "").trim() : String(p.title_en || "").trim() || String(p.title_he || "").trim();
+      const title = name || p.slug;
+      const where = `project "${p.slug}"`;
+      const videoOf = (v, i) => {
+        const url = typeof v === "string" ? v : v.url;
+        const file = typeof v === "string" ? "" : v.file;
+        const parsed = parseVideo(url);
+        if (url && !parsed) images.warnings.push(`${where}: video ${i + 1} is not a YouTube or Vimeo address`);
+        const local = typeof file === "string" && /\.(mp4|webm)$/i.test(file) && fs.existsSync(path.join(root, file.replace(/^\/+/, ""))) ? file.replace(/^\/+/, "") : "";
+        if (!parsed && !local) return null;
+        return { embed: parsed, file: local, title: typeof v === "string" ? "" : pick(v, "title", lang) };
+      };
+
+      // Optional sections, in the order chosen in the admin.
+      const sections = [];
+      for (const [i, sec] of (Array.isArray(p.sections) ? p.sections : []).entries()) {
+        if (!sec || sec.hidden === true) continue;
+        const heading = pick(sec, "heading", lang);
+        const at = `${where} section ${i + 1}`;
+        if (sec.type === "creators") {
+          const items = (sec.items || []).filter((c) => c && c.name).map((c) => ({ name: c.name, role: pick(c, "role", lang), text: pick(c, "text", lang) })).filter((c) => c.text || c.role);
+          if (items.length) sections.push({ type: "creators", heading, items });
+        } else if (sec.type === "behind" || sec.type === "gallery") {
+          const pics = (sec.images || []).map((g, j) => picture(g, title, `${at} image ${j + 1}`)).filter(Boolean);
+          const body = sec.type === "behind" ? pick(sec, "body", lang) : "";
+          if (pics.length || body) sections.push({ type: sec.type, heading, body, images: pics });
+        } else if (sec.type === "videos") {
+          const vids = (sec.items || []).map(videoOf).filter(Boolean);
+          if (vids.length) sections.push({ type: "videos", heading, videos: vids });
+        } else if (sec.type === "text") {
+          const body = pick(sec, "body", lang);
+          if (body) sections.push({ type: "text", heading, body });
+        } else if (sec.type === "details") {
+          const items = (sec.items || []).map((d) => ({ label: pick(d, "label", lang), value: pick(d, "value", lang) })).filter((d) => d.label && d.value);
+          if (items.length) sections.push({ type: "details", heading, items });
+        }
+      }
+      // Older fields (before sections existed) still work.
+      const oldVideo = videoOf({ url: p.video_url, file: p.video_file }, 0);
+      if (oldVideo) sections.unshift({ type: "videos", heading: "", videos: [oldVideo] });
+      const oldGallery = (p.gallery || []).map((g, j) => picture(g, title, `${where} image ${j + 1}`)).filter(Boolean);
+      if (oldGallery.length) sections.push({ type: "gallery", heading: "", images: oldGallery });
+      const oldDetails = (p.details || []).map((d) => ({ label: pick(d, "label", lang), value: pick(d, "value", lang) })).filter((d) => d.label && d.value);
+      if (oldDetails.length) sections.push({ type: "details", heading: "", items: oldDetails });
+
+      const cover = picture({ image: p.cover, alt_en: p.cover_alt_en, alt_he: p.cover_alt_he }, title, `${where} cover`);
+      const pictures = sections.filter((x) => x.images).flatMap((x) => x.images);
       return {
         slug: p.slug,
         title,
+        name,
+        showTitle: p.show_title !== false && !!name,
+        titleInGallery: p.title_in_gallery === true && !!name,
         text: pick(p, "text", lang),
         description: pick(p, "description", lang),
-        featured: !!p.featured,
+        featured: p.featured !== false,
+        comments: p.comments !== false,
         categories: (Array.isArray(p.categories) ? p.categories : []).map((c) => catBySlug.get(c)).filter(Boolean),
-        cover: imgWithAlt(p.cover, pick(p, "cover_alt", lang) || title, `project "${p.slug}" cover`),
-        video: parseVideo(p.video_url),
-        videoFile,
-        gallery: (p.gallery || [])
-          .map((g, i) => imgWithAlt(g.image, pick(g, "alt", lang) || title, `project "${p.slug}" image ${i + 1}`))
-          .filter(Boolean),
-        details: (p.details || [])
-          .map((d) => ({ label: pick(d, "label", lang), value: pick(d, "value", lang) }))
-          .filter((d) => d.label && d.value),
+        cover,
+        // The picture that represents the project in galleries.
+        thumb: cover || pictures[0] || null,
+        pictures,
+        sections,
       };
+    })
+    // A project without any image is not shown anywhere (no half-finished pages).
+    .filter((p) => {
+      if (!p.thumb) images.warnings.push(`project "${p.slug}" is not shown yet: it has no image`);
+      return !!p.thumb;
     });
 
+  // Homepage gallery: each chosen project's main picture, then the pictures
+  // marked "Also show in the homepage gallery". The same file is never shown twice.
+  const seen = new Set();
+  const homeGallery = [];
+  const addHome = (im, project, caption) => {
+    if (!im || seen.has(im.src)) return;
+    seen.add(im.src);
+    homeGallery.push({ image: im, project, caption });
+  };
+  const hero = imgWithAlt(s.hero_image, pick(s, "hero_alt", lang), "opening image");
+  const pictureCaption = (im) => (im.caption === "everywhere" && (im.title || im.note) ? { title: im.title, note: im.note } : null);
+  for (const p of projects.filter((x) => x.featured)) {
+    const nameCaption = p.titleInGallery ? { title: p.name, note: "" } : null;
+    const coverCaption = p.cover ? nameCaption : pictureCaption(p.thumb) || nameCaption;
+    // The opening image, if it belongs to this project, takes the project's place.
+    if (hero && p.pictures.concat(p.cover || []).some((im) => im.src === hero.src)) {
+      addHome({ ...hero }, p, coverCaption);
+    }
+    addHome(p.thumb, p, coverCaption);
+    for (const im of p.pictures.filter((x) => x.onHome)) {
+      addHome(im, p, pictureCaption(im));
+    }
+  }
+  if (hero && !seen.has(hero.src)) homeGallery.unshift({ image: hero, project: null, caption: null });
+  else if (hero) {
+    // Put the opening image first.
+    const i = homeGallery.findIndex((x) => x.image.src === hero.src);
+    if (i > 0) homeGallery.unshift(homeGallery.splice(i, 1)[0]);
+  }
+
   return {
-    hero: imgWithAlt(s.hero_image, pick(s, "hero_alt", lang), "main image"),
+    hero,
+    homeGallery,
+    participation,
     tagline: pick(s, "tagline", lang),
     intro: pick(s, "intro", lang),
     seoDescription: pick(s, "seo_description", lang) || pick(s, "intro", lang),
@@ -248,8 +382,9 @@ for (const lang of ["en", "he"]) {
   add("about/", render.about(contextFor(lang, "about/", data)));
   if (data.testimonials.length) add("testimonials/", render.testimonials(contextFor(lang, "testimonials/", data)));
   add("contact/", render.contact(contextFor(lang, "contact/", data)));
-  add("ideas/", render.ideas(contextFor(lang, "ideas/", data)));
-  add("privacy/", render.privacy(contextFor(lang, "privacy/", data)));
+  // Pages for visitor participation exist only while it is switched on.
+  if (participation.ideas) add("ideas/", render.ideas(contextFor(lang, "ideas/", data)));
+  if (participation.any) add("privacy/", render.privacy(contextFor(lang, "privacy/", data)));
   data.pages.forEach((p) => {
     const pagePath = `pages/${p.slug}/`;
     add(pagePath, render.customPage(contextFor(lang, pagePath, data), p));
@@ -257,6 +392,20 @@ for (const lang of ["en", "he"]) {
 }
 
 outputs.set("404.html", render.notFound(site, t.en, t.he, preview));
+
+// Galleries keep every picture whole (never cropped). Each row is filled by
+// giving each picture a share of the width that matches its proportions;
+// those shares are written here as small CSS classes (no inline styles,
+// which the Content-Security-Policy does not allow).
+outputs.set(
+  "css/gallery.css",
+  "/* Generated by build.js: picture proportions for the galleries. */\n" +
+    [...render.usedRatios]
+      .sort((a, b) => a - b)
+      .map((r) => `.ar-${r}{flex-grow:${r};flex-basis:calc(var(--row-h) * ${r / 100})}.ar-${r} .jg-media{aspect-ratio:${r / 100}}`)
+      .join("\n") +
+    "\n"
+);
 
 const today = new Date().toISOString().slice(0, 10);
 outputs.set(
@@ -291,27 +440,24 @@ outputs.set("robots.txt", `User-agent: *\nDisallow: ${sitePath}admin/\n\nSitemap
     fs.writeFileSync(out, html);
   }
 
-  // Remove pages this script wrote last time but no longer produces.
-  let removed = 0;
+  // Pages this script wrote before but no longer produces (a project hidden
+  // or still without images, a feature switched off) are never deleted:
+  // they are replaced by the short bilingual "page not found" notice, which
+  // search engines are told not to index. They come back when re-enabled.
+  let retired = 0;
   for (const rel of previous) {
     if (outputs.has(rel) || !/^(he\/)?((work|services|about|testimonials|contact|ideas|privacy|pages)\/.*)?index\.html$/.test(rel)) continue;
     const full = path.join(root, rel);
-    if (fs.existsSync(full)) {
-      fs.unlinkSync(full);
-      removed++;
-      // Remove now-empty folders left behind.
-      let dir = path.dirname(full);
-      while (dir.startsWith(root + path.sep) && fs.readdirSync(dir).length === 0) {
-        fs.rmdirSync(dir);
-        dir = path.dirname(dir);
-      }
-    }
+    fs.mkdirSync(path.dirname(full), { recursive: true });
+    fs.writeFileSync(full, render.notFound(site, t.en, t.he, preview));
+    outputs.set(rel, null); // keep it in the list
+    retired++;
   }
   fs.writeFileSync(manifestFile, JSON.stringify([...outputs.keys()].sort(), null, 2) + "\n");
 
   console.log(
     `Built ${outputs.size} files (${[...outputs.keys()].filter((k) => k.endsWith("index.html")).length} pages)` +
-      `${preview ? ", preview links" : ""}${removed ? `, removed ${removed} old pages` : ""}` +
+      `${preview ? ", preview links" : ""}${retired ? `, ${retired} inactive pages show a "not found" notice` : ""}` +
       `${images.hasSharp ? `, ${made} new resized images` : ", no resized images (sharp not installed)"}`
   );
   for (const w of [...new Set(images.warnings)]) console.warn("Warning:", w);

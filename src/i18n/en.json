@@ -29,7 +29,8 @@
   "home": {
     "selectedWork": "Selected work",
     "allWork": "All work",
-    "aboutLink": "About the studio"
+    "aboutLink": "About the studio",
+    "workTitle": "Work"
   },
   "work": {
     "title": "Work",
@@ -41,7 +42,11 @@
     "next": "Next project",
     "video": "Video",
     "gallery": "Images",
-    "details": "Details"
+    "details": "Details",
+    "synopsis": "Synopsis",
+    "creators": "From the creators",
+    "behind": "Behind the scenes",
+    "openImage": "Open image"
   },
   "services": {
     "title": "Services"
@@ -136,5 +141,12 @@
       "Where: the data is stored with Supabase in Frankfurt, Germany (European Union).",
       "To ask us to remove something you sent, write to us through the private consultation form."
     ]
+  },
+  "viewer": {
+    "label": "Image viewer",
+    "close": "Close",
+    "previous": "Previous image",
+    "next": "Next image",
+    "count": "{n} of {total}"
   }
 }

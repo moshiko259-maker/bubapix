@@ -210,9 +210,11 @@
     var slug = section ? section.getAttribute("data-project") : "";
     Array.prototype.forEach.call(root.querySelectorAll("form[data-form]"), setupForm);
 
-    if (slug) {
+    if (slug && root.querySelector("[data-rating-summary]")) {
       setupRating(root, slug);
       rpc("rating_summary", { p_slug: slug }).then(function (s) { showSummary(root, s); }).catch(function () {});
+    }
+    if (slug && root.querySelector('[data-list="comments"]')) {
       rpc("public_comments", { p_slug: slug }).then(function (items) { fillList(root, items); }).catch(function () { showListError(root); });
     } else if (root.querySelector('[data-list="ideas"]')) {
       rpc("public_ideas").then(function (items) { fillList(root, items); }).catch(function () { showListError(root); });

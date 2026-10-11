@@ -41,18 +41,42 @@ function logo(ctx, alt, cls, attrs = "") {
   return `<span class="logo-frame ${cls}"><img src="${ctx.assetBase}assets/brand/bubapix-logo.jpg" alt="${e(alt)}" width="989" height="902" ${attrs}></span>`;
 }
 
-function tile(ctx, p, { sizes, eager = false } = {}) {
-  const link = makeLink(ctx);
-  const media = p.cover
-    ? img(ctx, p.cover, { sizes, attrs: eager ? 'decoding="async"' : 'loading="lazy" decoding="async"' })
-    : `<span class="tile-empty">${e(ctx.t.work.imageComing)}</span>`;
-  const cats = p.categories.map((c) => c.name).join(", ");
-  return `<a class="tile" href="${link(`work/${p.slug}/`)}" data-categories="${e(p.categories.map((c) => c.slug).join(" "))}">
-          <span class="tile-media">${media}</span>
-          <span class="tile-title">${e(p.title)}</span>${cats ? `
-          <span class="tile-meta">${e(cats)}</span>` : ""}
-        </a>`;
+// ---------------------------------------------------------------------------
+// Galleries: pictures are shown whole (never cropped). Rows are "justified":
+// each picture's width share matches its proportions, so every row lines up.
+// The proportions become small CSS classes in css/gallery.css (see build.js).
+// ---------------------------------------------------------------------------
+const usedRatios = new Set();
+function ratioClass(im) {
+  const r = im.w && im.h ? Math.round((im.w / im.h) * 100) : 150;
+  const clamped = Math.min(400, Math.max(40, r));
+  usedRatios.add(clamped);
+  return { cls: `ar-${clamped}`, ratio: clamped / 100 };
 }
+
+// One gallery picture. href: where it leads (project page or full image).
+// caption: { title, note } or null. lead: shown alone, full width.
+function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = false, eager = false, viewer = false, sizes } = {}) {
+  const { cls, ratio } = ratioClass(im);
+  const isLead = lead && ratio >= 1.2;
+  const sz = sizes || (isLead ? "(max-width: 1440px) 100vw, 1440px" : "(max-width: 560px) 100vw, (max-width: 1100px) 50vw, 40vw");
+  const picture = `<span class="jg-media">${img(ctx, im, { sizes: sz, attrs: eager ? 'fetchpriority="high" decoding="async"' : 'loading="lazy" decoding="async"' })}</span>`;
+  const capInner = caption && (caption.title || caption.note)
+    ? `${caption.title ? `<span class="jg-title">${e(caption.title)}</span>` : ""}${caption.note ? `<span class="jg-note">${e(caption.note)}</span>` : ""}`
+    : "";
+  const classes = `jg-item ${cls}${isLead ? " is-lead" : ""}`;
+  if (!href) {
+    return `<figure class="${classes}">${picture}${capInner ? `<figcaption class="jg-caption">${capInner}</figcaption>` : ""}</figure>`;
+  }
+  return `<a class="${classes}" href="${href}"${label ? ` aria-label="${e(label)}"` : ""}${viewer ? " data-viewer" : ""}>${picture}${capInner ? `<span class="jg-caption">${capInner}</span>` : ""}</a>`;
+}
+
+function gallery(items, extraClass = "") {
+  return `<div class="jg${extraClass ? " " + extraClass : ""}">
+        ${items.join("\n        ")}
+      </div>`;
+}
+
 
 // Content-Security-Policy: the browser runs only our own scripts (plus the
 // two small inline ones, allowed by their exact fingerprint) and talks only to
@@ -88,13 +112,14 @@ function communityData(ctx) {
   return `<script type="application/json" id="community-data">${json}</script>`;
 }
 
-function layout(ctx, { title, description, image, main, current = "", community = false }) {
+function layout(ctx, { title, description, image, main, current = "", community = false, viewer = false }) {
   const { t, lang, dir, site, data } = ctx;
   const link = makeLink(ctx);
   const otherHref = ctx.otherBase + ctx.path + (ctx.preview ? "index.html" : "") + (lang === "he" ? "?lang=en" : "");
   const otherLang = lang === "he" ? "en" : "he";
   const absUrl = (l) => site.url + (l === "he" ? "he/" : "") + ctx.path;
-  const ogImage = image ? site.url + image.src : data.hero ? site.url + data.hero.src : site.url + "assets/brand/bubapix-logo.jpg";
+  const firstHome = data.homeGallery[0] && data.homeGallery[0].image;
+  const ogImage = image ? site.url + image.src : data.hero ? site.url + data.hero.src : firstHome ? site.url + firstHome.src : site.url + "assets/brand/bubapix-logo.jpg";
 
   const nav = [
     ["work/", t.nav.work, "work"],
@@ -149,12 +174,13 @@ function layout(ctx, { title, description, image, main, current = "", community 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Heebo:wght@400..700&display=swap">
   <script>${jsFlag}</script>
   <link rel="stylesheet" href="${ctx.assetBase}css/styles.css">
+  <link rel="stylesheet" href="${ctx.assetBase}css/gallery.css">
   <script src="${ctx.assetBase}js/main.js" defer></script>${withCommunity ? `
   ${communityData(ctx)}
   <script src="${ctx.assetBase}js/community.js" defer></script>` : ""}${site.analyticsHead ? `
   ${site.analyticsHead}` : ""}
 </head>
-<body>
+<body${viewer ? ` data-viewer-labels="${e(JSON.stringify(t.viewer))}"` : ""}>
   <a class="skip-link" href="#main">${e(t.a11y.skip)}</a>
 
   <header class="site-header">
@@ -178,8 +204,9 @@ ${main}
         <li><a href="${link("")}">${e(t.nav.home)}</a></li>
         ${nav.map(([path, label]) => `<li><a href="${link(path)}">${e(label)}</a></li>`).join("\n        ")}${footerPages.map((p) => `
         <li><a href="${link(`pages/${p.slug}/`)}">${e(p.title)}</a></li>`).join("")}
-        <li><a href="${link("ideas/")}"${current === "ideas" ? ' aria-current="page"' : ""}>${e(t.nav.ideas)}</a></li>
-        <li><a href="${link("privacy/")}"${current === "privacy" ? ' aria-current="page"' : ""}>${e(t.nav.privacy)}</a></li>
+${data.participation.ideas ? `
+        <li><a href="${link("ideas/")}"${current === "ideas" ? ' aria-current="page"' : ""}>${e(t.nav.ideas)}</a></li>` : ""}${data.participation.any ? `
+        <li><a href="${link("privacy/")}"${current === "privacy" ? ' aria-current="page"' : ""}>${e(t.nav.privacy)}</a></li>` : ""}
       </ul>
     </nav>
     <div class="footer-meta">
@@ -203,47 +230,41 @@ const pageTitle = (ctx, title) => `${title} — ${ctx.t.meta.titleSuffix}`;
 function home(ctx) {
   const { t, data } = ctx;
   const link = makeLink(ctx);
-  const featured = data.projects.filter((p) => p.featured);
-  const shown = featured.length ? featured : data.projects;
-
-  const hero = data.hero
+  const items = data.homeGallery.map((g, i) =>
+    galleryItem(ctx, g.image, {
+      href: g.project ? link(`work/${g.project.slug}/`) : "",
+      label: g.project ? g.project.title : "",
+      caption: g.caption,
+      lead: i === 0,
+      eager: i === 0,
+    })
+  );
+  const work = items.length
     ? `
-    <section class="hero" aria-label="${e(data.tagline || "BubaPix")}">
-      <figure class="hero-frame">${img(ctx, data.hero, { attrs: 'fetchpriority="high" decoding="async"' })}</figure>${data.tagline ? `
-      <p class="tagline">${e(data.tagline)}</p>` : ""}
+    <section class="section section-work" aria-labelledby="work-title">
+      <h2 id="work-title" class="section-label">${e(t.home.workTitle)}</h2>
+      ${gallery(items, "jg-home")}
     </section>`
     : "";
-
-  const work = shown.length
-    ? `
-    <section class="section" aria-labelledby="selected-title">
-      <div class="section-head">
-        <h2 id="selected-title" class="section-label">${e(t.home.selectedWork)}</h2>
-        <a class="text-link" href="${link("work/")}">${e(t.home.allWork)}</a>
-      </div>
-      <div class="mosaic">
-        ${shown.map((p, i) => tile(ctx, p, { sizes: "(max-width: 860px) 100vw, 60vw", eager: i === 0 && !data.hero })).join("\n        ")}
-      </div>
-    </section>`
-    : "";
-
+  const tagline = data.tagline ? `
+    <p class="tagline">${e(data.tagline)}</p>` : "";
   const intro = data.intro
     ? `
     <section class="section intro" aria-label="${e(t.nav.about)}">
       <p class="intro-text">${e(data.intro)}</p>
-      <a class="text-link" href="${link("about/")}">${e(t.home.aboutLink)}</a>
     </section>`
     : "";
 
   return layout(ctx, {
     title: t.meta.homeTitle,
     description: data.seoDescription || data.intro,
-    main: `    <h1 class="visually-hidden">BubaPix</h1>${hero}${work}${intro}`,
+    main: `    <h1 class="visually-hidden">BubaPix</h1>${tagline}${work}${intro}`,
   });
 }
 
 function work(ctx) {
   const { t, data } = ctx;
+  const link = makeLink(ctx);
   const used = data.categories.filter((c) => data.projects.some((p) => p.categories.some((pc) => pc.slug === c.slug)));
   const filters = used.length > 1 || (used.length === 1 && data.projects.some((p) => !p.categories.length))
     ? `
@@ -252,33 +273,95 @@ function work(ctx) {
         <button type="button" class="filter" data-filter="${e(c.slug)}" aria-pressed="false">${e(c.name)}</button>`).join("")}
       </div>`
     : "";
-  const grid = data.projects.length
-    ? `
-      <div class="mosaic mosaic-work">
-        ${data.projects.map((p) => tile(ctx, p, { sizes: "(max-width: 860px) 100vw, 50vw" })).join("\n        ")}
-      </div>`
-    : `<p class="muted">${e(t.work.empty)}</p>`;
+  const items = data.projects.map((p) =>
+    galleryItem(ctx, p.thumb, {
+      href: link(`work/${p.slug}/`),
+      label: p.title,
+      caption: p.titleInGallery ? { title: p.name, note: p.categories.map((c) => c.name).join(", ") } : null,
+    }).replace('<a class="jg-item', `<a data-categories="${e(p.categories.map((c) => c.slug).join(" "))}" class="jg-item`)
+  );
+  const grid = items.length ? gallery(items, "jg-work") : `<p class="muted">${e(t.work.empty)}</p>`;
   return layout(ctx, {
     title: pageTitle(ctx, t.work.title),
     description: data.seoDescription,
     current: "work",
     main: `
     <div class="page">
-      <header class="page-head"><h1 class="page-title">${e(t.work.title)}</h1></header>${filters}${grid}
+      <header class="page-head"><h1 class="page-title">${e(t.work.title)}</h1></header>${filters}
+      ${grid}
     </div>`,
   });
 }
 
-function videoBlock(ctx, p) {
+function videoBlock(ctx, v, projectTitle, poster) {
   const { t } = ctx;
-  if (p.video && p.video.kind === "youtube") {
-    return `<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${e(p.video.id)}" title="${e(p.title)} — ${e(t.work.video)}" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
+  const title = `${projectTitle} — ${v.title || t.work.video}`;
+  let player = "";
+  if (v.embed && v.embed.kind === "youtube") {
+    player = `<iframe src="https://www.youtube-nocookie.com/embed/${e(v.embed.id)}" title="${e(title)}" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
+  } else if (v.embed && v.embed.kind === "vimeo") {
+    player = `<iframe src="https://player.vimeo.com/video/${e(v.embed.id)}?dnt=1" title="${e(title)}" loading="lazy" allow="fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+  } else if (v.file) {
+    player = `<video controls preload="metadata" playsinline${poster ? ` poster="${ctx.assetBase}${e(poster.src)}"` : ""}><source src="${ctx.assetBase}${e(v.file)}" type="${/\.webm$/i.test(v.file) ? "video/webm" : "video/mp4"}"></video>`;
   }
-  if (p.video && p.video.kind === "vimeo") {
-    return `<div class="video"><iframe src="https://player.vimeo.com/video/${e(p.video.id)}?dnt=1" title="${e(p.title)} — ${e(t.work.video)}" loading="lazy" allow="fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+  return `<figure class="video-item"><div class="video">${player}</div>${v.title ? `<figcaption class="video-title">${e(v.title)}</figcaption>` : ""}</figure>`;
+}
+
+// Pictures inside a project page: open in the image viewer.
+function projectPictures(ctx, list) {
+  return gallery(
+    list.map((im) =>
+      galleryItem(ctx, im, {
+        href: ctx.assetBase + e(im.src),
+        label: `${ctx.t.work.openImage}: ${im.alt}`,
+        caption: im.caption !== "hidden" ? { title: im.title, note: im.note } : null,
+        viewer: true,
+      })
+    ),
+    "jg-project"
+  );
+}
+
+function projectSection(ctx, p, sec, i) {
+  const { t } = ctx;
+  const id = `section-${i + 1}`;
+  const head = (fallback) => {
+    const h = sec.heading || fallback;
+    return h ? `<h2 id="${id}" class="section-label">${e(h)}</h2>` : "";
+  };
+  const open = (fallback, extra = "") => {
+    const h = sec.heading || fallback;
+    return `
+      <section class="project-section ${extra}"${h ? ` aria-labelledby="${id}"` : ""}>
+        ${head(fallback)}`;
+  };
+  if (sec.type === "creators") {
+    return `${open(t.work.creators, "creators")}
+        <ul class="creators">${sec.items.map((c) => `
+          <li><figure>${c.text ? `<blockquote><p>${e(c.text)}</p></blockquote>` : ""}<figcaption><span class="creator-name">${e(c.name)}</span>${c.role ? `<span class="muted">${e(c.role)}</span>` : ""}</figcaption></figure></li>`).join("")}
+        </ul>
+      </section>`;
   }
-  if (p.videoFile) {
-    return `<div class="video"><video controls preload="metadata" playsinline${p.cover ? ` poster="${ctx.assetBase}${e(p.cover.src)}"` : ""}><source src="${ctx.assetBase}${e(p.videoFile)}" type="video/mp4"></video></div>`;
+  if (sec.type === "behind" || sec.type === "gallery") {
+    const body = sec.body ? `<div class="prose">${md(sec.body)}</div>` : "";
+    return `${open(sec.type === "behind" ? t.work.behind : t.work.gallery)}
+        ${body}${sec.images.length ? projectPictures(ctx, sec.images) : ""}
+      </section>`;
+  }
+  if (sec.type === "videos") {
+    return `${open(t.work.video, "videos")}
+        ${sec.videos.map((v) => videoBlock(ctx, v, p.title, p.cover)).join("\n        ")}
+      </section>`;
+  }
+  if (sec.type === "text") {
+    return `${open("")}
+        <div class="prose">${md(sec.body)}</div>
+      </section>`;
+  }
+  if (sec.type === "details") {
+    return `${open(t.work.details)}
+        <dl class="details">${sec.items.map((d) => `<div><dt>${e(d.label)}</dt><dd>${e(d.value)}</dd></div>`).join("")}</dl>
+      </section>`;
   }
   return "";
 }
@@ -323,14 +406,18 @@ function noscript(ctx) {
 
 function communitySection(ctx, p) {
   const c = ctx.t.community;
+  const on = ctx.data.participation;
+  const showRatings = on.ratings;
+  const showComments = on.comments && p.comments;
   const stars = [1, 2, 3, 4, 5]
     .map((n) => `<button type="button" class="star" data-value="${n}" aria-label="${e(c.rateStar.replace("{n}", n))}">★</button>`)
     .join("");
+  const title = showComments && showRatings ? c.sectionTitle : showComments ? c.commentsTitle : c.rateTitle;
   return `
       <section class="project-section community" aria-labelledby="community-title" data-project="${e(p.slug)}">
-        <h2 id="community-title" class="section-label">${e(c.sectionTitle)}</h2>
+        <h2 id="community-title" class="section-label">${e(title)}</h2>
         ${noscript(ctx)}
-        <div class="community-body" data-community hidden>
+        <div class="community-body" data-community hidden>${showRatings ? `
           <div class="rating">
             <p class="rating-summary" data-rating-summary></p>
             <div class="rate" data-rate>
@@ -338,53 +425,53 @@ function communitySection(ctx, p) {
               <div class="stars" role="group" aria-labelledby="rate-title">${stars}</div>
             </div>
             <p class="form-status" role="status" aria-live="polite" data-rate-status></p>
-          </div>
+          </div>` : ""}${showComments ? `
           <div class="comments-block">
-            <h3 class="community-h">${e(c.commentsTitle)}</h3>
+            ${showRatings ? `<h3 class="community-h">${e(c.commentsTitle)}</h3>` : ""}
             <ol class="comments" data-list="comments"></ol>
             <p class="muted" data-empty hidden>${e(c.commentsEmpty)}</p>
           </div>
-          ${participationForm(ctx, "comment", { project: p.slug })}
+          ${participationForm(ctx, "comment", { project: p.slug })}` : ""}
         </div>
       </section>`;
 }
 
 function project(ctx, p, prev, next) {
-  const { t } = ctx;
+  const { t, data } = ctx;
   const link = makeLink(ctx);
   const cats = p.categories.map((c) => c.name).join(", ");
-  const description = md(p.description);
-  const details = p.details.length
-    ? `<dl class="details">${p.details.map((d) => `<div><dt>${e(d.label)}</dt><dd>${e(d.value)}</dd></div>`).join("")}</dl>`
+  const cover = p.cover
+    ? `
+      <figure class="project-cover"><a href="${ctx.assetBase}${e(p.cover.src)}" data-viewer aria-label="${e(`${t.work.openImage}: ${p.cover.alt}`)}">${img(ctx, p.cover, { sizes: "(max-width: 1440px) 100vw, 1440px", attrs: 'fetchpriority="high" decoding="async"' })}</a></figure>`
     : "";
-  const video = videoBlock(ctx, p);
+  const synopsis = p.description
+    ? `
+      <section class="project-section" aria-labelledby="synopsis-title">
+        <h2 id="synopsis-title" class="section-label">${e(t.work.synopsis)}</h2>
+        <div class="prose prose-large">${md(p.description)}</div>
+      </section>`
+    : "";
+  const community = (data.participation.comments && p.comments) || data.participation.ratings ? communitySection(ctx, p) : "";
+  const pagerLink = (q, cls, label) =>
+    q ? `<a class="${cls}" href="${link(`work/${q.slug}/`)}"><span>${e(label)}</span>${q.name ? e(q.name) : ""}</a>` : "<span></span>";
   return layout(ctx, {
     title: pageTitle(ctx, p.title),
     description: p.text || ctx.data.seoDescription,
-    image: p.cover,
+    image: p.thumb,
     current: "work",
-    community: true,
+    community: !!community,
+    viewer: true,
     main: `
     <article class="page project">
       <header class="page-head">
         <p class="crumb"><a href="${link("work/")}">${e(t.work.back)}</a></p>
-        <h1 class="page-title">${e(p.title)}</h1>${cats ? `
+        <h1 class="${p.showTitle ? "page-title" : "visually-hidden"}">${e(p.title)}</h1>${cats ? `
         <p class="project-meta">${e(cats)}</p>` : ""}${p.text ? `
         <p class="lede">${e(p.text)}</p>` : ""}
-      </header>
-      <figure class="project-cover">${p.cover ? img(ctx, p.cover, { sizes: "(max-width: 1440px) 100vw, 1440px", attrs: 'fetchpriority="high" decoding="async"' }) : `<span class="tile-empty">${e(t.work.imageComing)}</span>`}</figure>${video ? `
-      <section class="project-section" aria-label="${e(t.work.video)}">${video}</section>` : ""}${description || details ? `
-      <section class="project-section project-body">
-        <div class="prose">${description}</div>${details}
-      </section>` : ""}${p.gallery.length ? `
-      <section class="project-section" aria-label="${e(t.work.gallery)}">
-        <ul class="gallery">${p.gallery.map((g) => `
-          <li>${img(ctx, g, { sizes: "(max-width: 860px) 100vw, 50vw" })}</li>`).join("")}
-        </ul>
-      </section>` : ""}${communitySection(ctx, p)}
+      </header>${cover}${synopsis}${p.sections.map((sec, i) => projectSection(ctx, p, sec, i)).join("")}${community}
       <nav class="pager" aria-label="${e(t.work.title)}">
-        ${prev ? `<a class="pager-prev" href="${link(`work/${prev.slug}/`)}"><span>${e(t.work.previous)}</span>${e(prev.title)}</a>` : "<span></span>"}
-        ${next ? `<a class="pager-next" href="${link(`work/${next.slug}/`)}"><span>${e(t.work.next)}</span>${e(next.title)}</a>` : "<span></span>"}
+        ${pagerLink(prev, "pager-prev", t.work.previous)}
+        ${pagerLink(next, "pager-next", t.work.next)}
       </nav>
     </article>`,
   });
@@ -469,14 +556,14 @@ function contact(ctx) {
     title: pageTitle(ctx, t.contact.title),
     description: c.intro || data.seoDescription,
     current: "contact",
-    community: true,
+    community: data.participation.consult,
     main: `
     <div class="page">
       <header class="page-head"><h1 class="page-title">${e(t.contact.title)}</h1>${c.intro ? `
         <p class="lede">${e(c.intro)}</p>` : ""}</header>
       ${rows.length || social
         ? `<dl class="contact-list">${rows.map(([k, v]) => `<div><dt>${e(k)}</dt><dd>${v}</dd></div>`).join("")}${social}</dl>`
-        : ""}
+        : data.participation.consult ? "" : `<p class="muted">${e(t.contact.pending)}</p>`}${data.participation.consult ? `
       <section class="section-inner community" aria-labelledby="consult-title">
         <h2 id="consult-title" class="section-label">${e(t.consult.title)}</h2>
         <p class="lede">${e(t.consult.intro)}</p>
@@ -484,8 +571,9 @@ function contact(ctx) {
         <div class="community-body" data-community hidden>
           ${participationForm(ctx, "consult")}
         </div>
-        <p><a class="text-link" href="${makeLink(ctx)("ideas/")}">${e(t.ideas.link)}</a></p>
-      </section>
+${data.participation.ideas ? `
+        <p><a class="text-link" href="${makeLink(ctx)("ideas/")}">${e(t.ideas.link)}</a></p>` : ""}
+      </section>` : ""}
     </div>`,
   });
 }
@@ -580,4 +668,4 @@ function notFound(site, en, he, preview) {
 `;
 }
 
-module.exports = { home, work, project, services, about, testimonials, contact, ideas, privacy, customPage, notFound };
+module.exports = { usedRatios, home, work, project, services, about, testimonials, contact, ideas, privacy, customPage, notFound };

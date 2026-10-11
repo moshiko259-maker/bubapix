@@ -27,6 +27,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Heebo:wght@400..700&display=swap">
   <script>document.documentElement.classList.add("js");</script>
   <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/gallery.css">
   <script src="../js/main.js" defer></script>
 </head>
 <body>
@@ -50,20 +51,8 @@
 
     <div class="page">
       <header class="page-head"><h1 class="page-title">Work</h1></header>
-      <div class="filters" role="group" aria-label="Show work by category" hidden>
-        <button type="button" class="filter" data-filter="" aria-pressed="true">All</button>
-        <button type="button" class="filter" data-filter="animation" aria-pressed="false">Animation</button>
-      </div>
-      <div class="mosaic mosaic-work">
-        <a class="tile" href="../work/the-new-ocean/index.html" data-categories="animation">
-          <span class="tile-media"><img src="../assets/work/the-new-ocean-poster.jpg" srcset="../assets/resized/the-new-ocean-poster-c97fc484eb-640.webp 640w, ../assets/resized/the-new-ocean-poster-c97fc484eb-1280.webp 1280w, ../assets/work/the-new-ocean-poster.jpg 1376w" sizes="(max-width: 860px) 100vw, 50vw" alt="Poster for The New Ocean." width="1376" height="768" loading="lazy" decoding="async"></span>
-          <span class="tile-title">THE NEW OCEAN</span>
-          <span class="tile-meta">Animation</span>
-        </a>
-        <a class="tile" href="../work/bradley-and-the-grumples/index.html" data-categories="">
-          <span class="tile-media"><span class="tile-empty">Image coming soon</span></span>
-          <span class="tile-title">BRADLEY &amp; THE GRUMPLES</span>
-        </a>
+      <div class="jg jg-work">
+        <a data-categories="" class="jg-item ar-179" href="../work/the-new-ocean/index.html" aria-label="THE NEW OCEAN"><span class="jg-media"><img src="../assets/work/the-new-ocean-poster.jpg" srcset="../assets/resized/the-new-ocean-poster-c97fc484eb-640.webp 640w, ../assets/resized/the-new-ocean-poster-c97fc484eb-1280.webp 1280w, ../assets/work/the-new-ocean-poster.jpg 1376w" sizes="(max-width: 560px) 100vw, (max-width: 1100px) 50vw, 40vw" alt="THE NEW OCEAN poster." width="1376" height="768" loading="lazy" decoding="async"></span></a>
       </div>
     </div>
   </main>
@@ -76,8 +65,7 @@
         <li><a href="../services/index.html">Services</a></li>
         <li><a href="../about/index.html">About</a></li>
         <li><a href="../contact/index.html">Contact</a></li>
-        <li><a href="../ideas/index.html">Ideas</a></li>
-        <li><a href="../privacy/index.html">Privacy</a></li>
+
       </ul>
     </nav>
     <div class="footer-meta">
