@@ -1,0 +1,3 @@
+# Installed by the build workflow (npm install --no-save sharp); never commit.
+node_modules/
+package-lock.json

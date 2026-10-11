@@ -1,28 +1,43 @@
 # BubaPix admin panel (Sveltia CMS) — settings
 #
-# Every change saved here is committed to the GitHub repository below.
-# A GitHub Actions workflow (.github/workflows/build-pages.yml) then
-# rebuilds the English and Hebrew pages automatically.
+# How saving works
+#   Every change is saved as a DRAFT first (Editorial Workflow): a separate
+#   branch and pull request in the GitHub repository. A GitHub Actions
+#   workflow builds a preview of the whole site with the draft and puts a
+#   "BubaPix preview" link on it. Nothing changes on the site until you press
+#   "Publish" in the panel.
 #
-# Sign in: "Sign In with Token", using your own fine-grained GitHub token
-# limited to this repository (Contents: Read and write). The token stays in
-# your browser; it is never stored in this site or the repository.
+# Who can edit
+#   Only GitHub accounts with write access to this repository, signed in with
+#   their own token ("Sign In Using Access Token"). The token stays in the
+#   browser; it is never stored in the site or the repository.
+#   Fine-grained token permissions: Contents (read and write) and
+#   Pull requests (read and write), for this repository only.
 
 backend:
   name: github
   repo: moshiko259-maker/bubapix
-  # Edits go to this branch only. Change to "main" after the redesign is approved.
+  # Drafts are created from, and published to, this branch.
+  # Change to "main" after the redesign is approved and merged.
   branch: redesign-v2
+  # Name of the preview link that the build workflow attaches to drafts.
+  preview_context: BubaPix preview
 
-# Uploaded images are saved in this folder of the repository.
+publish_mode: editorial_workflow
+
+# Uploaded files are saved in this folder of the repository.
 media_folder: assets/uploads
 public_folder: /assets/uploads
+
+slug:
+  encoding: ascii
+  clean_accents: true
 
 media_libraries:
   default:
     config:
-      max_file_size: 20000000   # 20 MB per upload
-      slugify_filename: true    # safe file names (no spaces or Hebrew letters)
+      max_file_size: 25000000   # 25 MB per file (GitHub is not made for large videos)
+      slugify_filename: true    # safe file names: no spaces or Hebrew letters
       transformations:
         # Photos are converted to WebP and scaled down to at most 2400 px,
         # keeping their proportions. Smaller images are never enlarged.
@@ -33,106 +48,319 @@ media_libraries:
           height: 2400
 
 collections:
-  - name: site
-    label: "BubaPix website / האתר"
+  # ---------------------------------------------------------------------
+  - name: projects
+    label: "Projects / פרויקטים"
+    label_singular: "Project / פרויקט"
+    description: "Each project gets its own page under /work/. Use Duplicate to copy an existing project."
+    folder: content/projects
+    extension: json
+    format: json
+    create: true
+    delete: true
+    identifier_field: title_en
+    summary: "{{title_en}} · {{title_he}}"
+    sortable_fields:
+      fields: [order, title_en]
+      default:
+        field: order
+        direction: ascending
+    fields:
+      - name: title_en
+        label: "Name, English / שם באנגלית"
+        widget: string
+        hint: "Also used for the page address, e.g. /work/the-new-ocean/."
+      - name: title_he
+        label: "Name, Hebrew / שם בעברית"
+        widget: string
+        required: false
+      - name: visible
+        label: "Show on the site / להציג באתר"
+        widget: boolean
+        default: true
+      - name: featured
+        label: "Show on the homepage / להציג בדף הבית"
+        widget: boolean
+        default: false
+      - name: order
+        label: "Order (1 = first) / סדר (1 = ראשון)"
+        widget: number
+        value_type: int
+        min: 1
+        default: 10
+      - name: categories
+        label: "Categories / קטגוריות"
+        widget: relation
+        collection: settings
+        file: categories
+        value_field: "categories.*.slug"
+        search_fields: ["categories.*.name_en", "categories.*.name_he"]
+        display_fields: ["categories.*.name_en"]
+        multiple: true
+        required: false
+      - name: text_en
+        label: "Short text, English / טקסט קצר באנגלית"
+        widget: string
+        required: false
+      - name: text_he
+        label: "Short text, Hebrew / טקסט קצר בעברית"
+        widget: string
+        required: false
+      - name: description_en
+        label: "Description, English / תיאור באנגלית"
+        widget: markdown
+        required: false
+        buttons: [bold, italic, link, heading-two, heading-three, bulleted-list, numbered-list]
+        editor_components: []
+      - name: description_he
+        label: "Description, Hebrew / תיאור בעברית"
+        widget: markdown
+        required: false
+        buttons: [bold, italic, link, heading-two, heading-three, bulleted-list, numbered-list]
+        editor_components: []
+      - name: cover
+        label: "Main image / תמונה ראשית"
+        widget: image
+        required: false
+        hint: "Shown whole on the project page; tiles show it in a 16:9 frame."
+      - name: cover_alt_en
+        label: "Main image description, English / תיאור התמונה באנגלית"
+        widget: string
+        required: false
+      - name: cover_alt_he
+        label: "Main image description, Hebrew / תיאור התמונה בעברית"
+        widget: string
+        required: false
+      - name: video_url
+        label: "Video link (YouTube or Vimeo) / קישור לסרטון"
+        widget: string
+        required: false
+        pattern: ['^$|^https://(www\.)?(youtube\.com|youtu\.be|vimeo\.com)/', "Use a YouTube or Vimeo address / כתובת YouTube או Vimeo"]
+        hint: "Free and without size limits. Recommended for videos."
+      - name: video_file
+        label: "Short video file (MP4, up to 25 MB) / קובץ וידאו קצר"
+        widget: file
+        required: false
+        accept: "video/mp4,video/webm"
+        hint: "Only for short clips. Longer videos: upload to YouTube or Vimeo and paste the link above."
+      - name: gallery
+        label: "More images / תמונות נוספות"
+        label_singular: "image / תמונה"
+        widget: list
+        required: false
+        allow_reorder: true
+        allow_duplicate: true
+        collapsed: true
+        thumbnail: image
+        hint: "Drag to change the order."
+        fields:
+          - { name: image, label: "Image / תמונה", widget: image }
+          - { name: alt_en, label: "Description, English / תיאור באנגלית", widget: string, required: false }
+          - { name: alt_he, label: "Description, Hebrew / תיאור בעברית", widget: string, required: false }
+      - name: details
+        label: "Details (optional) / פרטים"
+        label_singular: "detail / פרט"
+        widget: list
+        required: false
+        allow_reorder: true
+        collapsed: true
+        summary: "{{fields.label_en}}: {{fields.value_en}}"
+        hint: "For example Year, Client, Role. Only add real information."
+        fields:
+          - { name: label_en, label: "Label, English / כותרת באנגלית", widget: string }
+          - { name: label_he, label: "Label, Hebrew / כותרת בעברית", widget: string, required: false }
+          - { name: value_en, label: "Value, English / ערך באנגלית", widget: string }
+          - { name: value_he, label: "Value, Hebrew / ערך בעברית", widget: string, required: false }
+
+  # ---------------------------------------------------------------------
+  - name: testimonials
+    label: "Testimonials / המלצות"
+    label_singular: "Testimonial / המלצה"
+    description: "The Testimonials page appears only when at least one testimonial is shown. Add real quotes only, with permission."
+    folder: content/testimonials
+    extension: json
+    format: json
+    create: true
+    delete: true
+    identifier_field: name
+    summary: "{{name}}"
+    sortable_fields:
+      fields: [order, name]
+      default:
+        field: order
+        direction: ascending
+    fields:
+      - { name: name, label: "Name / שם", widget: string }
+      - { name: role_en, label: "Role or company, English / תפקיד או חברה באנגלית", widget: string, required: false }
+      - { name: role_he, label: "Role or company, Hebrew / תפקיד או חברה בעברית", widget: string, required: false }
+      - { name: quote_en, label: "Quote, English / ציטוט באנגלית", widget: text, required: false }
+      - { name: quote_he, label: "Quote, Hebrew / ציטוט בעברית", widget: text, required: false }
+      - { name: visible, label: "Show on the site / להציג באתר", widget: boolean, default: true }
+      - { name: order, label: "Order / סדר", widget: number, value_type: int, min: 1, default: 10 }
+
+  # ---------------------------------------------------------------------
+  - name: pages
+    label: "Extra pages / עמודים נוספים"
+    label_singular: "Page / עמוד"
+    description: "Free pages, for example a showreel or a press page. Address: /pages/<name>/."
+    folder: content/pages
+    extension: json
+    format: json
+    create: true
+    delete: true
+    identifier_field: title_en
+    summary: "{{title_en}} · {{title_he}}"
+    sortable_fields:
+      fields: [order, title_en]
+      default:
+        field: order
+        direction: ascending
+    fields:
+      - { name: title_en, label: "Title, English / כותרת באנגלית", widget: string, hint: "Also used for the page address." }
+      - { name: title_he, label: "Title, Hebrew / כותרת בעברית", widget: string, required: false }
+      - { name: visible, label: "Show on the site / להציג באתר", widget: boolean, default: true }
+      - { name: show_in_menu, label: "Show in the top menu / להציג בתפריט העליון", widget: boolean, default: false, hint: "Otherwise the page is linked in the footer." }
+      - { name: order, label: "Order / סדר", widget: number, value_type: int, min: 1, default: 10 }
+      - { name: description_en, label: "Search description, English / תיאור לחיפוש באנגלית", widget: string, required: false }
+      - { name: description_he, label: "Search description, Hebrew / תיאור לחיפוש בעברית", widget: string, required: false }
+      - name: body_en
+        label: "Text, English / טקסט באנגלית"
+        widget: markdown
+        required: false
+        buttons: [bold, italic, link, heading-two, heading-three, bulleted-list, numbered-list]
+        editor_components: []
+      - name: body_he
+        label: "Text, Hebrew / טקסט בעברית"
+        widget: markdown
+        required: false
+        buttons: [bold, italic, link, heading-two, heading-three, bulleted-list, numbered-list]
+        editor_components: []
+
+  # ---------------------------------------------------------------------
+  - name: settings
+    label: "Site settings / הגדרות האתר"
     files:
-      - name: homepage
+      - name: site
         label: "Homepage / דף הבית"
         file: content/site.json
         format: json
         fields:
-          - name: hero_image
-            label: "Main image / תמונה ראשית"
-            widget: image
-            hint: "Shown full width at the top. It is never cropped."
-          - name: hero_alt_en
-            label: "Main image description, English / תיאור התמונה באנגלית"
-            widget: string
-            required: false
-            hint: "For screen readers and search engines."
-          - name: hero_alt_he
-            label: "Main image description, Hebrew / תיאור התמונה בעברית"
-            widget: string
-            required: false
-          - name: tagline_en
-            label: "Tagline, English / סלוגן באנגלית"
-            widget: string
-            required: false
-          - name: tagline_he
-            label: "Tagline, Hebrew / סלוגן בעברית"
-            widget: string
-            required: false
-          - name: about_en
-            label: "About, English / אודות באנגלית"
-            widget: text
-            required: false
-          - name: about_he
-            label: "About, Hebrew / אודות בעברית"
-            widget: text
-            required: false
-          - name: contact_email
-            label: "Contact email / מייל ליצירת קשר"
-            widget: string
-            required: false
-            hint: "Leave empty until the mailbox exists and you have tested it."
-          - name: projects
-            label: "Projects / פרויקטים"
-            label_singular: "project / פרויקט"
+          - { name: hero_image, label: "Main image / תמונה ראשית", widget: image, hint: "Shown full width at the top of the homepage. Never cropped." }
+          - { name: hero_alt_en, label: "Main image description, English / תיאור התמונה באנגלית", widget: string, required: false }
+          - { name: hero_alt_he, label: "Main image description, Hebrew / תיאור התמונה בעברית", widget: string, required: false }
+          - { name: tagline_en, label: "Tagline, English / סלוגן באנגלית", widget: string, required: false }
+          - { name: tagline_he, label: "Tagline, Hebrew / סלוגן בעברית", widget: string, required: false }
+          - { name: intro_en, label: "Short intro, English / משפט פתיחה באנגלית", widget: text, required: false }
+          - { name: intro_he, label: "Short intro, Hebrew / משפט פתיחה בעברית", widget: text, required: false }
+          - { name: seo_description_en, label: "Search description, English / תיאור לחיפוש באנגלית", widget: string, required: false, hint: "Shown by Google under the site name. About 150 characters." }
+          - { name: seo_description_he, label: "Search description, Hebrew / תיאור לחיפוש בעברית", widget: string, required: false }
+
+      - name: categories
+        label: "Work categories / קטגוריות עבודות"
+        file: content/categories.json
+        format: json
+        fields:
+          - name: categories
+            label: "Categories / קטגוריות"
+            label_singular: "category / קטגוריה"
             widget: list
             allow_reorder: true
-            summary: "{{fields.title_en}}"
-            thumbnail: cover
             collapsed: true
-            hint: "Drag to change the order. Featured projects are shown large, first."
+            summary: "{{fields.name_en}} · {{fields.name_he}}"
+            hint: "Only categories used by at least one project appear as filters."
             fields:
-              - name: title_en
-                label: "Name, English / שם באנגלית"
-                widget: string
-              - name: title_he
-                label: "Name, Hebrew / שם בעברית"
-                widget: string
-                required: false
-              - name: text_en
-                label: "Short text, English / טקסט קצר באנגלית"
-                widget: string
-                required: false
-              - name: text_he
-                label: "Short text, Hebrew / טקסט קצר בעברית"
-                widget: string
-                required: false
-              - name: featured
-                label: "Featured (large) / פרויקט מרכזי (גדול)"
-                widget: boolean
-                default: false
-              - name: cover
-                label: "Main project image / תמונה ראשית של הפרויקט"
-                widget: image
-                required: false
-              - name: cover_alt_en
-                label: "Image description, English / תיאור התמונה באנגלית"
-                widget: string
-                required: false
-              - name: cover_alt_he
-                label: "Image description, Hebrew / תיאור התמונה בעברית"
-                widget: string
-                required: false
-              - name: gallery
-                label: "More images / תמונות נוספות"
-                label_singular: "image / תמונה"
-                widget: list
-                required: false
-                allow_reorder: true
-                thumbnail: image
-                collapsed: true
-                fields:
-                  - name: image
-                    label: "Image / תמונה"
-                    widget: image
-                  - name: alt_en
-                    label: "Description, English / תיאור באנגלית"
-                    widget: string
-                    required: false
-                  - name: alt_he
-                    label: "Description, Hebrew / תיאור בעברית"
-                    widget: string
-                    required: false
+              - { name: slug, label: "Short ID (a-z and dashes) / מזהה קצר", widget: string, pattern: ['^[a-z0-9][a-z0-9-]*$', "Use a-z, 0-9 and dashes"], hint: "For example music-videos. Don't change it after use." }
+              - { name: name_en, label: "Name, English / שם באנגלית", widget: string }
+              - { name: name_he, label: "Name, Hebrew / שם בעברית", widget: string, required: false }
+
+      - name: services
+        label: "Services page / עמוד שירותים"
+        file: content/services.json
+        format: json
+        fields:
+          - { name: intro_en, label: "Intro, English / פתיח באנגלית", widget: text, required: false }
+          - { name: intro_he, label: "Intro, Hebrew / פתיח בעברית", widget: text, required: false }
+          - name: services
+            label: "Services / שירותים"
+            label_singular: "service / שירות"
+            widget: list
+            allow_reorder: true
+            collapsed: true
+            summary: "{{fields.name_en}} · {{fields.name_he}}"
+            fields:
+              - { name: name_en, label: "Name, English / שם באנגלית", widget: string }
+              - { name: name_he, label: "Name, Hebrew / שם בעברית", widget: string, required: false }
+              - { name: text_en, label: "Text, English / טקסט באנגלית", widget: string, required: false }
+              - { name: text_he, label: "Text, Hebrew / טקסט בעברית", widget: string, required: false }
+          - { name: process_title_en, label: "Process title, English / כותרת התהליך באנגלית", widget: string, required: false }
+          - { name: process_title_he, label: "Process title, Hebrew / כותרת התהליך בעברית", widget: string, required: false }
+          - name: process
+            label: "Process steps / שלבי התהליך"
+            label_singular: "step / שלב"
+            widget: list
+            allow_reorder: true
+            collapsed: true
+            summary: "{{fields.name_en}} · {{fields.name_he}}"
+            fields:
+              - { name: name_en, label: "Title, English / כותרת באנגלית", widget: string }
+              - { name: name_he, label: "Title, Hebrew / כותרת בעברית", widget: string, required: false }
+              - { name: text_en, label: "Text, English / טקסט באנגלית", widget: string, required: false }
+              - { name: text_he, label: "Text, Hebrew / טקסט בעברית", widget: string, required: false }
+
+      - name: about
+        label: "About page / עמוד אודות"
+        file: content/about.json
+        format: json
+        fields:
+          - name: body_en
+            label: "Text, English / טקסט באנגלית"
+            widget: markdown
+            required: false
+            buttons: [bold, italic, link, heading-two, heading-three, bulleted-list, numbered-list]
+            editor_components: []
+          - name: body_he
+            label: "Text, Hebrew / טקסט בעברית"
+            widget: markdown
+            required: false
+            buttons: [bold, italic, link, heading-two, heading-three, bulleted-list, numbered-list]
+            editor_components: []
+          - name: team
+            label: "Team (optional) / צוות"
+            label_singular: "person / אדם"
+            widget: list
+            required: false
+            allow_reorder: true
+            collapsed: true
+            summary: "{{fields.name}}"
+            thumbnail: photo
+            hint: "Shown only when at least one person is added. Add people only with their permission."
+            fields:
+              - { name: name, label: "Name / שם", widget: string }
+              - { name: role_en, label: "Role, English / תפקיד באנגלית", widget: string, required: false }
+              - { name: role_he, label: "Role, Hebrew / תפקיד בעברית", widget: string, required: false }
+              - { name: bio_en, label: "Short bio, English / תיאור קצר באנגלית", widget: text, required: false }
+              - { name: bio_he, label: "Short bio, Hebrew / תיאור קצר בעברית", widget: text, required: false }
+              - { name: photo, label: "Photo / תמונה", widget: image, required: false }
+
+      - name: contact
+        label: "Contact page / עמוד יצירת קשר"
+        file: content/contact.json
+        format: json
+        fields:
+          - { name: intro_en, label: "Intro, English / פתיח באנגלית", widget: text, required: false }
+          - { name: intro_he, label: "Intro, Hebrew / פתיח בעברית", widget: text, required: false }
+          - { name: email, label: "Email / מייל", widget: string, required: false, hint: "Only an address you have tested. Leave empty until then." }
+          - { name: phone, label: "Phone / טלפון", widget: string, required: false }
+          - { name: location_en, label: "Location, English / מיקום באנגלית", widget: string, required: false }
+          - { name: location_he, label: "Location, Hebrew / מיקום בעברית", widget: string, required: false }
+          - name: social
+            label: "Social links / רשתות חברתיות"
+            label_singular: "link / קישור"
+            widget: list
+            required: false
+            allow_reorder: true
+            collapsed: true
+            summary: "{{fields.label}}"
+            fields:
+              - { name: label, label: "Name (e.g. Instagram) / שם", widget: string }
+              - { name: url, label: "Address (https://…) / כתובת", widget: string, pattern: ['^https://', "Must start with https://"] }

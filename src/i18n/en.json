@@ -1,107 +1,71 @@
 {
   "meta": {
-    "title": "BubaPix — AI film and animation studio",
-    "description": "BubaPix is an AI-native film and animation studio. We turn ideas into characters, worlds and finished films for brands, artists and storytellers.",
+    "siteName": "BubaPix",
+    "titleSuffix": "BubaPix",
+    "homeTitle": "BubaPix — AI film and animation studio",
     "ogLocale": "en_US"
   },
   "a11y": {
     "skip": "Skip to content",
     "home": "BubaPix home",
     "mainNav": "Main",
-    "footerNav": "Footer",
+    "footerNav": "Site",
     "menuOpen": "Menu",
-    "menuClose": "Close"
+    "menuClose": "Close",
+    "filterLabel": "Show work by category"
   },
   "nav": {
+    "home": "Home",
     "work": "Work",
     "services": "Services",
     "about": "About",
+    "testimonials": "Testimonials",
     "contact": "Contact",
-    "cta": "Start a project",
     "switchLabel": "עברית",
     "switchTitle": "Hebrew version"
   },
-  "hero": {
-    "line1": "From Imagination",
-    "line2": "to Cinema",
-    "lede": "BubaPix is an AI-powered film and creative studio. We make films, animation, characters, original worlds and commercial content for brands.",
-    "cta": "Start a project",
-    "secondary": "See the work",
-    "posterTitle": "The New Ocean",
-    "posterNote": "An original animated short by BubaPix.",
-    "posterAlt": "Poster for The New Ocean, a BubaPix animation: colourful characters on a beach between a tropical island and an underwater reef."
+  "home": {
+    "selectedWork": "Selected work",
+    "allWork": "All work",
+    "aboutLink": "About the studio"
   },
-  "scenes": {
-    "dusk-sea": "Dusk sea",
-    "northern-night": "Northern night",
-    "desert-noon": "Desert noon",
-    "forest-morning": "Forest morning",
-    "second-sun": "Second sun",
-    "snow-valley": "Snow valley"
-  },
-  "placeholder": "Placeholder",
   "work": {
-    "title": "Selected work",
-    "intro": "Our films will appear here. Every frame in this section is labelled placeholder artwork until real stills are added.",
-    "filmTitle": "Film title to come",
-    "workTitle": "Work",
+    "title": "Work",
+    "all": "All",
     "imageComing": "Image coming soon",
-    "items": [
-      { "scene": "second-sun", "type": "Short film" },
-      { "scene": "dusk-sea", "type": "Commercial" },
-      { "scene": "forest-morning", "type": "Music video" },
-      { "scene": "snow-valley", "type": "Trailer" },
-      { "scene": "desert-noon", "type": "Original world" }
-    ]
+    "empty": "Projects will appear here soon.",
+    "back": "All work",
+    "previous": "Previous project",
+    "next": "Next project",
+    "video": "Video",
+    "gallery": "Images",
+    "details": "Details"
   },
   "services": {
-    "title": "What we create",
-    "items": [
-      { "name": "AI films", "text": "Short and long-form films, written and directed for the screen." },
-      { "name": "Animation", "text": "Stylised animation with a consistent visual language from first frame to last." },
-      { "name": "Commercials", "text": "Brand films built around one clear idea, cut for every channel." },
-      { "name": "Trailers", "text": "Teasers and trailers that sell the story before the release." },
-      { "name": "Music videos", "text": "Visual worlds built around a track." },
-      { "name": "Characters", "text": "Original characters designed to stay consistent from shot to shot." },
-      { "name": "Original worlds", "text": "Places, rules and looks for stories that can grow into a series." }
-    ]
-  },
-  "process": {
-    "title": "From idea to film",
-    "intro": "Five stages. The frames show the film gaining colour as it takes shape.",
-    "steps": [
-      { "name": "It Starts with an Idea", "text": "It can start with your idea, a product or business need, or an idea we develop together." },
-      { "name": "We Shape the Story", "text": "We write the script and build the story scene by scene, until the message is clear." },
-      { "name": "We Build the World", "text": "We design the characters, places and visual style, and approve them with you before production." },
-      { "name": "We Create the Film", "text": "We generate, direct and refine every shot until it meets a cinematic standard." },
-      { "name": "Ready for the Screen", "text": "We edit, add sound and music, grade the colour, and deliver in every format you need." }
-    ]
+    "title": "Services"
   },
   "about": {
-    "title": "About BubaPix",
-    "p1": "BubaPix is an independent studio where filmmaking craft meets generative tools. We treat AI as a camera, not a shortcut: every film still needs a story worth telling, a deliberate look, and someone who cares about each frame.",
-    "p2": "We make films for brands, musicians and independent storytellers, from a single scene to a complete film."
+    "title": "About",
+    "team": "The team"
   },
-  "final": {
-    "title": "Tell us the sentence. We'll build the world.",
-    "lede": "Send a few lines about your idea, your audience and your timeline.",
-    "cta": "Start a project",
-    "emailSubject": "New project for BubaPix",
-    "pending": "Our contact address is being set up and will appear here soon."
+  "testimonials": {
+    "title": "Testimonials"
   },
   "contact": {
     "title": "Contact",
-    "pending": "Email address coming soon"
+    "email": "Email",
+    "phone": "Phone",
+    "location": "Location",
+    "social": "Follow",
+    "pending": "Contact details coming soon."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "text": "This page doesn't exist or has moved.",
+    "home": "Go to the homepage"
   },
   "footer": {
-    "tagline": "AI film and animation studio",
-    "studio": "Studio",
-    "contact": "Contact",
-    "contactPending": "Email address coming soon",
-    "language": "Language",
-    "rights": "BubaPix",
-    "artNote": "Images marked \"Placeholder\" are temporary artwork.",
-    "logoAlt": "BubaPix Animation Productions logo",
-    "top": "Back to top"
+    "top": "Back to top",
+    "logoAlt": "BubaPix Animation Productions logo"
   }
 }

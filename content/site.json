@@ -4,31 +4,8 @@
   "hero_alt_he": "פוסטר של הסרט הים החדש (The New Ocean) של BubaPix: דמויות צבעוניות על חוף בין אי טרופי לשונית מתחת למים.",
   "tagline_en": "From Imagination to Cinema",
   "tagline_he": "מדמיון למציאות קולנועית",
-  "about_en": "BubaPix is an AI-powered film and animation studio. We create films, characters and original worlds.",
-  "about_he": "BubaPix הוא סטודיו לקולנוע ולאנימציה מבוסס AI. אנחנו יוצרים סרטים, דמויות ועולמות מקוריים.",
-  "contact_email": "",
-  "projects": [
-    {
-      "title_en": "THE NEW OCEAN",
-      "title_he": "הים החדש",
-      "text_en": "An original animated short by BubaPix.",
-      "text_he": "סרט אנימציה קצר ומקורי של BubaPix.",
-      "featured": true,
-      "cover": "/assets/work/the-new-ocean-poster.jpg",
-      "cover_alt_en": "Poster for The New Ocean.",
-      "cover_alt_he": "פוסטר של הסרט הים החדש.",
-      "gallery": []
-    },
-    {
-      "title_en": "BRADLEY & THE GRUMPLES",
-      "title_he": "BRADLEY & THE GRUMPLES",
-      "text_en": "",
-      "text_he": "",
-      "featured": true,
-      "cover": "",
-      "cover_alt_en": "",
-      "cover_alt_he": "",
-      "gallery": []
-    }
-  ]
+  "intro_en": "BubaPix is an AI-powered film and animation studio. We create films, characters and original worlds.",
+  "intro_he": "BubaPix הוא סטודיו לקולנוע ולאנימציה מבוסס AI. אנחנו יוצרים סרטים, דמויות ועולמות מקוריים.",
+  "seo_description_en": "BubaPix is an AI-powered film and animation studio. We create films, characters and original worlds.",
+  "seo_description_he": "BubaPix הוא סטודיו לקולנוע ולאנימציה מבוסס AI. אנחנו יוצרים סרטים, דמויות ועולמות מקוריים."
 }

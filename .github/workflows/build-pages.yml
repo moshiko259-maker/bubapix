@@ -1,31 +1,50 @@
-# Rebuilds index.html and he/index.html whenever the content, images,
-# template or labels change, then commits the result to the same branch.
+# Builds the BubaPix site from content/ and src/.
 # Free for public repositories. Uses only the built-in GITHUB_TOKEN
 # (no secrets to set up).
+#
+# main          -> builds clean addresses and commits the pages to main
+#                  (GitHub Pages then publishes them).
+# redesign-v2   -> builds "preview links" (…/index.html) and commits them,
+#                  so the branch can be viewed on preview hosts.
+# cms/**        -> admin-panel DRAFTS. The draft branch itself is never
+#                  changed (the admin panel refuses to publish a draft whose
+#                  branch was changed by someone else). Instead the built site
+#                  goes to a separate branch, preview/<draft>, and a
+#                  "BubaPix preview" link is attached to the draft.
+# When a draft branch is deleted (published or discarded), its preview
+# branch is deleted too.
 
 name: Build pages
 
 on:
   push:
-    branches: [redesign-v2, main]
+    branches: [main, redesign-v2, "cms/**"]
     paths:
       - "content/**"
       - "assets/**"
       - "src/**"
+      - "css/**"
+      - "js/**"
       - "build.js"
+      - ".github/workflows/build-pages.yml"
+  delete:
   workflow_dispatch:
 
 permissions:
   contents: write
+  statuses: write
 
 concurrency:
   group: build-pages-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
+    if: github.event_name != 'delete'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
+    env:
+      BRANCH: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v4
 
@@ -33,17 +52,58 @@ jobs:
         with:
           node-version: 20
 
-      - name: Build the English and Hebrew pages
-        run: node build.js
+      - name: Install the image resizer (free, open source)
+        run: npm install --no-save --no-package-lock sharp@0.34.4
 
-      - name: Commit the rebuilt pages, if they changed
+      - name: Build the site
         run: |
-          if git diff --quiet -- index.html he/index.html; then
+          if [ "$BRANCH" = "main" ]; then
+            node build.js
+          else
+            node build.js --preview-links
+          fi
+
+      - name: Save the built pages (main and redesign-v2)
+        if: ${{ !startsWith(github.ref_name, 'cms/') }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- . ':!node_modules'
+          if git diff --cached --quiet; then
             echo "Pages are already up to date."
             exit 0
           fi
+          git commit -m "Rebuild pages"
+          git push
+
+      - name: Publish a preview of the draft (cms/**)
+        if: ${{ startsWith(github.ref_name, 'cms/') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRAFT_SHA: ${{ github.sha }}
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html he/index.html
-          git commit -m "Rebuild pages after content change"
-          git push
+          PREVIEW="preview/${BRANCH}"
+          git checkout -B "$PREVIEW"
+          git add -A -- . ':!node_modules'
+          git commit -m "Preview of ${BRANCH} at ${DRAFT_SHA}" || true
+          git push --force origin "$PREVIEW"
+          PREVIEW_SHA=$(git rev-parse HEAD)
+          URL="https://raw.githack.com/${GITHUB_REPOSITORY}/${PREVIEW_SHA}/index.html?lang=en"
+          gh api "repos/${GITHUB_REPOSITORY}/statuses/${DRAFT_SHA}" \
+            -f state=success -f context="BubaPix preview" \
+            -f description="View the whole site with this draft" \
+            -f target_url="$URL"
+          echo "Preview: $URL"
+
+  cleanup:
+    if: github.event_name == 'delete' && github.event.ref_type == 'branch' && startsWith(github.event.ref, 'cms/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Delete the preview branch of the finished draft
+        env:
+          DRAFT: ${{ github.event.ref }}
+        run: git push origin --delete "preview/${DRAFT}" || echo "No preview branch to delete."

@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /bubapix/admin/
+
+Sitemap: https://moshiko259-maker.github.io/bubapix/sitemap.xml

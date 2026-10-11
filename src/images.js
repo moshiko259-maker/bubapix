@@ -1,0 +1,101 @@
+// Image helpers for build.js.
+// - Reads width and height from JPEG, PNG, WebP and GIF files, so pages
+//   reserve the right space and never crop or stretch an image.
+// - If the free "sharp" library is installed (the GitHub Actions workflow
+//   installs it), also writes smaller WebP copies (640, 1280, 1920 px wide)
+//   to assets/resized/, so phones download smaller files. Never enlarges.
+
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
+
+let sharp = null;
+try { sharp = require("sharp"); } catch (e) { /* optional */ }
+
+const WIDTHS = [640, 1280, 1920];
+
+function readSize(file) {
+  const b = fs.readFileSync(file);
+  if (b.length > 24 && b.readUInt32BE(0) === 0x89504e47) {
+    return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) }; // PNG
+  }
+  if (b.length > 10 && b.toString("ascii", 0, 3) === "GIF") {
+    return { w: b.readUInt16LE(6), h: b.readUInt16LE(8) };
+  }
+  if (b.length > 30 && b.toString("ascii", 0, 4) === "RIFF" && b.toString("ascii", 8, 12) === "WEBP") {
+    const kind = b.toString("ascii", 12, 16);
+    if (kind === "VP8X") return { w: 1 + b.readUIntLE(24, 3), h: 1 + b.readUIntLE(27, 3) };
+    if (kind === "VP8L") {
+      const bits = b.readUInt32LE(21);
+      return { w: 1 + (bits & 0x3fff), h: 1 + ((bits >> 14) & 0x3fff) };
+    }
+    if (kind === "VP8 ") return { w: b.readUInt16LE(26) & 0x3fff, h: b.readUInt16LE(28) & 0x3fff };
+  }
+  if (b[0] === 0xff && b[1] === 0xd8) {
+    let i = 2;
+    while (i + 9 < b.length) {
+      if (b[i] !== 0xff) { i++; continue; }
+      const marker = b[i + 1];
+      const len = b.readUInt16BE(i + 2);
+      if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
+        return { w: b.readUInt16BE(i + 7), h: b.readUInt16BE(i + 5) };
+      }
+      i += 2 + len;
+    }
+  }
+  return null;
+}
+
+module.exports = function createImages(root) {
+  const warnings = [];
+  const jobs = []; // resize jobs, run after the pages are prepared
+  const cache = new Map();
+
+  // Turns a value saved by the admin panel ("/assets/uploads/x.webp") into
+  // { src, w, h, srcset } or null when empty or missing.
+  function image(value, where) {
+    if (!value || typeof value !== "string") return null;
+    if (/^[a-z]+:/i.test(value)) {
+      warnings.push(`${where}: external image addresses are not used (${value})`);
+      return null;
+    }
+    const rel = value.replace(/^\/+/, "");
+    if (cache.has(rel)) return { ...cache.get(rel) };
+    const file = path.join(root, rel);
+    if (!file.startsWith(root + path.sep) || !fs.existsSync(file)) {
+      warnings.push(`${where}: image not found (${value})`);
+      return null;
+    }
+    const size = readSize(file);
+    if (!size) warnings.push(`${where}: could not read image size (${value})`);
+    const rec = { src: rel, w: size ? size.w : null, h: size ? size.h : null, srcset: "" };
+
+    if (sharp && size && /\.(jpe?g|png|webp)$/i.test(rel)) {
+      const hash = crypto.createHash("sha1").update(fs.readFileSync(file)).digest("hex").slice(0, 10);
+      const name = path.basename(rel).replace(/\.[^.]+$/, "");
+      const parts = [];
+      for (const w of WIDTHS.filter((w) => w < size.w)) {
+        const outRel = `assets/resized/${name}-${hash}-${w}.webp`;
+        jobs.push({ file, out: path.join(root, outRel), w });
+        parts.push(`${outRel} ${w}w`);
+      }
+      if (parts.length) rec.srcset = [...parts, `${rel} ${size.w}w`].join(", ");
+    }
+    cache.set(rel, rec);
+    return { ...rec };
+  }
+
+  async function runJobs() {
+    if (!jobs.length) return 0;
+    fs.mkdirSync(path.join(root, "assets/resized"), { recursive: true });
+    let made = 0;
+    for (const j of jobs) {
+      if (fs.existsSync(j.out)) continue;
+      await sharp(j.file).resize({ width: j.w, withoutEnlargement: true }).webp({ quality: 82 }).toFile(j.out);
+      made++;
+    }
+    return made;
+  }
+
+  return { image, runJobs, warnings, hasSharp: !!sharp };
+};
