@@ -50,6 +50,15 @@ media_libraries:
           width: 2400
           height: 2400
 
+# Folders of images the admin can see besides assets/uploads. The original
+# work images (for example the THE NEW OCEAN poster) live in assets/work;
+# without this entry the admin cannot find them and shows a broken preview.
+asset_collections:
+  - name: work_images
+    label: "Original work images / תמונות מקור"
+    media_folder: assets/work
+    public_folder: /assets/work
+
 collections:
   # ---------------------------------------------------------------------
   # Projects. "New" creates a project from its name only; every other part
