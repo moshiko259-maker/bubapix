@@ -66,11 +66,11 @@
     "title": "From idea to film",
     "intro": "Five stages. The frames show the film gaining colour as it takes shape.",
     "steps": [
-      { "name": "Idea", "text": "You bring the idea, the audience and the deadline." },
-      { "name": "Story", "text": "We write the script and shape the story scene by scene." },
-      { "name": "Look", "text": "Characters, world and style frames, approved before production." },
-      { "name": "Production", "text": "Every shot is generated, directed and refined until it holds up." },
-      { "name": "Finish", "text": "Edit, sound, music and colour grade, delivered in every format you need." }
+      { "name": "It Starts with an Idea", "text": "It can start with your idea, a product or business need, or an idea we develop together." },
+      { "name": "We Shape the Story", "text": "We write the script and build the story scene by scene, until the message is clear." },
+      { "name": "We Build the World", "text": "We design the characters, places and visual style, and approve them with you before production." },
+      { "name": "We Create the Film", "text": "We generate, direct and refine every shot until it meets a cinematic standard." },
+      { "name": "Ready for the Screen", "text": "We edit, add sound and music, grade the colour, and deliver in every format you need." }
     ]
   },
   "about": {
