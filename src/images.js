@@ -68,18 +68,30 @@ module.exports = function createImages(root) {
     }
     const size = readSize(file);
     if (!size) warnings.push(`${where}: could not read image size (${value})`);
-    const rec = { src: rel, w: size ? size.w : null, h: size ? size.h : null, srcset: "" };
+    const rec = { src: rel, full: rel, w: size ? size.w : null, h: size ? size.h : null, srcset: "" };
 
     if (sharp && size && /\.(jpe?g|png|webp)$/i.test(rel)) {
       const hash = crypto.createHash("sha1").update(fs.readFileSync(file)).digest("hex").slice(0, 10);
       const name = path.basename(rel).replace(/\.[^.]+$/, "");
       const parts = [];
-      for (const w of WIDTHS.filter((w) => w < size.w)) {
+      const heavyFile = fs.statSync(file).size > 1.5 * 1024 * 1024;
+      // A heavy original also gets a WebP copy at its own full width, so the
+      // sharpest version stays available without the heavy file.
+      const widths = WIDTHS.filter((w) => w < size.w);
+      if (heavyFile && size.w < WIDTHS[WIDTHS.length - 1] && !widths.includes(size.w)) widths.push(size.w);
+      for (const w of widths) {
         const outRel = `assets/resized/${name}-${hash}-${w}.webp`;
         jobs.push({ file, out: path.join(root, outRel), w });
         parts.push(`${outRel} ${w}w`);
       }
-      if (parts.length) rec.srcset = [...parts, `${rel} ${size.w}w`].join(", ");
+      if (parts.length) {
+        // Heavy originals (over 1.5 MB, e.g. large PNG files) are not offered
+        // to browsers: the largest WebP copy is used instead. Light originals
+        // stay the sharpest choice. The original file itself is never changed.
+        const heavy = heavyFile;
+        rec.srcset = (heavy ? parts : [...parts, `${rel} ${size.w}w`]).join(", ");
+        if (heavy) rec.full = parts[parts.length - 1].split(" ")[0];
+      }
     }
     cache.set(rel, rec);
     return { ...rec };

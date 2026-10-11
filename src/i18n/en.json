@@ -16,7 +16,7 @@
   },
   "nav": {
     "home": "Home",
-    "work": "Work",
+    "work": "Works",
     "services": "Services",
     "about": "About",
     "testimonials": "Testimonials",
@@ -30,14 +30,17 @@
     "selectedWork": "Selected work",
     "allWork": "All work",
     "aboutLink": "About the studio",
-    "workTitle": "Work"
+    "workTitle": "Works",
+    "showreel": "Showreel",
+    "allServices": "All services",
+    "startProject": "Start a project"
   },
   "work": {
-    "title": "Work",
+    "title": "Works",
     "all": "All",
     "imageComing": "Image coming soon",
     "empty": "Projects will appear here soon.",
-    "back": "All work",
+    "back": "All works",
     "previous": "Previous project",
     "next": "Next project",
     "video": "Video",

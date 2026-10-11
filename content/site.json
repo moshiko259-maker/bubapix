@@ -2,6 +2,7 @@
   "hero_image": "/assets/work/the-new-ocean-poster.jpg",
   "hero_alt_en": "THE NEW OCEAN poster by BubaPix: colourful characters on a beach between a tropical island and an underwater reef.",
   "hero_alt_he": "הפוסטר של THE NEW OCEAN מאת BubaPix: דמויות צבעוניות על חוף בין אי טרופי לשונית מתחת למים.",
+  "showreel_url": "",
   "tagline_en": "From Imagination to Cinema",
   "tagline_he": "מדמיון למציאות קולנועית",
   "intro_en": "",
@@ -96,6 +97,182 @@
       "note_he": "",
       "caption": "hidden",
       "visible": true
+    },
+    {
+      "image": "/assets/work/sea-owl-boat.jpg",
+      "alt_en": "An orange character in a sailboat surrounded by white furry creatures in the sea, with a winged creature above and an island behind.",
+      "alt_he": "דמות כתומה בסירת מפרש מוקפת ביצורים לבנים ופרוותיים בים, יצור מכונף מעליה ואי ברקע.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/pop-life-city.png",
+      "alt_en": "A city built of red POP LIFE cans, with can-shaped characters, cars, birds and a river.",
+      "alt_he": "עיר שבנויה מפחיות POP LIFE אדומות, עם דמויות־פחית, מכוניות, ציפורים ונהר.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/smiling-shark.png",
+      "alt_en": "A smiling cartoon shark swimming over a coral reef.",
+      "alt_he": "כריש מצויר ומחייך שוחה מעל שונית אלמוגים.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/turtle-island.png",
+      "alt_en": "A giant blue sea turtle carrying an island with dome houses and trees on its back.",
+      "alt_he": "צב ים כחול ענק שנושא על גבו אי עם בתי כיפה ועצים.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/orange-character-boat.jpg",
+      "alt_en": "An orange character in a small sailboat pointing toward an island.",
+      "alt_he": "דמות כתומה בסירת מפרש קטנה מצביעה לעבר אי.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": false
+    },
+    {
+      "image": "/assets/work/boat-towed-to-island.jpg",
+      "alt_en": "White furry creatures on a beach pull a boat with an orange character toward the island.",
+      "alt_he": "יצורים לבנים ופרוותיים על החוף מושכים סירה עם דמות כתומה אל האי.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": false
+    },
+    {
+      "image": "/assets/work/white-creatures-towing-boat.jpg",
+      "alt_en": "White furry creatures in the sea tow a sailboat with a rope.",
+      "alt_he": "יצורים לבנים ופרוותיים בים גוררים סירת מפרש בחבל.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": false
+    },
+    {
+      "image": "/assets/work/white-creatures-swimming.jpg",
+      "alt_en": "White furry creatures swimming and pulling a rope, with a sailboat and an island behind.",
+      "alt_he": "יצורים לבנים ופרוותיים שוחים ומושכים חבל, עם סירת מפרש ואי ברקע.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": false
+    },
+    {
+      "image": "/assets/work/white-creatures-rope.jpg",
+      "alt_en": "White furry creatures pulling a rope in the sea beside a sailboat.",
+      "alt_he": "יצורים לבנים ופרוותיים מושכים חבל בים ליד סירת מפרש.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": false
+    },
+    {
+      "image": "/assets/work/grumpy-gray-trio.png",
+      "alt_en": "Three grumpy gray furry characters: one with a wooden crown, one with a chef's hat and spoon, one in a red GUARD vest.",
+      "alt_he": "שלוש דמויות אפורות ופרוותיות ממורמרות: אחת עם כתר עץ, אחת עם כובע שף וכף, ואחת עם גופיית GUARD אדומה.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": false
+    },
+    {
+      "image": "/assets/work/pop-life-street.png",
+      "alt_en": "Can-shaped POP LIFE characters and a robot dog walking in a red city at sunset.",
+      "alt_he": "דמויות־פחית של POP LIFE וכלב רובוט הולכים בעיר אדומה בשקיעה.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": false
+    },
+    {
+      "image": "/assets/work/character-lineup.png",
+      "alt_en": "A lineup of six colorful characters in casual clothes.",
+      "alt_he": "שורה של שש דמויות צבעוניות בבגדים יומיומיים.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": false
+    },
+    {
+      "image": "/assets/work/surfer-characters-sheet.png",
+      "alt_en": "A character sheet of white furry surfer characters with surfboards, labeled in Hebrew.",
+      "alt_he": "דף דמויות של גולשים לבנים ופרוותיים עם גלשנים, עם כיתוב בעברית.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": false
+    },
+    {
+      "image": "/assets/work/winged-white-creature.png",
+      "alt_en": "A round white furry creature with wings and thick eyebrows.",
+      "alt_he": "יצור לבן, עגול ופרוותי עם כנפיים וגבות עבות.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": false
+    },
+    {
+      "image": "/assets/work/orange-character-kitchen.png",
+      "alt_en": "An orange character eating breakfast in a sunny city kitchen.",
+      "alt_he": "דמות כתומה אוכלת ארוחת בוקר במטבח מואר בעיר.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": false
+    },
+    {
+      "image": "/assets/work/boat-towed-cliffs.png",
+      "alt_en": "White furry creatures tow a sailboat with an orange character past rocky cliffs.",
+      "alt_he": "יצורים לבנים ופרוותיים גוררים סירת מפרש עם דמות כתומה ליד צוקים.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": false
     }
   ]
 }

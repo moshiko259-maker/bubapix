@@ -251,6 +251,36 @@ function home(ctx) {
     : "";
   const tagline = data.tagline ? `
     <p class="tagline">${e(data.tagline)}</p>` : "";
+  // Showreel: only when a video link is set in the admin.
+  const showreel = data.showreel
+    ? `
+    <section class="section section-showreel" aria-labelledby="showreel-title">
+      <h2 id="showreel-title" class="section-label">${e(t.home.showreel)}</h2>
+      ${videoBlock(ctx, { embed: data.showreel, file: "", title: "" }, "BubaPix", null)}
+    </section>`
+    : "";
+  // Services: the approved service names from the Services page.
+  const services = data.services.items.length
+    ? `
+    <section class="section home-services" aria-labelledby="home-services-title">
+      <div class="section-head">
+        <h2 id="home-services-title" class="section-label">${e(t.nav.services)}</h2>
+        <a class="text-link" href="${link("services/")}">${e(t.home.allServices)}</a>
+      </div>
+      <ul class="home-service-list">${data.services.items.map((x) => `
+        <li>${e(x.name)}</li>`).join("")}
+      </ul>
+    </section>`
+    : "";
+  // "Start a project" appears only when the Contact page offers a working way
+  // to reach the studio (email, phone, or the private message form).
+  const canContact = !!(data.contact.email || data.contact.phone || data.participation.consult);
+  const start = canContact
+    ? `
+    <section class="section start-project">
+      <a class="button button-large" href="${link("contact/")}">${e(t.home.startProject)}</a>
+    </section>`
+    : "";
   const intro = data.intro
     ? `
     <section class="section intro" aria-label="${e(t.nav.about)}">
@@ -261,7 +291,7 @@ function home(ctx) {
   return layout(ctx, {
     title: t.meta.homeTitle,
     description: data.seoDescription || data.intro,
-    main: `    <h1 class="visually-hidden">BubaPix</h1>${tagline}${work}${intro}`,
+    main: `    <h1 class="visually-hidden">BubaPix</h1>${tagline}${showreel}${work}${services}${intro}${start}`,
   });
 }
 
@@ -315,7 +345,7 @@ function projectPictures(ctx, list) {
   return gallery(
     list.map((im) =>
       galleryItem(ctx, im, {
-        href: ctx.assetBase + e(im.src),
+        href: ctx.assetBase + e(im.full || im.src),
         label: `${ctx.t.work.openImage}: ${im.alt}`,
         caption: im.caption !== "hidden" ? { title: im.title, note: im.note } : null,
         viewer: true,
@@ -445,7 +475,7 @@ function project(ctx, p, prev, next) {
   const cats = p.categories.map((c) => c.name).join(", ");
   const cover = p.cover
     ? `
-      <figure class="project-cover"><a href="${ctx.assetBase}${e(p.cover.src)}" data-viewer aria-label="${e(`${t.work.openImage}: ${p.cover.alt}`)}">${img(ctx, p.cover, { sizes: "(max-width: 1440px) 100vw, 1440px", attrs: 'fetchpriority="high" decoding="async"' })}</a></figure>`
+      <figure class="project-cover"><a href="${ctx.assetBase}${e(p.cover.full || p.cover.src)}" data-viewer aria-label="${e(`${t.work.openImage}: ${p.cover.alt}`)}">${img(ctx, p.cover, { sizes: "(max-width: 1440px) 100vw, 1440px", attrs: 'fetchpriority="high" decoding="async"' })}</a></figure>`
     : "";
   const synopsis = p.description
     ? `
@@ -458,8 +488,8 @@ function project(ctx, p, prev, next) {
   const pagerLink = (q, cls, label) =>
     q ? `<a class="${cls}" href="${link(`work/${q.slug}/`)}"><span>${e(label)}</span>${q.name ? e(q.name) : ""}</a>` : "<span></span>";
   return layout(ctx, {
-    title: pageTitle(ctx, p.title),
-    description: p.text || ctx.data.seoDescription,
+    title: p.seoTitle || pageTitle(ctx, p.title),
+    description: p.seoDescription || p.text || ctx.data.seoDescription,
     image: p.thumb,
     current: "work",
     community: !!community,

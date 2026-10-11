@@ -30,7 +30,10 @@
     "selectedWork": "עבודות נבחרות",
     "allWork": "כל העבודות",
     "aboutLink": "על הסטודיו",
-    "workTitle": "עבודות"
+    "workTitle": "עבודות",
+    "showreel": "שואוריל",
+    "allServices": "לכל השירותים",
+    "startProject": "התחילו פרויקט"
   },
   "work": {
     "title": "עבודות",

@@ -288,6 +288,26 @@ collections:
                   - { name: value_en, label: "Value, English / ערך, אנגלית", widget: string, required: false }
                   - { name: value_he, label: "Value, Hebrew / ערך, עברית", widget: string, required: false }
 
+      # ---- Search engines and sharing (optional)
+      - name: seo_title_en
+        label: "Search title, English (optional) / כותרת לגוגל, אנגלית"
+        widget: string
+        required: false
+        hint: "Shown in Google and when the page is shared. Empty: the project name is used. About 60 characters. / ריק: יוצג שם הפרויקט."
+      - name: seo_title_he
+        label: "Search title, Hebrew (optional) / כותרת לגוגל, עברית"
+        widget: string
+        required: false
+      - name: seo_description_en
+        label: "Search description, English (optional) / תיאור לגוגל, אנגלית"
+        widget: text
+        required: false
+        hint: "About 150 characters. Empty: the short line or the site description is used. / ריק: תשמש השורה הקצרה או תיאור האתר."
+      - name: seo_description_he
+        label: "Search description, Hebrew (optional) / תיאור לגוגל, עברית"
+        widget: text
+        required: false
+
       # ---- Less common options
       - name: comments
         label: "Allow visitor comments on this project / לאפשר תגובות גולשים בפרויקט"
@@ -373,6 +393,12 @@ collections:
           - { name: hero_image, label: "Large opening image (optional) / תמונת פתיחה גדולה (לא חובה)", widget: image, required: false, hint: "Shown first, full width, never cropped. If it is also a project image, it is shown only once. / מוצגת ראשונה ברוחב מלא. אם היא גם תמונה של פרויקט, תוצג פעם אחת בלבד." }
           - { name: hero_alt_en, label: "Main image description, English / תיאור התמונה באנגלית", widget: string, required: false }
           - { name: hero_alt_he, label: "Main image description, Hebrew / תיאור התמונה בעברית", widget: string, required: false }
+          - name: showreel_url
+            label: "Showreel video link, YouTube or Vimeo (optional) / קישור לשואוריל"
+            widget: string
+            required: false
+            pattern: ['^$|^https://(www\.|m\.)?(youtube\.com|youtu\.be|vimeo\.com)/', "Use a YouTube or Vimeo address / כתובת YouTube או Vimeo"]
+            hint: "Shown on the homepage above the gallery only when filled in. / מוצג בדף הבית רק כשממלאים."
           - name: gallery
             label: "Homepage gallery / הגלריה בדף הבית"
             label_singular: "image / תמונה"
@@ -421,9 +447,9 @@ collections:
         file: content/labels.json
         format: json
         fields:
-          - { name: work_heading_en, label: "Gallery heading, English (usual: Work) / כותרת הגלריה, אנגלית", widget: string, required: false, hint: "Leave any field on this page empty to keep the usual text. / שדה ריק משאיר את הטקסט הרגיל." }
+          - { name: work_heading_en, label: "Gallery heading, English (usual: Works) / כותרת הגלריה, אנגלית", widget: string, required: false, hint: "Leave any field on this page empty to keep the usual text. / שדה ריק משאיר את הטקסט הרגיל." }
           - { name: work_heading_he, label: "Gallery heading, Hebrew (usual: עבודות) / כותרת הגלריה, עברית", widget: string, required: false }
-          - { name: nav_work_en, label: "Menu: Work, English / תפריט: עבודות, אנגלית", widget: string, required: false }
+          - { name: nav_work_en, label: "Menu: Works, English / תפריט: עבודות, אנגלית", widget: string, required: false }
           - { name: nav_work_he, label: "Menu: Work, Hebrew / תפריט: עבודות, עברית", widget: string, required: false }
           - { name: nav_services_en, label: "Menu: Services, English / תפריט: שירותים, אנגלית", widget: string, required: false }
           - { name: nav_services_he, label: "Menu: Services, Hebrew / תפריט: שירותים, עברית", widget: string, required: false }
@@ -431,6 +457,8 @@ collections:
           - { name: nav_about_he, label: "Menu: About, Hebrew / תפריט: אודות, עברית", widget: string, required: false }
           - { name: nav_contact_en, label: "Menu: Contact, English / תפריט: יצירת קשר, אנגלית", widget: string, required: false }
           - { name: nav_contact_he, label: "Menu: Contact, Hebrew / תפריט: יצירת קשר, עברית", widget: string, required: false }
+          - { name: start_project_en, label: "Homepage button: Start a project, English / כפתור: התחילו פרויקט, אנגלית", widget: string, required: false }
+          - { name: start_project_he, label: "Homepage button: Start a project, Hebrew / כפתור: התחילו פרויקט, עברית", widget: string, required: false }
           - { name: synopsis_en, label: "Project heading: Synopsis, English / כותרת: תקציר, אנגלית", widget: string, required: false }
           - { name: synopsis_he, label: "Project heading: Synopsis, Hebrew / כותרת: תקציר, עברית", widget: string, required: false }
           - { name: creators_en, label: "Project heading: Words from the creators, English / כותרת: דברי היוצרים, אנגלית", widget: string, required: false }

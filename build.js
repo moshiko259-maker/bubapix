@@ -104,6 +104,7 @@ const raw = {
   for (const lang of ["en", "he"]) {
     const tl = t[lang];
     set(lang, tl.home, "workTitle", "work_heading");
+    set(lang, tl.home, "startProject", "start_project");
     set(lang, tl.nav, "work", "nav_work");
     set(lang, tl.work, "title", "nav_work");
     set(lang, tl.nav, "services", "nav_services");
@@ -244,6 +245,8 @@ function contentFor(lang) {
         titleInGallery: p.title_in_gallery === true && !!name,
         text: pick(p, "text", lang),
         description: pick(p, "description", lang),
+        seoTitle: pick(p, "seo_title", lang),
+        seoDescription: pick(p, "seo_description", lang),
         featured: p.featured !== false,
         comments: p.comments !== false,
         categories: (Array.isArray(p.categories) ? p.categories : []).map((c) => catBySlug.get(c)).filter(Boolean),
@@ -303,6 +306,7 @@ function contentFor(lang) {
     homeGallery,
     participation,
     tagline: pick(s, "tagline", lang),
+    showreel: parseVideo(s.showreel_url),
     intro: pick(s, "intro", lang),
     seoDescription: pick(s, "seo_description", lang) || pick(s, "intro", lang),
     categories,
