@@ -1,22 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BubaPix — AI film studio</title>
-  <meta name="description" content="BubaPix is an AI film studio. We write, direct and finish short films, brand films and music videos.">
-  <meta name="theme-color" content="#120d0a">
+  <script>try{if(localStorage.getItem("bubapix-lang")==="he"&&!/[?&]lang=en\b/.test(location.search)){location.replace("he/"+location.hash)}}catch(e){}</script>
+  <title>BubaPix — AI film and animation studio</title>
+  <meta name="description" content="BubaPix is an AI-native film and animation studio. We turn ideas into characters, worlds and finished films for brands, artists and storytellers.">
+  <link rel="canonical" href="https://moshiko259-maker.github.io/bubapix/">
+  <link rel="alternate" hreflang="en" href="https://moshiko259-maker.github.io/bubapix/">
+  <link rel="alternate" hreflang="he" href="https://moshiko259-maker.github.io/bubapix/he/">
+  <link rel="alternate" hreflang="x-default" href="https://moshiko259-maker.github.io/bubapix/">
+  <meta name="theme-color" content="#faf9f6">
 
-  <meta property="og:title" content="BubaPix — AI film studio">
-  <meta property="og:description" content="Every frame directed. None of it filmed.">
   <meta property="og:type" content="website">
+  <meta property="og:site_name" content="BubaPix">
+  <meta property="og:title" content="BubaPix — AI film and animation studio">
+  <meta property="og:description" content="BubaPix is an AI-native film and animation studio. We turn ideas into characters, worlds and finished films for brands, artists and storytellers.">
+  <meta property="og:url" content="https://moshiko259-maker.github.io/bubapix/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="he_IL">
 
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Schibsted+Grotesk:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400..900&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&display=swap">
 
+  <link rel="preload" as="image" href="assets/scenes/dusk-sea.svg">
   <script>document.documentElement.classList.add("js");</script>
   <link rel="stylesheet" href="css/styles.css">
   <script src="js/main.js" defer></script>
@@ -25,98 +35,291 @@
   <a class="skip-link" href="#main">Skip to content</a>
 
   <header class="site-header">
-    <a class="wordmark" href="./" aria-label="BubaPix home">Buba<span>Pix</span></a>
-    <nav aria-label="Main">
-      <ul class="nav-list">
-        <li class="nav-optional"><a href="#films">Films</a></li>
-        <li class="nav-optional"><a href="#process">Process</a></li>
-        <li><a class="nav-cta" href="#contact">Start a project</a></li>
+    <a class="wordmark" href="./" aria-label="BubaPix home">BubaPix</a>
+
+    <nav class="site-nav" aria-label="Main">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu" data-open="Menu" data-close="Close">Menu</button>
+      <ul class="menu" id="menu">
+        <li><a href="#work">Work</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#about">About</a></li>
+        <li class="menu-lang"><a class="lang-switch" href="he/" hreflang="he" lang="he" title="Hebrew version" data-lang="he">עברית</a></li>
+        <li class="menu-cta"><a class="button button-dark nav-cta" href="#start">Start a project</a></li>
       </ul>
     </nav>
   </header>
 
   <main id="main">
-    <!-- HERO -->
     <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-frame">
-        <!-- Temporary background: a projector beam drawn live in the browser.
-             Replace with the showreel video when it is approved. -->
-        <canvas class="hero-canvas" aria-hidden="true"></canvas>
-        <div class="grain" aria-hidden="true"></div>
-        <div class="letterbox letterbox-top" aria-hidden="true"></div>
-        <div class="letterbox letterbox-bottom" aria-hidden="true"></div>
-
-        <div class="hero-content">
-          <h1 id="hero-title" class="hero-title">
-            <span class="line">Every frame directed.</span>
-            <span class="line">None of it filmed.</span>
-          </h1>
-          <p class="hero-lede">
-            BubaPix is an AI film studio. We write, direct and finish short films,
-            brand films and music videos, generated frame by frame and shaped by
-            a human eye.
-          </p>
-          <div class="hero-actions">
-            <a class="button button-primary" href="#contact">Start a project</a>
-            <a class="button button-quiet" href="#process">See how we work</a>
+      <div class="hero-head">
+        <h1 id="hero-title" class="hero-title">
+          <span class="line">Every world</span>
+          <span class="line">starts with a sentence.</span>
+        </h1>
+        <div class="hero-side">
+          <p class="hero-lede">BubaPix is an AI-native film and animation studio. We turn an idea into characters, worlds and finished films for brands, artists and storytellers.</p>
+          <div class="actions">
+            <a class="button button-dark" href="#start">Start a project</a>
+            <a class="text-link" href="#work">See the work</a>
           </div>
         </div>
       </div>
+
+      <figure class="hero-frame">
+        <div class="frame frame-wide">
+          <img class="hero-still" src="assets/scenes/dusk-sea.svg" alt="Placeholder: Dusk sea" width="1600" height="900" fetchpriority="high">
+          <span class="tag">Placeholder</span>
+        </div>
+        <figcaption>
+          <span class="scene-name" aria-live="polite">Dusk sea</span>
+          <span class="scene-note">Placeholder artwork. Replace with a still from the showreel.</span>
+        </figcaption>
+      </figure>
+
+      <div class="script">
+        <p class="script-label" id="script-label">Choose a world for the frame</p>
+        <ul class="script-strip" aria-labelledby="script-label">
+          <li>
+            <button class="script-frame" type="button" data-scene="dusk-sea" data-src="assets/scenes/dusk-sea.svg" data-name="Dusk sea" aria-pressed="true">
+              <img src="assets/scenes/dusk-sea.svg" alt="" width="160" height="90" loading="lazy" decoding="async">
+              <span class="visually-hidden">Dusk sea</span>
+            </button>
+          </li>
+          <li>
+            <button class="script-frame" type="button" data-scene="northern-night" data-src="assets/scenes/northern-night.svg" data-name="Northern night" aria-pressed="false">
+              <img src="assets/scenes/northern-night.svg" alt="" width="160" height="90" loading="lazy" decoding="async">
+              <span class="visually-hidden">Northern night</span>
+            </button>
+          </li>
+          <li>
+            <button class="script-frame" type="button" data-scene="desert-noon" data-src="assets/scenes/desert-noon.svg" data-name="Desert noon" aria-pressed="false">
+              <img src="assets/scenes/desert-noon.svg" alt="" width="160" height="90" loading="lazy" decoding="async">
+              <span class="visually-hidden">Desert noon</span>
+            </button>
+          </li>
+          <li>
+            <button class="script-frame" type="button" data-scene="forest-morning" data-src="assets/scenes/forest-morning.svg" data-name="Forest morning" aria-pressed="false">
+              <img src="assets/scenes/forest-morning.svg" alt="" width="160" height="90" loading="lazy" decoding="async">
+              <span class="visually-hidden">Forest morning</span>
+            </button>
+          </li>
+          <li>
+            <button class="script-frame" type="button" data-scene="second-sun" data-src="assets/scenes/second-sun.svg" data-name="Second sun" aria-pressed="false">
+              <img src="assets/scenes/second-sun.svg" alt="" width="160" height="90" loading="lazy" decoding="async">
+              <span class="visually-hidden">Second sun</span>
+            </button>
+          </li>
+          <li>
+            <button class="script-frame" type="button" data-scene="snow-valley" data-src="assets/scenes/snow-valley.svg" data-name="Snow valley" aria-pressed="false">
+              <img src="assets/scenes/snow-valley.svg" alt="" width="160" height="90" loading="lazy" decoding="async">
+              <span class="visually-hidden">Snow valley</span>
+            </button>
+          </li>
+        </ul>
+      </div>
     </section>
 
-    <!-- WHAT WE MAKE -->
-    <section id="films" class="section" aria-labelledby="films-title">
-      <h2 id="films-title" class="section-title">What we make</h2>
-      <dl class="formats">
-        <div class="format">
-          <dt>Short films</dt>
-          <dd>Original stories with a beginning, a middle and an ending you remember. Festival-ready or made for the feed.</dd>
-        </div>
-        <div class="format">
-          <dt>Brand films</dt>
-          <dd>Commercials and launch pieces that look like cinema, not stock footage. Built around one idea, cut to any length.</dd>
-        </div>
-        <div class="format">
-          <dt>Music videos</dt>
-          <dd>Visual worlds built around a track: characters, places and camera moves that would be impossible on a set.</dd>
-        </div>
-      </dl>
+    <section id="work" class="section work" aria-labelledby="work-title">
+      <div class="section-head">
+        <h2 id="work-title" class="section-title">Selected work</h2>
+        <p class="section-intro">Our films will appear here. Every frame in this section is labelled placeholder artwork until real stills are added.</p>
+      </div>
+      <ul class="work-grid">
+        <li class="work-item work-item-1">
+          <figure>
+            <div class="frame">
+              <img src="assets/scenes/second-sun.svg" alt="Placeholder: Second sun" width="1600" height="900" loading="lazy" decoding="async">
+              <span class="tag">Placeholder</span>
+            </div>
+            <figcaption>
+              <span class="work-type">Short film</span>
+              <span class="work-title">Film title to come</span>
+            </figcaption>
+          </figure>
+        </li>
+        <li class="work-item work-item-2">
+          <figure>
+            <div class="frame">
+              <img src="assets/scenes/dusk-sea.svg" alt="Placeholder: Dusk sea" width="1600" height="900" loading="lazy" decoding="async">
+              <span class="tag">Placeholder</span>
+            </div>
+            <figcaption>
+              <span class="work-type">Commercial</span>
+              <span class="work-title">Film title to come</span>
+            </figcaption>
+          </figure>
+        </li>
+        <li class="work-item work-item-3">
+          <figure>
+            <div class="frame">
+              <img src="assets/scenes/forest-morning.svg" alt="Placeholder: Forest morning" width="1600" height="900" loading="lazy" decoding="async">
+              <span class="tag">Placeholder</span>
+            </div>
+            <figcaption>
+              <span class="work-type">Music video</span>
+              <span class="work-title">Film title to come</span>
+            </figcaption>
+          </figure>
+        </li>
+        <li class="work-item work-item-4">
+          <figure>
+            <div class="frame">
+              <img src="assets/scenes/snow-valley.svg" alt="Placeholder: Snow valley" width="1600" height="900" loading="lazy" decoding="async">
+              <span class="tag">Placeholder</span>
+            </div>
+            <figcaption>
+              <span class="work-type">Trailer</span>
+              <span class="work-title">Film title to come</span>
+            </figcaption>
+          </figure>
+        </li>
+        <li class="work-item work-item-5">
+          <figure>
+            <div class="frame">
+              <img src="assets/scenes/desert-noon.svg" alt="Placeholder: Desert noon" width="1600" height="900" loading="lazy" decoding="async">
+              <span class="tag">Placeholder</span>
+            </div>
+            <figcaption>
+              <span class="work-type">Original world</span>
+              <span class="work-title">Film title to come</span>
+            </figcaption>
+          </figure>
+        </li>
+      </ul>
     </section>
 
-    <!-- PROCESS (a real sequence, so it is numbered) -->
-    <section id="process" class="section" aria-labelledby="process-title">
-      <h2 id="process-title" class="section-title">How a film gets made</h2>
+    <section id="services" class="section services" aria-labelledby="services-title">
+      <h2 id="services-title" class="section-title">What we create</h2>
+      <ul class="service-list">
+        <li>
+          <h3>AI films</h3>
+          <p>Short and long-form films, written and directed for the screen.</p>
+        </li>
+        <li>
+          <h3>Animation</h3>
+          <p>Stylised animation with a consistent visual language from first frame to last.</p>
+        </li>
+        <li>
+          <h3>Commercials</h3>
+          <p>Brand films built around one clear idea, cut for every channel.</p>
+        </li>
+        <li>
+          <h3>Trailers</h3>
+          <p>Teasers and trailers that sell the story before the release.</p>
+        </li>
+        <li>
+          <h3>Music videos</h3>
+          <p>Visual worlds built around a track.</p>
+        </li>
+        <li>
+          <h3>Characters</h3>
+          <p>Original characters designed to stay consistent from shot to shot.</p>
+        </li>
+        <li>
+          <h3>Original worlds</h3>
+          <p>Places, rules and looks for stories that can grow into a series.</p>
+        </li>
+      </ul>
+    </section>
+
+    <section id="process" class="section process" aria-labelledby="process-title">
+      <div class="section-head">
+        <h2 id="process-title" class="section-title">From idea to film</h2>
+        <p class="section-intro">Five stages. The frames show the film gaining colour as it takes shape.</p>
+      </div>
       <ol class="steps">
-        <li>
-          <h3>Brief</h3>
-          <p>You tell us what the film is for, who will watch it, and where.</p>
+        <li class="step step-1">
+          <div class="step-frame" aria-hidden="true">
+            <img src="assets/scenes/dusk-sea.svg" alt="" width="1600" height="900" loading="lazy" decoding="async">
+          </div>
+          <div class="step-text">
+            <h3><span class="step-num">1</span> Idea</h3>
+            <p>You bring the idea, the audience and the deadline.</p>
+          </div>
         </li>
-        <li>
-          <h3>Script and look</h3>
-          <p>We write the story and set its visual language: light, colour, lens, pace.</p>
+        <li class="step step-2">
+          <div class="step-frame" aria-hidden="true">
+            <img src="assets/scenes/dusk-sea.svg" alt="" width="1600" height="900" loading="lazy" decoding="async">
+          </div>
+          <div class="step-text">
+            <h3><span class="step-num">2</span> Story</h3>
+            <p>We write the script and shape the story scene by scene.</p>
+          </div>
         </li>
-        <li>
-          <h3>Generate and direct</h3>
-          <p>Every shot is generated, reviewed and redone until it holds up on a big screen.</p>
+        <li class="step step-3">
+          <div class="step-frame" aria-hidden="true">
+            <img src="assets/scenes/dusk-sea.svg" alt="" width="1600" height="900" loading="lazy" decoding="async">
+          </div>
+          <div class="step-text">
+            <h3><span class="step-num">3</span> Look</h3>
+            <p>Characters, world and style frames, approved before production.</p>
+          </div>
         </li>
-        <li>
-          <h3>Edit, sound and grade</h3>
-          <p>We cut, score and colour-grade the film, then deliver it in every format you need.</p>
+        <li class="step step-4">
+          <div class="step-frame" aria-hidden="true">
+            <img src="assets/scenes/dusk-sea.svg" alt="" width="1600" height="900" loading="lazy" decoding="async">
+          </div>
+          <div class="step-text">
+            <h3><span class="step-num">4</span> Production</h3>
+            <p>Every shot is generated, directed and refined until it holds up.</p>
+          </div>
+        </li>
+        <li class="step step-5">
+          <div class="step-frame" aria-hidden="true">
+            <img src="assets/scenes/dusk-sea.svg" alt="" width="1600" height="900" loading="lazy" decoding="async">
+          </div>
+          <div class="step-text">
+            <h3><span class="step-num">5</span> Finish</h3>
+            <p>Edit, sound, music and colour grade, delivered in every format you need.</p>
+          </div>
         </li>
       </ol>
     </section>
 
-    <!-- CONTACT -->
-    <section id="contact" class="section contact" aria-labelledby="contact-title">
-      <h2 id="contact-title" class="contact-title">Have a film in mind?</h2>
-      <p class="contact-lede">Send a few lines about the story, the length and the deadline, and we'll take it from there.</p>
-      <a class="button button-primary" data-contact href="mailto:hello@bubapix.com?subject=New%20project%20for%20BubaPix">Start a project</a>
+    <section id="about" class="section about" aria-labelledby="about-title">
+      <h2 id="about-title" class="section-title">About BubaPix</h2>
+      <div class="about-body">
+        <p class="about-lead">BubaPix is an independent studio where filmmaking craft meets generative tools. We treat AI as a camera, not a shortcut: every film still needs a story worth telling, a deliberate look, and someone who cares about each frame.</p>
+        <p>We make films for brands, musicians and independent storytellers, from a single scene to a complete film.</p>
+      </div>
+    </section>
+
+    <section id="start" class="final" aria-labelledby="final-title">
+      <img class="final-bg" src="assets/scenes/northern-night.svg" alt="" width="1600" height="900" loading="lazy" decoding="async">
+      <div class="final-inner">
+        <h2 id="final-title" class="final-title">Tell us the sentence. We'll build the world.</h2>
+        <p class="final-lede">Send a few lines about your idea, your audience and your timeline.</p>
+        <p class="pending">Our contact address is being set up and will appear here soon.</p>
+      </div>
     </section>
   </main>
 
   <footer class="site-footer">
-    <p>&copy; <span data-year>2026</span> BubaPix</p>
-    <a href="#main">Back to top</a>
+    <div class="footer-brand">
+      <a class="wordmark" href="./">BubaPix</a>
+      <p>AI film and animation studio</p>
+    </div>
+    <nav class="footer-col" aria-label="Footer">
+      <h2>Studio</h2>
+      <ul>
+        <li><a href="#work">Work</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+    </nav>
+    <div class="footer-col">
+      <h2>Contact</h2>
+      <p><span>Email address coming soon</span></p>
+    </div>
+    <div class="footer-col">
+      <h2>Language</h2>
+      <p><a class="lang-switch" href="he/" hreflang="he" lang="he" data-lang="he">עברית</a></p>
+    </div>
+    <div class="footer-base">
+      <p>&copy; <span data-year>2026</span> BubaPix</p>
+      <p>All imagery on this page is placeholder artwork.</p>
+      <a href="#main">Back to top</a>
+    </div>
   </footer>
 </body>
 </html>

@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "title": "BubaPix — AI film and animation studio",
+    "description": "BubaPix is an AI-native film and animation studio. We turn ideas into characters, worlds and finished films for brands, artists and storytellers.",
+    "ogLocale": "en_US"
+  },
+  "a11y": {
+    "skip": "Skip to content",
+    "home": "BubaPix home",
+    "mainNav": "Main",
+    "footerNav": "Footer",
+    "menuOpen": "Menu",
+    "menuClose": "Close"
+  },
+  "nav": {
+    "work": "Work",
+    "services": "Services",
+    "about": "About",
+    "cta": "Start a project",
+    "switchLabel": "עברית",
+    "switchTitle": "Hebrew version"
+  },
+  "hero": {
+    "line1": "Every world",
+    "line2": "starts with a sentence.",
+    "lede": "BubaPix is an AI-native film and animation studio. We turn an idea into characters, worlds and finished films for brands, artists and storytellers.",
+    "cta": "Start a project",
+    "secondary": "See the work",
+    "scriptLabel": "Choose a world for the frame",
+    "placeholderNote": "Placeholder artwork. Replace with a still from the showreel."
+  },
+  "scenes": {
+    "dusk-sea": "Dusk sea",
+    "northern-night": "Northern night",
+    "desert-noon": "Desert noon",
+    "forest-morning": "Forest morning",
+    "second-sun": "Second sun",
+    "snow-valley": "Snow valley"
+  },
+  "placeholder": "Placeholder",
+  "work": {
+    "title": "Selected work",
+    "intro": "Our films will appear here. Every frame in this section is labelled placeholder artwork until real stills are added.",
+    "filmTitle": "Film title to come",
+    "items": [
+      { "scene": "second-sun", "type": "Short film" },
+      { "scene": "dusk-sea", "type": "Commercial" },
+      { "scene": "forest-morning", "type": "Music video" },
+      { "scene": "snow-valley", "type": "Trailer" },
+      { "scene": "desert-noon", "type": "Original world" }
+    ]
+  },
+  "services": {
+    "title": "What we create",
+    "items": [
+      { "name": "AI films", "text": "Short and long-form films, written and directed for the screen." },
+      { "name": "Animation", "text": "Stylised animation with a consistent visual language from first frame to last." },
+      { "name": "Commercials", "text": "Brand films built around one clear idea, cut for every channel." },
+      { "name": "Trailers", "text": "Teasers and trailers that sell the story before the release." },
+      { "name": "Music videos", "text": "Visual worlds built around a track." },
+      { "name": "Characters", "text": "Original characters designed to stay consistent from shot to shot." },
+      { "name": "Original worlds", "text": "Places, rules and looks for stories that can grow into a series." }
+    ]
+  },
+  "process": {
+    "title": "From idea to film",
+    "intro": "Five stages. The frames show the film gaining colour as it takes shape.",
+    "steps": [
+      { "name": "Idea", "text": "You bring the idea, the audience and the deadline." },
+      { "name": "Story", "text": "We write the script and shape the story scene by scene." },
+      { "name": "Look", "text": "Characters, world and style frames, approved before production." },
+      { "name": "Production", "text": "Every shot is generated, directed and refined until it holds up." },
+      { "name": "Finish", "text": "Edit, sound, music and colour grade, delivered in every format you need." }
+    ]
+  },
+  "about": {
+    "title": "About BubaPix",
+    "p1": "BubaPix is an independent studio where filmmaking craft meets generative tools. We treat AI as a camera, not a shortcut: every film still needs a story worth telling, a deliberate look, and someone who cares about each frame.",
+    "p2": "We make films for brands, musicians and independent storytellers, from a single scene to a complete film."
+  },
+  "final": {
+    "title": "Tell us the sentence. We'll build the world.",
+    "lede": "Send a few lines about your idea, your audience and your timeline.",
+    "cta": "Start a project",
+    "emailSubject": "New project for BubaPix",
+    "pending": "Our contact address is being set up and will appear here soon."
+  },
+  "footer": {
+    "tagline": "AI film and animation studio",
+    "studio": "Studio",
+    "contact": "Contact",
+    "contactPending": "Email address coming soon",
+    "language": "Language",
+    "rights": "BubaPix",
+    "artNote": "All imagery on this page is placeholder artwork.",
+    "top": "Back to top"
+  }
+}
