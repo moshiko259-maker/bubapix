@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BubaPix — AI film studio</title>
+  <meta name="description" content="BubaPix is an AI film studio. We write, direct and finish short films, brand films and music videos.">
+  <meta name="theme-color" content="#120d0a">
+
+  <meta property="og:title" content="BubaPix — AI film studio">
+  <meta property="og:description" content="Every frame directed. None of it filmed.">
+  <meta property="og:type" content="website">
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Schibsted+Grotesk:wght@400;500;600&display=swap">
+
+  <script>document.documentElement.classList.add("js");</script>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <a class="wordmark" href="./" aria-label="BubaPix home">Buba<span>Pix</span></a>
+    <nav aria-label="Main">
+      <ul class="nav-list">
+        <li class="nav-optional"><a href="#films">Films</a></li>
+        <li class="nav-optional"><a href="#process">Process</a></li>
+        <li><a class="nav-cta" href="#contact">Start a project</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-frame">
+        <!-- Temporary background: a projector beam drawn live in the browser.
+             Replace with the showreel video when it is approved. -->
+        <canvas class="hero-canvas" aria-hidden="true"></canvas>
+        <div class="grain" aria-hidden="true"></div>
+        <div class="letterbox letterbox-top" aria-hidden="true"></div>
+        <div class="letterbox letterbox-bottom" aria-hidden="true"></div>
+
+        <div class="hero-content">
+          <h1 id="hero-title" class="hero-title">
+            <span class="line">Every frame directed.</span>
+            <span class="line">None of it filmed.</span>
+          </h1>
+          <p class="hero-lede">
+            BubaPix is an AI film studio. We write, direct and finish short films,
+            brand films and music videos, generated frame by frame and shaped by
+            a human eye.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#contact">Start a project</a>
+            <a class="button button-quiet" href="#process">See how we work</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHAT WE MAKE -->
+    <section id="films" class="section" aria-labelledby="films-title">
+      <h2 id="films-title" class="section-title">What we make</h2>
+      <dl class="formats">
+        <div class="format">
+          <dt>Short films</dt>
+          <dd>Original stories with a beginning, a middle and an ending you remember. Festival-ready or made for the feed.</dd>
+        </div>
+        <div class="format">
+          <dt>Brand films</dt>
+          <dd>Commercials and launch pieces that look like cinema, not stock footage. Built around one idea, cut to any length.</dd>
+        </div>
+        <div class="format">
+          <dt>Music videos</dt>
+          <dd>Visual worlds built around a track: characters, places and camera moves that would be impossible on a set.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- PROCESS (a real sequence, so it is numbered) -->
+    <section id="process" class="section" aria-labelledby="process-title">
+      <h2 id="process-title" class="section-title">How a film gets made</h2>
+      <ol class="steps">
+        <li>
+          <h3>Brief</h3>
+          <p>You tell us what the film is for, who will watch it, and where.</p>
+        </li>
+        <li>
+          <h3>Script and look</h3>
+          <p>We write the story and set its visual language: light, colour, lens, pace.</p>
+        </li>
+        <li>
+          <h3>Generate and direct</h3>
+          <p>Every shot is generated, reviewed and redone until it holds up on a big screen.</p>
+        </li>
+        <li>
+          <h3>Edit, sound and grade</h3>
+          <p>We cut, score and colour-grade the film, then deliver it in every format you need.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="section contact" aria-labelledby="contact-title">
+      <h2 id="contact-title" class="contact-title">Have a film in mind?</h2>
+      <p class="contact-lede">Send a few lines about the story, the length and the deadline, and we'll take it from there.</p>
+      <a class="button button-primary" data-contact href="mailto:hello@bubapix.com?subject=New%20project%20for%20BubaPix">Start a project</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span data-year>2026</span> BubaPix</p>
+    <a href="#main">Back to top</a>
+  </footer>
+</body>
+</html>
