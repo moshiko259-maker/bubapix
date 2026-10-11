@@ -293,6 +293,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   gap: 0.5rem;
   margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
 }
+.filters[hidden] { display: none; } /* buttons need JavaScript; hidden without it */
 .filter {
   min-height: 40px;
   padding: 0 1rem;
