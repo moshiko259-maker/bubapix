@@ -1,0 +1,138 @@
+# BubaPix admin panel (Sveltia CMS) — settings
+#
+# Every change saved here is committed to the GitHub repository below.
+# A GitHub Actions workflow (.github/workflows/build-pages.yml) then
+# rebuilds the English and Hebrew pages automatically.
+#
+# Sign in: "Sign In with Token", using your own fine-grained GitHub token
+# limited to this repository (Contents: Read and write). The token stays in
+# your browser; it is never stored in this site or the repository.
+
+backend:
+  name: github
+  repo: moshiko259-maker/bubapix
+  # Edits go to this branch only. Change to "main" after the redesign is approved.
+  branch: redesign-v2
+
+# Uploaded images are saved in this folder of the repository.
+media_folder: assets/uploads
+public_folder: /assets/uploads
+
+media_libraries:
+  default:
+    config:
+      max_file_size: 20000000   # 20 MB per upload
+      slugify_filename: true    # safe file names (no spaces or Hebrew letters)
+      transformations:
+        # Photos are converted to WebP and scaled down to at most 2400 px,
+        # keeping their proportions. Smaller images are never enlarged.
+        raster_image:
+          format: webp
+          quality: 85
+          width: 2400
+          height: 2400
+
+collections:
+  - name: site
+    label: "BubaPix website / האתר"
+    files:
+      - name: homepage
+        label: "Homepage / דף הבית"
+        file: content/site.json
+        format: json
+        fields:
+          - name: hero_image
+            label: "Main image / תמונה ראשית"
+            widget: image
+            hint: "Shown full width at the top. It is never cropped."
+          - name: hero_alt_en
+            label: "Main image description, English / תיאור התמונה באנגלית"
+            widget: string
+            required: false
+            hint: "For screen readers and search engines."
+          - name: hero_alt_he
+            label: "Main image description, Hebrew / תיאור התמונה בעברית"
+            widget: string
+            required: false
+          - name: tagline_en
+            label: "Tagline, English / סלוגן באנגלית"
+            widget: string
+            required: false
+          - name: tagline_he
+            label: "Tagline, Hebrew / סלוגן בעברית"
+            widget: string
+            required: false
+          - name: about_en
+            label: "About, English / אודות באנגלית"
+            widget: text
+            required: false
+          - name: about_he
+            label: "About, Hebrew / אודות בעברית"
+            widget: text
+            required: false
+          - name: contact_email
+            label: "Contact email / מייל ליצירת קשר"
+            widget: string
+            required: false
+            hint: "Leave empty until the mailbox exists and you have tested it."
+          - name: projects
+            label: "Projects / פרויקטים"
+            label_singular: "project / פרויקט"
+            widget: list
+            allow_reorder: true
+            summary: "{{fields.title_en}}"
+            thumbnail: cover
+            collapsed: true
+            hint: "Drag to change the order. Featured projects are shown large, first."
+            fields:
+              - name: title_en
+                label: "Name, English / שם באנגלית"
+                widget: string
+              - name: title_he
+                label: "Name, Hebrew / שם בעברית"
+                widget: string
+                required: false
+              - name: text_en
+                label: "Short text, English / טקסט קצר באנגלית"
+                widget: string
+                required: false
+              - name: text_he
+                label: "Short text, Hebrew / טקסט קצר בעברית"
+                widget: string
+                required: false
+              - name: featured
+                label: "Featured (large) / פרויקט מרכזי (גדול)"
+                widget: boolean
+                default: false
+              - name: cover
+                label: "Main project image / תמונה ראשית של הפרויקט"
+                widget: image
+                required: false
+              - name: cover_alt_en
+                label: "Image description, English / תיאור התמונה באנגלית"
+                widget: string
+                required: false
+              - name: cover_alt_he
+                label: "Image description, Hebrew / תיאור התמונה בעברית"
+                widget: string
+                required: false
+              - name: gallery
+                label: "More images / תמונות נוספות"
+                label_singular: "image / תמונה"
+                widget: list
+                required: false
+                allow_reorder: true
+                thumbnail: image
+                collapsed: true
+                fields:
+                  - name: image
+                    label: "Image / תמונה"
+                    widget: image
+                  - name: alt_en
+                    label: "Description, English / תיאור באנגלית"
+                    widget: string
+                    required: false
+                  - name: alt_he
+                    label: "Description, Hebrew / תיאור בעברית"
+                    widget: string
+                    required: false

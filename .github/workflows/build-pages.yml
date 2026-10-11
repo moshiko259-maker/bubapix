@@ -1,0 +1,49 @@
+# Rebuilds index.html and he/index.html whenever the content, images,
+# template or labels change, then commits the result to the same branch.
+# Free for public repositories. Uses only the built-in GITHUB_TOKEN
+# (no secrets to set up).
+
+name: Build pages
+
+on:
+  push:
+    branches: [redesign-v2, main]
+    paths:
+      - "content/**"
+      - "assets/**"
+      - "src/**"
+      - "build.js"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build the English and Hebrew pages
+        run: node build.js
+
+      - name: Commit the rebuilt pages, if they changed
+        run: |
+          if git diff --quiet -- index.html he/index.html; then
+            echo "Pages are already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html he/index.html
+          git commit -m "Rebuild pages after content change"
+          git push

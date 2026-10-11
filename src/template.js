@@ -1,94 +1,76 @@
-// Page template for the BubaPix homepage.
-// Called by build.js once per language. All visible text comes from
-// src/i18n/<lang>.json; nothing language-specific is hard-coded here.
-
-const SCENES = [
-  "dusk-sea",
-  "northern-night",
-  "desert-noon",
-  "forest-morning",
-  "second-sun",
-  "snow-valley",
-];
+// Page template for the BubaPix homepage (redesign v2).
+// Called by build.js once per language.
+//   t  interface labels from src/i18n/<lang>.json
+//   c  content for this language, prepared by build.js from content/site.json
+//      (hero image, tagline, about text, contact email, projects)
 
 // Escape text before placing it in HTML.
 function e(s) {
-  return String(s)
+  return String(s == null ? "" : s)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
 
-function scene(base, name) {
-  return `${base}assets/scenes/${name}.svg`;
-}
-
-module.exports = function render({ t, lang, dir, base, urls, other, site }) {
-  const email = site.contactEmail;
-  const mailto = email
-    ? `mailto:${email}?subject=${encodeURIComponent(t.final.emailSubject)}`
-    : "";
-
-  // Original brand and film files, used unchanged.
-  const poster = `${base}assets/work/the-new-ocean-poster.jpg`; // 1376 x 768
-  const logo = `${base}assets/brand/bubapix-logo.jpg`;          // 989 x 902
+module.exports = function render({ t, c, lang, dir, base, urls, other }) {
+  const logo = `${base}assets/brand/bubapix-logo.jpg`; // original file, 989 x 902
 
   // The logo file has thin dark strips on its top and bottom edges
   // (screenshot borders). .logo-frame hides them with CSS; the file is untouched.
   const logoImg = (alt, cls, attrs = "") =>
     `<span class="logo-frame ${cls}"><img src="${logo}" alt="${e(alt)}" width="989" height="902" ${attrs}></span>`;
 
-  const workItems = t.work.items
+  // One image, at its own proportions (width/height read from the file).
+  const img = (im, attrs = 'loading="lazy" decoding="async"') =>
+    `<img src="${base}${e(im.src)}" alt="${e(im.alt)}"${im.w ? ` width="${im.w}" height="${im.h}"` : ""} ${attrs}>`;
+
+  const cover = (p) =>
+    p.cover
+      ? `<div class="project-cover">${img(p.cover)}</div>`
+      : `<div class="project-cover project-cover-empty"><span>${e(t.work.imageComing)}</span></div>`;
+
+  const featured = c.featured
     .map(
-      (w, i) => `
-        <li class="work-item work-item-${i + 1}">
-          <figure>
-            <div class="frame">
-              <img src="${scene(base, w.scene)}" alt="${e(t.placeholder)}: ${e(t.scenes[w.scene])}" width="1600" height="900" loading="lazy" decoding="async">
-              <span class="tag">${e(t.placeholder)}</span>
-            </div>
-            <figcaption>
-              <span class="work-type">${e(w.type)}</span>
-              <span class="work-title">${e(t.work.filmTitle)}</span>
-            </figcaption>
-          </figure>
-        </li>`
+      (p) => `
+        <article class="project project-featured">
+          ${cover(p)}
+          <h3 class="project-title">${e(p.title)}</h3>${p.text ? `
+          <p class="project-text">${e(p.text)}</p>` : ""}${p.gallery.length ? `
+          <ul class="project-gallery">${p.gallery.map((g) => `
+            <li>${img(g)}</li>`).join("")}
+          </ul>` : ""}
+        </article>`
     )
     .join("");
 
-  const services = t.services.items
-    .map(
-      (s) => `
-        <li>
-          <h3>${e(s.name)}</h3>
-          <p>${e(s.text)}</p>
+  const others = c.others.length
+    ? `
+      <ul class="gallery">${c.others
+        .map(
+          (p) => `
+        <li class="project">
+          ${cover(p)}
+          <h3 class="project-title">${e(p.title)}</h3>
         </li>`
-    )
-    .join("");
+        )
+        .join("")}
+      </ul>`
+    : "";
 
-  const steps = t.process.steps
-    .map(
-      (s, i) => `
-        <li class="step step-${i + 1}">
-          <div class="step-frame" aria-hidden="true">
-            <img src="${scene(base, "dusk-sea")}" alt="" width="1600" height="900" loading="lazy" decoding="async">
-          </div>
-          <div class="step-text">
-            <h3><span class="step-num">${i + 1}</span> ${e(s.name)}</h3>
-            <p>${e(s.text)}</p>
-          </div>
-        </li>`
-    )
-    .join("");
+  const hero = c.hero
+    ? `
+    <section class="hero" aria-label="${e(c.tagline || "BubaPix")}">
+      <figure class="hero-frame">
+        ${img(c.hero, 'fetchpriority="high"')}
+      </figure>${c.tagline ? `
+      <p class="tagline">${e(c.tagline)}</p>` : ""}
+    </section>`
+    : "";
 
-  const startAction = email
-    ? `<a class="button button-light" href="${e(mailto)}">${e(t.final.cta)}</a>`
-    : `<p class="pending">${e(t.final.pending)}</p>`;
-
-  const footerContact = email
-    ? `<a href="${e(mailto)}">${e(email)}</a>`
-    : `<span>${e(t.footer.contactPending)}</span>`;
+  const contact = c.email
+    ? `<a class="contact-email" href="mailto:${e(c.email)}">${e(c.email)}</a>`
+    : `<p class="pending">${e(t.contact.pending)}</p>`;
 
   // Remember the language a visitor picks, and send returning Hebrew
   // readers from the English root to /he/. Only runs on the English page.
@@ -104,7 +86,7 @@ module.exports = function render({ t, lang, dir, base, urls, other, site }) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   ${redirect}
   <title>${e(t.meta.title)}</title>
-  <meta name="description" content="${e(t.meta.description)}">
+  <meta name="description" content="${e(c.about || t.meta.description)}">
   <link rel="canonical" href="${urls[lang]}">
   <link rel="alternate" hreflang="en" href="${urls.en}">
   <link rel="alternate" hreflang="he" href="${urls.he}">
@@ -114,18 +96,19 @@ module.exports = function render({ t, lang, dir, base, urls, other, site }) {
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="BubaPix">
   <meta property="og:title" content="${e(t.meta.title)}">
-  <meta property="og:description" content="${e(t.meta.description)}">
+  <meta property="og:description" content="${e(c.about || t.meta.description)}">
   <meta property="og:url" content="${urls[lang]}">
   <meta property="og:locale" content="${t.meta.ogLocale}">
-  <meta property="og:locale:alternate" content="${other.t.meta.ogLocale}">
+  <meta property="og:locale:alternate" content="${other.t.meta.ogLocale}">${c.hero ? `
+  <meta property="og:image" content="${urls.en}${e(c.hero.src)}">` : ""}
 
   <link rel="icon" href="${base}favicon.svg" type="image/svg+xml">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Heebo:wght@400..700&display=swap">
-
-  <link rel="preload" as="image" href="${poster}">
+${c.hero ? `
+  <link rel="preload" as="image" href="${base}${e(c.hero.src)}">` : ""}
   <script>document.documentElement.classList.add("js");</script>
   <link rel="stylesheet" href="${base}css/styles.css">
   <script src="${base}js/main.js" defer></script>
@@ -135,114 +118,44 @@ module.exports = function render({ t, lang, dir, base, urls, other, site }) {
 
   <header class="site-header">
     <a class="brand" href="./" aria-label="${e(t.a11y.home)}">${logoImg("", "logo-compact")}</a>
-
     <nav class="site-nav" aria-label="${e(t.a11y.mainNav)}">
-      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu" data-open="${e(t.a11y.menuOpen)}" data-close="${e(t.a11y.menuClose)}">${e(t.a11y.menuOpen)}</button>
-      <ul class="menu" id="menu">
+      <ul class="menu">
         <li><a href="#work">${e(t.nav.work)}</a></li>
-        <li><a href="#services">${e(t.nav.services)}</a></li>
         <li><a href="#about">${e(t.nav.about)}</a></li>
-        <li class="menu-lang"><a class="lang-switch" href="${other.href}" hreflang="${other.lang}" lang="${other.lang}" title="${e(t.nav.switchTitle)}" data-lang="${other.lang}">${e(t.nav.switchLabel)}</a></li>
-        <li class="menu-cta"><a class="button button-dark nav-cta" href="#start">${e(t.nav.cta)}</a></li>
+        <li><a href="#contact">${e(t.nav.contact)}</a></li>
+        <li><a class="lang-switch" href="${other.href}" hreflang="${other.lang}" lang="${other.lang}" title="${e(t.nav.switchTitle)}" data-lang="${other.lang}">${e(t.nav.switchLabel)}</a></li>
       </ul>
     </nav>
   </header>
 
   <main id="main">
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-head">
-        <h1 id="hero-title" class="hero-title">
-          <span class="line">${e(t.hero.line1)}</span>
-          <span class="line">${e(t.hero.line2)}</span>
-        </h1>
-        <div class="hero-side">
-          <p class="hero-lede">${e(t.hero.lede)}</p>
-          <div class="actions">
-            <a class="button button-dark" href="#start">${e(t.hero.cta)}</a>
-            <a class="text-link" href="#work">${e(t.hero.secondary)}</a>
-          </div>
-        </div>
-      </div>
-
-      <figure class="hero-frame">
-        <div class="frame frame-poster">
-          <img class="hero-poster" src="${poster}" alt="${e(t.hero.posterAlt)}" width="1376" height="768" fetchpriority="high">
-        </div>
-        <figcaption>
-          <span class="scene-name">${e(t.hero.posterTitle)}</span>
-          <span class="scene-note">${e(t.hero.posterNote)}</span>
-        </figcaption>
-      </figure>
-    </section>
+    <h1 class="visually-hidden">BubaPix</h1>
+${hero}
 
     <section id="work" class="section work" aria-labelledby="work-title">
-      <div class="section-head">
-        <h2 id="work-title" class="section-title">${e(t.work.title)}</h2>
-        <p class="section-intro">${e(t.work.intro)}</p>
-      </div>
-      <ul class="work-grid">${workItems}
-      </ul>
-    </section>
-
-    <section id="services" class="section services" aria-labelledby="services-title">
-      <h2 id="services-title" class="section-title">${e(t.services.title)}</h2>
-      <ul class="service-list">${services}
-      </ul>
-    </section>
-
-    <section id="process" class="section process" aria-labelledby="process-title">
-      <div class="section-head">
-        <h2 id="process-title" class="section-title">${e(t.process.title)}</h2>
-        <p class="section-intro">${e(t.process.intro)}</p>
-      </div>
-      <ol class="steps">${steps}
-      </ol>
+      <h2 id="work-title" class="section-label">${e(t.work.workTitle)}</h2>
+      <div class="featured">${featured}
+      </div>${others}
     </section>
 
     <section id="about" class="section about" aria-labelledby="about-title">
-      <h2 id="about-title" class="section-title">${e(t.about.title)}</h2>
+      <h2 id="about-title" class="section-label">${e(t.nav.about)}</h2>
       <div class="about-body">
-        <p class="about-lead">${e(t.about.p1)}</p>
-        <p>${e(t.about.p2)}</p>
+        ${c.about ? `<p class="about-text">${e(c.about)}</p>` : ""}
+        ${logoImg(t.footer.logoAlt, "logo-full", 'loading="lazy" decoding="async"')}
       </div>
     </section>
 
-    <section id="start" class="final" aria-labelledby="final-title">
-      <img class="final-bg" src="${scene(base, "northern-night")}" alt="" width="1600" height="900" loading="lazy" decoding="async">
-      <div class="final-inner">
-        <h2 id="final-title" class="final-title">${e(t.final.title)}</h2>
-        <p class="final-lede">${e(t.final.lede)}</p>
-        ${startAction}
-      </div>
+    <section id="contact" class="section contact" aria-labelledby="contact-title">
+      <h2 id="contact-title" class="section-label">${e(t.contact.title)}</h2>
+      ${contact}
     </section>
   </main>
 
   <footer class="site-footer">
-    <div class="footer-brand">
-      <a class="brand" href="./" aria-label="${e(t.a11y.home)}">${logoImg(t.footer.logoAlt, "logo-full", 'loading="lazy" decoding="async"')}</a>
-      <p>${e(t.footer.tagline)}</p>
-    </div>
-    <nav class="footer-col" aria-label="${e(t.a11y.footerNav)}">
-      <h2>${e(t.footer.studio)}</h2>
-      <ul>
-        <li><a href="#work">${e(t.nav.work)}</a></li>
-        <li><a href="#services">${e(t.nav.services)}</a></li>
-        <li><a href="#about">${e(t.nav.about)}</a></li>
-      </ul>
-    </nav>
-    <div class="footer-col">
-      <h2>${e(t.footer.contact)}</h2>
-      <p>${footerContact}</p>
-    </div>
-    <div class="footer-col">
-      <h2>${e(t.footer.language)}</h2>
-      <p><a class="lang-switch" href="${other.href}" hreflang="${other.lang}" lang="${other.lang}" data-lang="${other.lang}">${e(t.nav.switchLabel)}</a></p>
-    </div>
-    <div class="footer-base">
-      <p>&copy; <span data-year>${new Date().getFullYear()}</span> ${e(t.footer.rights)}</p>
-      <p>${e(t.footer.artNote)}</p>
-      <a href="#main">${e(t.footer.top)}</a>
-    </div>
+    <p>&copy; <span data-year>${new Date().getFullYear()}</span> BubaPix</p>
+    <a class="lang-switch" href="${other.href}" hreflang="${other.lang}" lang="${other.lang}" data-lang="${other.lang}">${e(t.nav.switchLabel)}</a>
+    <a href="#main">${e(t.footer.top)}</a>
   </footer>
 </body>
 </html>

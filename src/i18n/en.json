@@ -16,6 +16,7 @@
     "work": "Work",
     "services": "Services",
     "about": "About",
+    "contact": "Contact",
     "cta": "Start a project",
     "switchLabel": "עברית",
     "switchTitle": "Hebrew version"
@@ -43,6 +44,8 @@
     "title": "Selected work",
     "intro": "Our films will appear here. Every frame in this section is labelled placeholder artwork until real stills are added.",
     "filmTitle": "Film title to come",
+    "workTitle": "Work",
+    "imageComing": "Image coming soon",
     "items": [
       { "scene": "second-sun", "type": "Short film" },
       { "scene": "dusk-sea", "type": "Commercial" },
@@ -85,6 +88,10 @@
     "cta": "Start a project",
     "emailSubject": "New project for BubaPix",
     "pending": "Our contact address is being set up and will appear here soon."
+  },
+  "contact": {
+    "title": "Contact",
+    "pending": "Email address coming soon"
   },
   "footer": {
     "tagline": "AI film and animation studio",
