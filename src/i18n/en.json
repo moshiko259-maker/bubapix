@@ -26,8 +26,9 @@
     "lede": "BubaPix is an AI-powered film and creative studio. We make films, animation, characters, original worlds and commercial content for brands.",
     "cta": "Start a project",
     "secondary": "See the work",
-    "scriptLabel": "Choose a world for the frame",
-    "placeholderNote": "Placeholder artwork. Replace with a still from the showreel."
+    "posterTitle": "The New Ocean",
+    "posterNote": "An original animated short by BubaPix.",
+    "posterAlt": "Poster for The New Ocean, a BubaPix animation: colourful characters on a beach between a tropical island and an underwater reef."
   },
   "scenes": {
     "dusk-sea": "Dusk sea",
@@ -92,7 +93,8 @@
     "contactPending": "Email address coming soon",
     "language": "Language",
     "rights": "BubaPix",
-    "artNote": "All imagery on this page is placeholder artwork.",
+    "artNote": "Images marked \"Placeholder\" are temporary artwork.",
+    "logoAlt": "BubaPix Animation Productions logo",
     "top": "Back to top"
   }
 }

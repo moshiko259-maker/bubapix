@@ -1,9 +1,8 @@
 /* ==========================================================
    BubaPix — homepage script (redesign v1)
    1. Opening moment for the hero frame.
-   2. Colour script: thumbnails switch the hero still.
-   3. Small-screen menu.
-   4. Language switch: remembers the choice and keeps the
+   2. Small-screen menu.
+   3. Language switch: remembers the choice and keeps the
       section you were reading.
    No libraries. The page works without this file.
    ========================================================== */
@@ -26,37 +25,7 @@
   var yearEl = document.querySelector("[data-year]");
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
-  // ---------- 2. Colour script ----------
-  var still = document.querySelector(".hero-still");
-  var nameEl = document.querySelector(".scene-name");
-  var tagText = document.querySelector(".hero-frame .tag");
-  var frames = document.querySelectorAll(".script-frame");
-
-  Array.prototype.forEach.call(frames, function (btn) {
-    btn.addEventListener("click", function () {
-      if (btn.getAttribute("aria-pressed") === "true" || !still) return;
-      Array.prototype.forEach.call(frames, function (b) {
-        b.setAttribute("aria-pressed", String(b === btn));
-      });
-      var src = btn.getAttribute("data-src");
-      var name = btn.getAttribute("data-name");
-
-      // Load first, then cross-fade, so the frame never flashes empty.
-      var next = new Image();
-      next.onload = function () {
-        still.classList.add("is-swapping");
-        setTimeout(function () {
-          still.src = src;
-          still.alt = (tagText ? tagText.textContent + ": " : "") + name;
-          if (nameEl) nameEl.textContent = name;
-          still.classList.remove("is-swapping");
-        }, 220);
-      };
-      next.src = src;
-    });
-  });
-
-  // ---------- 3. Small-screen menu ----------
+  // ---------- 2. Small-screen menu ----------
   var toggle = document.querySelector(".menu-toggle");
   var menu = document.getElementById("menu");
   var small = window.matchMedia("(max-width: 860px)");
@@ -96,7 +65,7 @@
     });
   }
 
-  // ---------- 4. Language ----------
+  // ---------- 3. Language ----------
   // Arriving on English with ?lang=en means the visitor chose English.
   if (/[?&]lang=en\b/.test(location.search)) {
     store("en");

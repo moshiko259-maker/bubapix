@@ -30,17 +30,14 @@ module.exports = function render({ t, lang, dir, base, urls, other, site }) {
     ? `mailto:${email}?subject=${encodeURIComponent(t.final.emailSubject)}`
     : "";
 
-  const heroScene = SCENES[0];
+  // Original brand and film files, used unchanged.
+  const poster = `${base}assets/work/the-new-ocean-poster.jpg`; // 1376 x 768
+  const logo = `${base}assets/brand/bubapix-logo.jpg`;          // 989 x 902
 
-  const scriptButtons = SCENES.map(
-    (s, i) => `
-          <li>
-            <button class="script-frame" type="button" data-scene="${s}" data-src="${scene(base, s)}" data-name="${e(t.scenes[s])}" aria-pressed="${i === 0}">
-              <img src="${scene(base, s)}" alt="" width="160" height="90" loading="lazy" decoding="async">
-              <span class="visually-hidden">${e(t.scenes[s])}</span>
-            </button>
-          </li>`
-  ).join("");
+  // The logo file has thin dark strips on its top and bottom edges
+  // (screenshot borders). .logo-frame hides them with CSS; the file is untouched.
+  const logoImg = (alt, cls, attrs = "") =>
+    `<span class="logo-frame ${cls}"><img src="${logo}" alt="${e(alt)}" width="989" height="902" ${attrs}></span>`;
 
   const workItems = t.work.items
     .map(
@@ -112,7 +109,7 @@ module.exports = function render({ t, lang, dir, base, urls, other, site }) {
   <link rel="alternate" hreflang="en" href="${urls.en}">
   <link rel="alternate" hreflang="he" href="${urls.he}">
   <link rel="alternate" hreflang="x-default" href="${urls.en}">
-  <meta name="theme-color" content="#faf9f6">
+  <meta name="theme-color" content="#f0eee2">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="BubaPix">
@@ -128,7 +125,7 @@ module.exports = function render({ t, lang, dir, base, urls, other, site }) {
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Heebo:wght@400..700&display=swap">
 
-  <link rel="preload" as="image" href="${scene(base, heroScene)}">
+  <link rel="preload" as="image" href="${poster}">
   <script>document.documentElement.classList.add("js");</script>
   <link rel="stylesheet" href="${base}css/styles.css">
   <script src="${base}js/main.js" defer></script>
@@ -137,7 +134,7 @@ module.exports = function render({ t, lang, dir, base, urls, other, site }) {
   <a class="skip-link" href="#main">${e(t.a11y.skip)}</a>
 
   <header class="site-header">
-    <a class="wordmark" href="./" aria-label="${e(t.a11y.home)}">BubaPix</a>
+    <a class="brand" href="./" aria-label="${e(t.a11y.home)}">${logoImg("", "logo-compact")}</a>
 
     <nav class="site-nav" aria-label="${e(t.a11y.mainNav)}">
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu" data-open="${e(t.a11y.menuOpen)}" data-close="${e(t.a11y.menuClose)}">${e(t.a11y.menuOpen)}</button>
@@ -168,21 +165,14 @@ module.exports = function render({ t, lang, dir, base, urls, other, site }) {
       </div>
 
       <figure class="hero-frame">
-        <div class="frame frame-wide">
-          <img class="hero-still" src="${scene(base, heroScene)}" alt="${e(t.placeholder)}: ${e(t.scenes[heroScene])}" width="1600" height="900" fetchpriority="high">
-          <span class="tag">${e(t.placeholder)}</span>
+        <div class="frame frame-poster">
+          <img class="hero-poster" src="${poster}" alt="${e(t.hero.posterAlt)}" width="1376" height="768" fetchpriority="high">
         </div>
         <figcaption>
-          <span class="scene-name" aria-live="polite">${e(t.scenes[heroScene])}</span>
-          <span class="scene-note">${e(t.hero.placeholderNote)}</span>
+          <span class="scene-name">${e(t.hero.posterTitle)}</span>
+          <span class="scene-note">${e(t.hero.posterNote)}</span>
         </figcaption>
       </figure>
-
-      <div class="script">
-        <p class="script-label" id="script-label">${e(t.hero.scriptLabel)}</p>
-        <ul class="script-strip" aria-labelledby="script-label">${scriptButtons}
-        </ul>
-      </div>
     </section>
 
     <section id="work" class="section work" aria-labelledby="work-title">
@@ -229,7 +219,7 @@ module.exports = function render({ t, lang, dir, base, urls, other, site }) {
 
   <footer class="site-footer">
     <div class="footer-brand">
-      <a class="wordmark" href="./">BubaPix</a>
+      <a class="brand" href="./" aria-label="${e(t.a11y.home)}">${logoImg(t.footer.logoAlt, "logo-full", 'loading="lazy" decoding="async"')}</a>
       <p>${e(t.footer.tagline)}</p>
     </div>
     <nav class="footer-col" aria-label="${e(t.a11y.footerNav)}">

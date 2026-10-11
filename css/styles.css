@@ -7,13 +7,14 @@
    ========================================================== */
 
 :root {
-  --paper: #faf9f6;      /* page background */
+  --paper: #f0eee2;      /* page background: the logo's own paper colour */
   --paper-2: #f0eee9;    /* quiet panels, image backdrops */
   --ink: #16161d;        /* main text, dark buttons */
   --ink-2: #4b4b57;      /* secondary text */
   --line: rgba(22, 22, 29, 0.14);
   --accent: #2f3de0;     /* ultramarine: focus, numbers, active states */
   --night: #0e1424;      /* final section */
+  --logo-paper: var(--paper);
 
   --font-display: "Rubik", "Heebo", system-ui, sans-serif;
   --font-body: "Heebo", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
@@ -128,14 +129,32 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   padding: 1.25rem var(--gutter);
 }
 
-.wordmark {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 1.625rem;
-  letter-spacing: -0.02em;
-  text-decoration: none;
-  direction: ltr; /* the brand name is always Latin */
+/* Original logo file (989 x 902). The frame hides the 2px (top) and 6px
+   (bottom) dark screenshot strips, with a few px of margin; the file is untouched.
+   Its background is the logo's own paper colour, so it never shows a gap. */
+.brand { display: inline-flex; flex: none; text-decoration: none; }
+.logo-frame {
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 989 / 888;
+  background: var(--logo-paper);
+  /* Soften only the outer paper margin (the emblem starts well inside it),
+     so the logo's slight light-to-dark paper gradient has no visible edge. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent),
+                      linear-gradient(to right, transparent, #000 5%, #000 95%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent),
+              linear-gradient(to right, transparent, #000 5%, #000 95%, transparent);
+  mask-composite: intersect;
 }
+.logo-frame img {
+  width: 100%;
+  height: auto;
+  max-width: none;
+  margin-top: -0.4045%; /* 4px of 989: clears the 2px strip with a safety margin */
+}
+.logo-compact { width: 76px; }
+.logo-full { width: clamp(150px, 16vw, 210px); }
 
 .menu {
   display: flex;
@@ -257,7 +276,9 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   object-fit: cover;
 }
 
-.frame-wide { aspect-ratio: 2.39 / 1; }
+/* The New Ocean poster: shown whole, at its own ratio. */
+.frame-poster { aspect-ratio: 1376 / 768; }
+.frame-poster img { object-fit: contain; }
 
 .tag {
   position: absolute;
@@ -273,8 +294,6 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 }
 
 .hero-frame { margin: 0; }
-.hero-still { transition: opacity 0.45s var(--ease); }
-.hero-still.is-swapping { opacity: 0; }
 
 .hero-frame figcaption {
   display: flex;
@@ -292,47 +311,6 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .js.is-loaded .hero-frame .frame {
   clip-path: inset(0 0 0 0 round var(--radius));
   transition: clip-path 1.3s var(--ease) 0.15s;
-}
-
-/* Colour script: thumbnails that switch the hero frame. */
-.script {
-  display: flex;
-  align-items: center;
-  gap: 1rem 1.5rem;
-  margin-top: 1.5rem;
-}
-.script-label {
-  flex: none;
-  margin: 0;
-  font-size: 0.875rem;
-  color: var(--ink-2);
-}
-.script-strip {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 0.5rem;
-  flex: 1;
-  max-width: 720px;
-}
-.script-frame {
-  display: block;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  border-radius: 4px;
-  background: none;
-  cursor: pointer;
-  overflow: hidden;
-  aspect-ratio: 16 / 9;
-  opacity: 0.55;
-  outline-offset: 3px;
-  transition: opacity 0.2s;
-}
-.script-frame img { width: 100%; height: 100%; object-fit: cover; }
-.script-frame:hover { opacity: 0.85; }
-.script-frame[aria-pressed="true"] {
-  opacity: 1;
-  box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink);
 }
 
 /* ---------- Sections ---------- */
@@ -566,9 +544,6 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 @media (max-width: 860px) {
   .section-head,
   .about { grid-template-columns: 1fr; }
-  .frame-wide { aspect-ratio: 16 / 10; }
-  .script { flex-direction: column; align-items: stretch; }
-  .script-strip { max-width: none; }
   .work-item-1 { grid-column: 1 / -1; }
   .work-item-2,
   .work-item-3,
@@ -587,7 +562,10 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   .work-item .frame,
   .work-item-1 .frame,
   .work-item-2 .frame { height: auto; aspect-ratio: 16 / 10; }
-  .script-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* Poster runs edge to edge on phones so its text stays legible. */
+  .hero-frame .frame-poster { margin-inline: calc(var(--gutter) * -1); border-radius: 0; }
+  .js.is-loaded .hero-frame .frame-poster { clip-path: inset(0); }
+  .logo-compact { width: 60px; }
   .steps { grid-template-columns: 1fr; }
   .step {
     display: grid;
