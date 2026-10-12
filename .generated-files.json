@@ -21,6 +21,7 @@
   "ideas/index.html",
   "index.html",
   "manage/index.html",
+  "manifest.webmanifest",
   "privacy/index.html",
   "robots.txt",
   "services/index.html",
@@ -30,6 +31,7 @@
   "shop/index.html",
   "shop/order/index.html",
   "sitemap.xml",
+  "sw.js",
   "work/bradley-and-the-grumples/index.html",
   "work/index.html",
   "work/the-new-ocean/index.html"

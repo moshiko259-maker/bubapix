@@ -286,4 +286,14 @@
     if (phone.addEventListener) phone.addEventListener("change", layout);
     else if (phone.addListener) phone.addListener(layout);
   }
+
+  // ---------- 8. Installable app ----------
+  // Registers the helper that lets the site be added to the home screen and
+  // open offline. Its address is next to the app manifest (the site root).
+  var manifestLink = document.querySelector('link[rel="manifest"]');
+  if (manifestLink && "serviceWorker" in navigator && window.isSecureContext) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register(new URL("sw.js", manifestLink.href).href).catch(function () { /* not available here */ });
+    });
+  }
 })();

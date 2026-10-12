@@ -15,6 +15,7 @@
 // pages this script writes is kept in .generated-files.json.
 
 const fs = require("fs");
+const crypto = require("crypto");
 const path = require("path");
 const render = require("./src/render.js");
 const createImages = require("./src/images.js");
@@ -671,6 +672,91 @@ ${sitemap
   </url>`))
   .join("\n")}
 </urlset>
+`
+);
+
+// ---- Installable app (PWA): "Add to home screen" opens the site full screen
+// with the BubaPix icon. The icons are the unchanged logo on its own paper
+// colour (assets/brand/icons). Relative addresses keep it working on any
+// address the site is served from.
+outputs.set(
+  "manifest.webmanifest",
+  JSON.stringify(
+    {
+      id: "./",
+      name: "BubaPix",
+      short_name: "BubaPix",
+      description: "BubaPix — film and animation studio",
+      start_url: "./",
+      scope: "./",
+      display: "standalone",
+      background_color: "#f7f6ef",
+      theme_color: "#f7f6ef",
+      icons: [
+        { src: "assets/brand/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+        { src: "assets/brand/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+        { src: "assets/brand/icons/icon-maskable-192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
+        { src: "assets/brand/icons/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      ],
+    },
+    null,
+    2
+  ) + "\n"
+);
+// The service worker. Pages always come from the network first (so changes
+// show at once) and fall back to the saved copy when offline; styles,
+// scripts and pictures are kept after the first visit. Its version changes
+// whenever the styles or scripts change, which clears the old saved copies.
+// The admin pages and other sites (fonts, comments) are never touched.
+const swVersion = crypto
+  .createHash("sha256")
+  .update(["css/styles.css", "js/main.js", "js/shop.js", "js/community.js"].map((f) => (fs.existsSync(path.join(root, f)) ? fs.readFileSync(path.join(root, f)) : "")).join("|") + outputs.get("css/gallery.css"))
+  .digest("hex")
+  .slice(0, 12);
+outputs.set(
+  "sw.js",
+  `// BubaPix: helper that lets the installed site open fast and work offline.
+"use strict";
+const CACHE = "bubapix-${swVersion}";
+const HOME = new URL("./", self.location).href;
+// Shown when there is no connection and the page was never saved. A page is
+// never shown at another page's address (its links would break).
+const OFFLINE = \`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>BubaPix</title></head>
+<body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f6ef;color:#16161d;font-family:system-ui,sans-serif;text-align:center;padding:24px">
+<div><p style="font-size:20px;font-weight:600;margin:0 0 8px">אין חיבור לאינטרנט</p><p style="margin:0 0 20px" lang="en" dir="ltr">You are offline</p>
+<a href="\${HOME}" style="color:#16161d">BubaPix</a></div></body></html>\`;
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith("bubapix-") && k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
+self.addEventListener("fetch", (e) => {
+  const req = e.request;
+  if (req.method !== "GET") return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin || url.pathname.includes("/admin/")) return;
+  if (req.mode === "navigate") {
+    e.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+          return res;
+        })
+        .catch(() => caches.match(req).then((m) => m || new Response(OFFLINE, { headers: { "Content-Type": "text/html; charset=utf-8" } })))
+    );
+    return;
+  }
+  if (!/\\.(css|js|webp|jpe?g|png|svg|webmanifest)$/.test(url.pathname)) return;
+  e.respondWith(
+    caches.match(req).then((m) => m || fetch(req).then((res) => {
+      if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+      return res;
+    }))
+  );
+});
 `
 );
 

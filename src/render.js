@@ -199,6 +199,11 @@ function layout(ctx, { title, description, image, main, current = "", community 
   <meta property="og:locale:alternate" content="${ctx.otherT.meta.ogLocale}">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="${ctx.assetBase}favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="${ctx.assetBase}manifest.webmanifest">
+  <link rel="apple-touch-icon" href="${ctx.assetBase}assets/brand/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-title" content="BubaPix">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Heebo:wght@400..700&display=swap">
