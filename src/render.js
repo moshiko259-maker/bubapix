@@ -379,39 +379,65 @@ function home(ctx) {
   // A homepage picture opens its project's page only when a project was
   // chosen for it in the admin; otherwise it is for looking only.
   const linked = (g) => !!g.project;
-  // Editorial layout: big and small pictures in a changing rhythm, every
-  // picture whole (never cropped). "Automatic" follows the rhythm below; a
-  // size chosen in the admin (large / medium / small) overrides it.
-  const RHYTHM = [
-    "span-7", "span-4 start-9 is-offset",
-    "span-4", "span-4 is-offset", "span-4",
-    "span-5 start-2", "span-6 start-7 is-offset",
-    "span-6", "span-6 is-offset",
-  ];
-  const MOBILE = ["m-full", "m-right", "m-left"];
-  const SIZE = { large: "span-8", medium: "span-6", small: "span-4" };
-  const items = data.homeGallery.map((g, i) => {
-    // Very wide pictures (line-ups, banners) get more room so they stay readable.
-    const wide = ratioClass(g.image).ratio >= 2.2;
-    const desk = i === 0 ? "span-12" : SIZE[g.image.size] || (wide ? "span-8 start-3" : RHYTHM[(i - 1) % RHYTHM.length]);
-    const mob = i === 0 ? "m-full" : MOBILE[(i - 1) % MOBILE.length];
+  // Mosaic: pictures placed tightly in rows, with a minimal gap. Each row
+  // holds 1 to 4 pictures, so their sizes change from row to row (one very
+  // large, then two medium, then three or four small…). Pictures in a row
+  // share one height and keep their own shape, so nothing is cropped.
+  // A size chosen in the admin (large / medium / small) sets the row.
+  const ratioOf = (g) => ratioClass(g.image).ratio;
+  // Rows for one screen size. counts: the rhythm of pictures per row.
+  const buildRows = (counts, minSum, maxPer, sized) => {
+    const out = [];
+    let i = 0, k = 0;
+    if (data.homeGallery.length) { out.push([0]); i = 1; }
+    while (i < data.homeGallery.length) {
+      const size = data.homeGallery[i].image.size;
+      let count = sized && size === "large" ? 1 : sized && size === "medium" ? 2 : sized && size === "small" ? 4 : counts[k++ % counts.length];
+      if (count === 1 && ratioOf(data.homeGallery[i]) < 1.3) count = 2; // only wide pictures fill a row alone
+      count = Math.min(count, maxPer);
+      const row = [];
+      let sum = 0;
+      // Rows of portraits would become very tall: add pictures until the
+      // row is wide enough (minSum = width compared with height).
+      while (i < data.homeGallery.length && (row.length < count || (count > 1 && sum < minSum && row.length < maxPer))) {
+        row.push(i);
+        sum += ratioOf(data.homeGallery[i]);
+        i++;
+      }
+      out.push(row);
+    }
+    return out;
+  };
+  const rows = buildRows([2, 3, 1, 3, 2, 4], 2.3, 5, true);
+  // Phones: at most two pictures side by side, in the same tight style.
+  const rowsSmall = buildRows([2, 1, 2, 2], 1.4, 2, false);
+  const cell = (n, rowLen) => {
+    const g = data.homeGallery[n];
     const own = !linked(g) && g.image.link;
     return galleryItem(ctx, g.image, {
       caption: g.caption,
-      lead: i === 0,
-      eager: i === 0,
-      href: linked(g) ? link(`work/${g.project.slug}/`) : own ? linkOf(ctx, g.image.link) : "",
-      label: linked(g) ? `${g.project.name} — ${t.home.openProject}` : own ? g.image.alt : "",
+      lead: n === 0,
+      eager: n === 0,
+      // Opens its project, or its own link; otherwise the picture opens large.
+      href: linked(g) ? link(`work/${g.project.slug}/`) : own ? linkOf(ctx, g.image.link) : ctx.assetBase + e(g.image.full || g.image.src),
+      label: linked(g) ? `${g.project.name} — ${t.home.openProject}` : own ? g.image.alt : `${t.work.openImage}: ${g.image.alt}`,
       external: !!(own && g.image.link.external),
-      extraClass: `${desk} ${mob}`,
-      sizes: i === 0 ? "(max-width: 1440px) 100vw, 1440px" : "(max-width: 700px) 90vw, 60vw",
+      viewer: !linked(g) && !own,
+      sizes: rowLen === 1 ? "(max-width: 1440px) 100vw, 1440px" : `(max-width: 700px) ${rowLen > 2 ? 50 : 60}vw, ${Math.round(100 / rowLen) + 10}vw`,
     });
-  });
+  };
+  // Each picture also carries its place in the phone layout (row "s" of
+  // rowsSmall); js/main.js moves the pictures into those rows on phones.
+  const smallRowOf = new Map();
+  rowsSmall.forEach((row, r) => row.forEach((n) => smallRowOf.set(n, `${r}:${row.length}`)));
+  const items = rows.map((row) => `<div class="mrow n${row.length}">${row.map((n) => cell(n, row.length).replace(/^<(a|figure) /, `<$1 data-srow="${smallRowOf.get(n)}" `)).join("")}</div>`);
   const work = items.length
     ? `
     <section class="section section-work" aria-labelledby="work-title">
       <h2 id="work-title" class="section-label">${e(t.home.workTitle)}</h2>
-      ${gallery(items, "jg-home eg")}
+      <div class="mosaic jg-home" data-mosaic>
+        ${items.join("\n        ")}
+      </div>
     </section>`
     : "";
   const tagline = data.tagline ? `
@@ -456,6 +482,7 @@ function home(ctx) {
   return layout(ctx, {
     edits: [[t.edit.gallery, ed.site], [t.edit.tagline, ed.site], [t.edit.services, ed.services], [t.edit.newProject, ed.newProject]],
     title: t.meta.homeTitle,
+    viewer: true,
     description: data.seoDescription || data.intro,
     main: `    <h1 class="visually-hidden">BubaPix</h1>${tagline}${showreel}${work}${services}${intro}${start}`,
   });

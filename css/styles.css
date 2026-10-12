@@ -870,3 +870,18 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .cat-next { inset-inline-end: -0.75rem; }
 .cat-wrap.can-prev .cat-prev, .cat-wrap.can-next .cat-next { display: grid; place-items: center; }
 @media (hover: none) { .cat-wrap .cat-arrow { display: none !important; } }
+
+/* ---------- Homepage mosaic: tight rows, changing sizes, whole pictures ---------- */
+.mosaic { --mgap: 6px; display: grid; gap: var(--mgap); }
+.mrow { display: flex; gap: var(--mgap); align-items: flex-start; }
+.mrow .jg-item { flex-basis: 0 !important; min-width: 0; }
+.mosaic .jg-media { border-radius: 2px; }
+.mosaic .jg-media img { object-fit: cover; } /* the box already has the picture's own shape */
+.mosaic .jg-caption { padding: 0.4rem 0.1rem 0.6rem; }
+@media (max-width: 700px) {
+  .mosaic { --mgap: 4px; }
+  /* Without the script, rows of three or more wrap two by two. */
+  .mosaic:not(.is-small) .mrow { flex-wrap: wrap; }
+  .mosaic:not(.is-small) .mrow.n3 .jg-item, .mosaic:not(.is-small) .mrow.n4 .jg-item, .mosaic:not(.is-small) .mrow.n5 .jg-item { flex: 1 1 calc(50% - var(--mgap)) !important; }
+}
+.mrow[hidden] { display: none; }

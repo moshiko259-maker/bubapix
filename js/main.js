@@ -140,7 +140,8 @@
 
   // ---------- 5. Image viewer ----------
   var labelsAttr = document.body.getAttribute("data-viewer-labels");
-  var links = document.querySelectorAll("a[data-viewer]");
+  var allLinks = document.querySelectorAll("a[data-viewer]");
+  var links = allLinks;
   if (labelsAttr && links.length && window.HTMLDialogElement) {
     var L = JSON.parse(labelsAttr);
     var rtl = root.dir === "rtl";
@@ -188,10 +189,15 @@
     };
     prev.hidden = next.hidden = links.length < 2;
 
-    each(links, function (a, i) {
+    each(allLinks, function (a) {
       a.addEventListener("click", function (e) {
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // new tab etc.
         e.preventDefault();
+        // Previous / Next follow the order on screen (the homepage arranges
+        // its pictures differently on phones).
+        links = Array.prototype.slice.call(document.querySelectorAll("a[data-viewer]")).filter(function (x) { return x.getClientRects().length > 0; });
+        var i = Math.max(0, links.indexOf(a));
+        prev.hidden = next.hidden = links.length < 2;
         opener = a;
         big.removeAttribute("src");
         show(i);
@@ -247,4 +253,37 @@
     b.addEventListener("click", function () { setEdit(false); });
   });
   applyEdit();
+
+  // ---------- 7. Homepage mosaic on phones ----------
+  // The pictures are moved into rows of at most two (their places are
+  // prepared by build.js in data-srow), and back when the screen widens.
+  var mosaic = document.querySelector("[data-mosaic]");
+  if (mosaic) {
+    var wideRows = Array.prototype.slice.call(mosaic.children);
+    var cells = Array.prototype.slice.call(mosaic.querySelectorAll("[data-srow]"));
+    var homes = cells.map(function (c) { return c.parentNode; });
+    var smallRows = [];
+    var phone = window.matchMedia("(max-width: 700px)");
+    var layout = function () {
+      if (phone.matches && !mosaic.classList.contains("is-small")) {
+        cells.forEach(function (c) {
+          var parts = c.getAttribute("data-srow").split(":");
+          var r = Number(parts[0]);
+          if (!smallRows[r]) { smallRows[r] = document.createElement("div"); smallRows[r].className = "mrow n" + parts[1]; }
+          smallRows[r].appendChild(c);
+        });
+        wideRows.forEach(function (row) { row.hidden = true; });
+        smallRows.forEach(function (row) { if (row) mosaic.appendChild(row); });
+        mosaic.classList.add("is-small");
+      } else if (!phone.matches && mosaic.classList.contains("is-small")) {
+        cells.forEach(function (c, n) { homes[n].appendChild(c); });
+        smallRows.forEach(function (row) { if (row && row.parentNode) row.parentNode.removeChild(row); });
+        wideRows.forEach(function (row) { row.hidden = false; });
+        mosaic.classList.remove("is-small");
+      }
+    };
+    layout();
+    if (phone.addEventListener) phone.addEventListener("change", layout);
+    else if (phone.addListener) phone.addListener(layout);
+  }
 })();
