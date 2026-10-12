@@ -90,6 +90,8 @@ const raw = {
   // Optional replacements for headings and menu names (Settings > Interface texts).
   labels: readJsonOr("content/labels.json", {}),
   projects: readFolder("content/projects"),
+  products: readFolder("content/products"),
+  shop: readJsonOr("content/shop.json", { categories: [] }),
   testimonials: readFolder("content/testimonials"),
   pages: readFolder("content/pages"),
 };
@@ -131,7 +133,7 @@ const visible = (x) => x.visible !== false;
 const byOrder = (a, b) =>
   (Number(a.order) || 9999) - (Number(b.order) || 9999) || String(a.title_en || a.name || "").localeCompare(String(b.title_en || b.name || ""));
 
-for (const list of [raw.projects, raw.pages]) {
+for (const list of [raw.projects, raw.pages, raw.products]) {
   for (const x of list) {
     if (!safeSlug(x.slug)) console.warn(`Warning: skipped "${x.slug}" (file names must use a-z, 0-9 and dashes)`);
   }
@@ -210,7 +212,7 @@ function contentFor(lang) {
         const heading = pick(sec, "heading", lang);
         const at = `${where} section ${i + 1}`;
         if (sec.type === "creators") {
-          const items = (sec.items || []).filter((c) => c && c.name).map((c) => ({ name: c.name, role: pick(c, "role", lang), text: pick(c, "text", lang) })).filter((c) => c.text || c.role);
+          const items = (sec.items || []).filter((c) => c && c.name).map((c) => ({ name: lang === "he" ? String(c.name_he || "").trim() || c.name : c.name, role: pick(c, "role", lang), text: pick(c, "text", lang) })).filter((c) => c.text || c.role);
           if (items.length) sections.push({ type: "creators", heading, items });
         } else if (sec.type === "behind" || sec.type === "gallery") {
           const pics = (sec.images || []).map((g, j) => picture(g, title, `${at} image ${j + 1}`)).filter(Boolean);
@@ -301,9 +303,56 @@ function contentFor(lang) {
     if (i > 0) homeGallery.unshift(homeGallery.splice(i, 1)[0]);
   }
 
+  // ---- Shop: real products only, entered in the admin. A product needs at
+  // least one photo to be shown. No online payment: the button opens the
+  // product's buy link, or an order email to the Contact page address.
+  const shopCategories = (raw.shop.categories || [])
+    .filter((c) => c && safeSlug(c.slug || ""))
+    .map((c) => ({ slug: c.slug, name: pick(c, "name", lang) || c.slug }));
+  const shopCat = new Map(shopCategories.map((c) => [c.slug, c]));
+  const projectBySlug = new Map(projects.map((p) => [p.slug, p]));
+  const products = raw.products
+    .filter((x) => visible(x) && safeSlug(x.slug))
+    .sort(byOrder)
+    .map((x) => {
+      const name = lang === "he" ? String(x.title_he || "").trim() || String(x.title_en || "").trim() : String(x.title_en || "").trim() || String(x.title_he || "").trim();
+      const title = name || x.slug;
+      const where = `product "${x.slug}"`;
+      const pics = (x.images || []).map((g, j) => picture(g, title, `${where} photo ${j + 1}`)).filter(Boolean);
+      const price = typeof x.price === "number" && isFinite(x.price) && x.price >= 0 ? x.price : null;
+      const currency = ["ILS", "USD", "EUR"].includes(x.currency) ? x.currency : "ILS";
+      return {
+        slug: x.slug,
+        title,
+        description: pick(x, "description", lang),
+        category: shopCat.get(x.category) || null,
+        type: ["physical", "digital", "personalized", "made-to-order"].includes(x.type) ? x.type : "physical",
+        availability: ["available", "preorder", "soon", "soldout"].includes(x.availability) ? x.availability : "available",
+        price,
+        priceText: price === null ? "" : new Intl.NumberFormat(lang === "he" ? "he-IL" : "en-US", { style: "currency", currency, maximumFractionDigits: Number.isInteger(price) ? 0 : 2 }).format(price),
+        priceFrom: x.price_from === true,
+        variants: (x.variants || [])
+          .map((v) => ({ name: pick(v, "name", lang), values: pick(v, "values", lang).split(",").map((t) => t.trim()).filter(Boolean) }))
+          .filter((v) => v.name && v.values.length),
+        projects: (Array.isArray(x.projects) ? x.projects : []).map((sl) => projectBySlug.get(sl)).filter(Boolean),
+        buyUrl: /^https:\/\//.test(String(x.buy_url || "")) ? x.buy_url : "",
+        images: pics,
+        thumb: pics[0] || null,
+        seoTitle: pick(x, "seo_title", lang),
+        seoDescription: pick(x, "seo_description", lang),
+      };
+    })
+    .filter((x) => {
+      if (!x.thumb) images.warnings.push(`product "${x.slug}" is not shown yet: it has no photo`);
+      return !!x.thumb;
+    });
+  for (const p of projects) p.products = products.filter((x) => x.projects.some((q) => q.slug === p.slug));
+
   return {
     hero,
     homeGallery,
+    products,
+    shop: { intro: pick(raw.shop, "intro", lang), categories: shopCategories.filter((c) => products.some((x) => x.category && x.category.slug === c.slug)) },
     participation,
     tagline: pick(s, "tagline", lang),
     showreel: parseVideo(s.showreel_url),
@@ -322,7 +371,7 @@ function contentFor(lang) {
       team: (raw.about.team || [])
         .filter((m) => m && m.name)
         .map((m, i) => ({
-          name: m.name,
+          name: lang === "he" ? String(m.name_he || "").trim() || m.name : m.name,
           role: pick(m, "role", lang),
           bio: pick(m, "bio", lang),
           photo: imgWithAlt(m.photo, m.name, `team member ${i + 1}`),
@@ -394,6 +443,11 @@ for (const lang of ["en", "he"]) {
   add("about/", render.about(contextFor(lang, "about/", data)));
   if (data.testimonials.length) add("testimonials/", render.testimonials(contextFor(lang, "testimonials/", data)));
   add("contact/", render.contact(contextFor(lang, "contact/", data)));
+  add("shop/", render.shop(contextFor(lang, "shop/", data)));
+  data.products.forEach((x) => {
+    const pagePath = `shop/${x.slug}/`;
+    add(pagePath, render.product(contextFor(lang, pagePath, data), x));
+  });
   // Pages for visitor participation exist only while it is switched on.
   if (participation.ideas) add("ideas/", render.ideas(contextFor(lang, "ideas/", data)));
   if (participation.any) add("privacy/", render.privacy(contextFor(lang, "privacy/", data)));
@@ -458,7 +512,7 @@ outputs.set("robots.txt", `User-agent: *\nDisallow: ${sitePath}admin/\n\nSitemap
   // search engines are told not to index. They come back when re-enabled.
   let retired = 0;
   for (const rel of previous) {
-    if (outputs.has(rel) || !/^(he\/)?((work|services|about|testimonials|contact|ideas|privacy|pages)\/.*)?index\.html$/.test(rel)) continue;
+    if (outputs.has(rel) || !/^(he\/)?((work|services|about|testimonials|contact|ideas|privacy|shop|pages)\/.*)?index\.html$/.test(rel)) continue;
     const full = path.join(root, rel);
     fs.mkdirSync(path.dirname(full), { recursive: true });
     fs.writeFileSync(full, render.notFound(site, t.en, t.he, preview));

@@ -1,0 +1,11 @@
+{
+  "intro_en": "",
+  "intro_he": "",
+  "categories": [
+    { "slug": "dolls", "name_en": "Dolls", "name_he": "בובות" },
+    { "slug": "clothing", "name_en": "Clothing", "name_he": "בגדים" },
+    { "slug": "posters", "name_en": "Posters", "name_he": "פוסטרים" },
+    { "slug": "art-prints", "name_en": "Art prints", "name_he": "הדפסי אמנות" },
+    { "slug": "printed-products", "name_en": "Printed products", "name_he": "מוצרים מודפסים" }
+  ]
+}

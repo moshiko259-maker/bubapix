@@ -16,7 +16,7 @@
   },
   "nav": {
     "home": "Home",
-    "work": "Works",
+    "work": "Projects",
     "services": "Services",
     "about": "About",
     "testimonials": "Testimonials",
@@ -24,23 +24,24 @@
     "switchLabel": "עברית",
     "switchTitle": "Hebrew version",
     "ideas": "Ideas",
-    "privacy": "Privacy"
+    "privacy": "Privacy",
+    "shop": "Shop"
   },
   "home": {
     "selectedWork": "Selected work",
     "allWork": "All work",
     "aboutLink": "About the studio",
-    "workTitle": "Works",
+    "workTitle": "Gallery",
     "showreel": "Showreel",
     "allServices": "All services",
     "startProject": "Start a project"
   },
   "work": {
-    "title": "Works",
+    "title": "Projects",
     "all": "All",
     "imageComing": "Image coming soon",
     "empty": "Projects will appear here soon.",
-    "back": "All works",
+    "back": "All projects",
     "previous": "Previous project",
     "next": "Next project",
     "video": "Video",
@@ -56,7 +57,7 @@
   },
   "about": {
     "title": "About",
-    "team": "The team"
+    "team": "Creators"
   },
   "testimonials": {
     "title": "Testimonials"
@@ -151,5 +152,32 @@
     "previous": "Previous image",
     "next": "Next image",
     "count": "{n} of {total}"
+  },
+  "shop": {
+    "title": "Shop",
+    "empty": "Products are on the way.",
+    "all": "All",
+    "price": "Price",
+    "from": "From",
+    "buy": "Buy",
+    "orderEmail": "Order by email",
+    "orderSubject": "Order",
+    "contact": "Ask about this product",
+    "variants": "Options",
+    "type": "Type",
+    "fromProject": "From the project",
+    "projectShop": "Shop",
+    "availability": {
+      "available": "Available",
+      "preorder": "Pre-order",
+      "soon": "Coming soon",
+      "soldout": "Sold out"
+    },
+    "types": {
+      "physical": "Physical product",
+      "digital": "Digital download",
+      "personalized": "Personalized",
+      "made-to-order": "Made to order"
+    }
   }
 }

@@ -127,6 +127,7 @@ function layout(ctx, { title, description, image, main, current = "", community 
   const nav = [
     ["work/", t.nav.work, "work"],
     ["services/", t.nav.services, "services"],
+    ["shop/", t.nav.shop, "shop"],
     ["about/", t.nav.about, "about"],
     ...(data.testimonials.length ? [["testimonials/", t.nav.testimonials, "testimonials"]] : []),
     ...data.pages.filter((p) => p.menu).map((p) => [`pages/${p.slug}/`, p.title, `page:${p.slug}`]),
@@ -212,6 +213,7 @@ ${data.participation.ideas ? `
         <li><a href="${link("privacy/")}"${current === "privacy" ? ' aria-current="page"' : ""}>${e(t.nav.privacy)}</a></li>` : ""}
       </ul>
     </nav>
+    ${data.contact.social.length ? `<ul class="footer-social" aria-label="${e(t.contact.social)}">${data.contact.social.map((x) => `<li><a href="${e(x.url)}" rel="noopener me" target="_blank">${e(x.label)}</a></li>`).join("")}</ul>` : ""}
     <div class="footer-meta">
       ${data.contact.email ? `<a class="footer-email" href="mailto:${e(data.contact.email)}">${e(data.contact.email)}</a>` : ""}
       <a class="lang-switch" href="${otherHref}" hreflang="${otherLang}" lang="${otherLang}" data-lang="${otherLang}">${e(t.nav.switchLabel)}</a>
@@ -501,7 +503,13 @@ function project(ctx, p, prev, next) {
         <h1 class="${p.showTitle ? "page-title" : "visually-hidden"}">${e(p.title)}</h1>${cats ? `
         <p class="project-meta">${e(cats)}</p>` : ""}${p.text ? `
         <p class="lede">${e(p.text)}</p>` : ""}
-      </header>${cover}${synopsis}${p.sections.map((sec, i) => projectSection(ctx, p, sec, i)).join("")}${community}
+      </header>${cover}${synopsis}${p.sections.map((sec, i) => projectSection(ctx, p, sec, i)).join("")}${p.products && p.products.length ? `
+      <section class="project-section" aria-labelledby="project-shop-title">
+        <h2 id="project-shop-title" class="section-label">${e(t.shop.projectShop)}</h2>
+        <div class="product-grid">
+          ${p.products.map((x) => productCard(ctx, x)).join("\n          ")}
+        </div>
+      </section>` : ""}${community}
       <nav class="pager" aria-label="${e(t.work.title)}">
         ${pagerLink(prev, "pager-prev", t.work.previous)}
         ${pagerLink(next, "pager-next", t.work.next)}
@@ -656,6 +664,91 @@ function privacy(ctx) {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Shop
+// ---------------------------------------------------------------------------
+// "From" before a price: "From ₪89" in English, "החל מ־89 ₪" in Hebrew (no space after the maqaf).
+const fromPrefix = (ctx) => e(ctx.t.shop.from) + (/־$/.test(ctx.t.shop.from) ? "" : " ");
+
+function productCard(ctx, x) {
+  const link = makeLink(ctx);
+  const { cls } = ratioClass(x.thumb);
+  return `<a class="product-card" href="${link(`shop/${x.slug}/`)}">
+          <span class="product-media">${img(ctx, x.thumb, { sizes: "(max-width: 560px) 50vw, (max-width: 1100px) 33vw, 25vw" })}</span>
+          <span class="product-name">${e(x.title)}</span>${x.priceText ? `
+          <span class="product-price">${x.priceFrom ? fromPrefix(ctx) : ""}${e(x.priceText)}</span>` : ""}${x.availability !== "available" ? `
+          <span class="product-badge">${e(ctx.t.shop.availability[x.availability])}</span>` : ""}
+        </a>`;
+}
+
+function shop(ctx) {
+  const { t, data } = ctx;
+  const cats = data.shop.categories;
+  const filters = cats.length > 1
+    ? `
+      <div class="filters" role="group" aria-label="${e(t.shop.title)}" hidden>
+        <button type="button" class="filter" data-filter="" aria-pressed="true">${e(t.shop.all)}</button>${cats.map((c) => `
+        <button type="button" class="filter" data-filter="${e(c.slug)}" aria-pressed="false">${e(c.name)}</button>`).join("")}
+      </div>`
+    : "";
+  const grid = data.products.length
+    ? `
+      <div class="product-grid">
+        ${data.products.map((x) => productCard(ctx, x).replace('<a class="product-card"', `<a data-categories="${e(x.category ? x.category.slug : "")}" class="product-card"`)).join("\n        ")}
+      </div>`
+    : `
+      <p class="shop-empty">${e(t.shop.empty)}</p>`;
+  return layout(ctx, {
+    title: pageTitle(ctx, t.shop.title),
+    description: data.shop.intro || data.seoDescription,
+    current: "shop",
+    main: `
+    <div class="page">
+      <header class="page-head"><h1 class="page-title">${e(t.shop.title)}</h1>${data.shop.intro ? `
+        <p class="lede">${e(data.shop.intro)}</p>` : ""}</header>${filters}${grid}
+    </div>`,
+  });
+}
+
+function product(ctx, x) {
+  const { t, data } = ctx;
+  const link = makeLink(ctx);
+  const c = data.contact;
+  // The buy button never pretends: it opens the product's own buy link, or an
+  // order email to the address on the Contact page. Without either, no button.
+  let action = "";
+  if (x.availability !== "soldout" && x.availability !== "soon") {
+    if (x.buyUrl) action = `<a class="button button-large" href="${e(x.buyUrl)}" rel="noopener" target="_blank">${e(t.shop.buy)}</a>`;
+    else if (c.email) action = `<a class="button button-large" href="mailto:${e(c.email)}?subject=${encodeURIComponent(`${t.shop.orderSubject}: ${x.title}`)}">${e(t.shop.orderEmail)}</a>`;
+  }
+  const pics = x.images.map((im, i) =>
+    galleryItem(ctx, im, { href: ctx.assetBase + e(im.full || im.src), label: `${t.work.openImage}: ${im.alt}`, viewer: true, lead: i === 0, eager: i === 0 })
+  );
+  return layout(ctx, {
+    title: x.seoTitle || pageTitle(ctx, x.title),
+    description: x.seoDescription || data.seoDescription,
+    image: x.thumb,
+    current: "shop",
+    viewer: true,
+    main: `
+    <article class="page product-page">
+      <p class="crumb"><a href="${link("shop/")}">${e(t.shop.title)}</a></p>
+      <div class="product-layout">
+        <div class="product-photos">${gallery(pics, "jg-product")}</div>
+        <div class="product-info">
+          <h1 class="page-title">${e(x.title)}</h1>${x.priceText ? `
+          <p class="product-price-large">${x.priceFrom ? fromPrefix(ctx) : ""}${e(x.priceText)}</p>` : ""}
+          <p class="product-meta">${e(t.shop.availability[x.availability])}${x.category ? ` · ${e(x.category.name)}` : ""}${x.type !== "physical" ? ` · ${e(t.shop.types[x.type])}` : ""}</p>${x.description ? `
+          <div class="prose">${md(x.description)}</div>` : ""}${x.variants.length ? `
+          <dl class="details product-variants">${x.variants.map((v) => `<div><dt>${e(v.name)}</dt><dd>${v.values.map(e).join(" · ")}</dd></div>`).join("")}</dl>` : ""}${action ? `
+          <p class="product-action">${action}</p>` : ""}${x.projects.length ? `
+          <p class="product-projects">${e(t.shop.fromProject)}: ${x.projects.map((p) => `<a href="${link(`work/${p.slug}/`)}">${e(p.title)}</a>`).join(", ")}</p>` : ""}
+        </div>
+      </div>
+    </article>`,
+  });
+}
+
 function customPage(ctx, p) {
   return layout(ctx, {
     title: pageTitle(ctx, p.title),
@@ -701,4 +794,4 @@ function notFound(site, en, he, preview) {
 `;
 }
 
-module.exports = { usedRatios, home, work, project, services, about, testimonials, contact, ideas, privacy, customPage, notFound };
+module.exports = { usedRatios, shop, product, home, work, project, services, about, testimonials, contact, ideas, privacy, customPage, notFound };

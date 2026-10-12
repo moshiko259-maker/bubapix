@@ -186,7 +186,8 @@ collections:
                 collapsed: auto
                 summary: "{{fields.name}}"
                 fields:
-                  - { name: name, label: "Name / שם", widget: string, hint: "For example Moshe Appelbaum or Dani Moskona. / לדוגמה משה אפלבוים או דני מוסקונה." }
+                  - { name: name, label: "Name, English / שם באנגלית", widget: string, hint: "For example Moses Appleboim or Dan Moskona. / לדוגמה Moses Appleboim או Dan Moskona." }
+                  - { name: name_he, label: "Name, Hebrew / שם בעברית", widget: string, required: false, hint: "For example משה אפלבוים or דן מוסקונה." }
                   - { name: role_en, label: "Role, English (optional) / תפקיד, אנגלית", widget: string, required: false }
                   - { name: role_he, label: "Role, Hebrew (optional) / תפקיד, עברית", widget: string, required: false }
                   - { name: text_en, label: "Text, English / טקסט, אנגלית", widget: text, required: false }
@@ -317,6 +318,122 @@ collections:
         hint: "Works only when comments are turned on in Settings › Visitor participation (off by default). / פועל רק כשהתגובות מופעלות בהגדרות (כבוי כברירת מחדל)."
 
   # ---------------------------------------------------------------------
+  # Shop. Each product gets its own page under /shop/. Only real products:
+  # no invented prices or stock. No online payment yet: the buy button opens
+  # your store link (for example a print-on-demand shop) or an order email.
+  - name: products
+    label: "Shop products / מוצרים בחנות"
+    label_singular: "Product / מוצר"
+    description: "To add a product: press New, type its name, add a photo and a price, then Save. It appears in the Shop once it has a photo. Turn off 'Show in the shop' to hide it without deleting. / להוספת מוצר: New, שם, תמונה ומחיר, שמירה."
+    icon: storefront
+    folder: content/products
+    extension: json
+    format: json
+    create: true
+    delete: true
+    duplicate: true
+    identifier_field: title_en
+    slug:
+      template: "{{title_en}}"
+      editable: [create]
+      pattern: ['^[a-z0-9][a-z0-9-]*$', "Use English letters, numbers and dashes / אותיות באנגלית, מספרים ומקפים בלבד"]
+    summary: "{{title_en}} · {{price}} {{currency}}"
+    thumbnail: images.*.image
+    sortable_fields:
+      fields: [order, title_en, price]
+      default:
+        field: order
+        direction: ascending
+    fields:
+      - { name: title_en, label: "Product name, English / שם המוצר, אנגלית", widget: string }
+      - { name: title_he, label: "Product name, Hebrew / שם המוצר, עברית", widget: string, required: false }
+      - { name: visible, label: "Show in the shop / להציג בחנות", widget: boolean, default: true, required: false }
+      - { name: order, label: "Order (1 = first) / סדר", widget: number, value_type: int, min: 1, default: 10, required: false }
+      - name: category
+        label: "Category / קטגוריה"
+        widget: relation
+        collection: settings
+        file: shop
+        value_field: "categories.*.slug"
+        search_fields: ["categories.*.name_en", "categories.*.name_he"]
+        display_fields: ["categories.*.name_en"]
+        required: false
+      - name: type
+        label: "Product type / סוג מוצר"
+        widget: select
+        default: physical
+        required: false
+        options:
+          - { label: "Physical / פיזי", value: physical }
+          - { label: "Digital download / דיגיטלי", value: digital }
+          - { label: "Personalized / מותאם אישית", value: personalized }
+          - { label: "Made to order / בהזמנה אישית", value: made-to-order }
+      - name: images
+        label: "Photos / תמונות"
+        label_singular: "photo / תמונה"
+        widget: list
+        required: false
+        collapsed: auto
+        thumbnail: image
+        hint: "The first photo is the main one. Drag to change the order. Real product photos are best. / התמונה הראשונה היא הראשית."
+        fields:
+          - { name: image, label: "Photo / תמונה", widget: image }
+          - { name: alt_en, label: "Description for blind visitors, English / תיאור לעיוורים, אנגלית", widget: string, required: false }
+          - { name: alt_he, label: "Description for blind visitors, Hebrew / תיאור לעיוורים, עברית", widget: string, required: false }
+      - { name: price, label: "Price (empty = not shown) / מחיר (ריק = לא מוצג)", widget: number, value_type: float, min: 0, required: false }
+      - name: currency
+        label: "Currency / מטבע"
+        widget: select
+        default: ILS
+        required: false
+        options: [ { label: "₪ ILS", value: ILS }, { label: "$ USD", value: USD }, { label: "€ EUR", value: EUR } ]
+      - { name: price_from, label: "Price starts from (several options) / המחיר הוא \"החל מ־\"", widget: boolean, default: false, required: false }
+      - name: availability
+        label: "Availability / זמינות"
+        widget: select
+        default: available
+        required: false
+        options:
+          - { label: "Available / זמין", value: available }
+          - { label: "Pre-order / הזמנה מוקדמת", value: preorder }
+          - { label: "Coming soon / בקרוב", value: soon }
+          - { label: "Sold out / אזל", value: soldout }
+      - { name: description_en, label: "Description, English / תיאור, אנגלית", widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list], editor_components: [] }
+      - { name: description_he, label: "Description, Hebrew / תיאור, עברית", widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list], editor_components: [] }
+      - name: variants
+        label: "Options, e.g. size or color (optional) / אפשרויות, למשל מידה או צבע"
+        label_singular: "option / אפשרות"
+        widget: list
+        required: false
+        collapsed: auto
+        summary: "{{fields.name_en}}: {{fields.values_en}}"
+        fields:
+          - { name: name_en, label: "Option name, English (e.g. Size) / שם, אנגלית", widget: string }
+          - { name: name_he, label: "Option name, Hebrew (e.g. מידה) / שם, עברית", widget: string, required: false }
+          - { name: values_en, label: "Choices, English, separated by commas (e.g. S, M, L) / בחירות, אנגלית", widget: string }
+          - { name: values_he, label: "Choices, Hebrew, separated by commas / בחירות, עברית", widget: string, required: false }
+      - name: projects
+        label: "From these projects (optional) / מתוך הפרויקטים"
+        widget: relation
+        collection: projects
+        value_field: "{{slug}}"
+        search_fields: [title_en, title_he]
+        display_fields: [title_en]
+        multiple: true
+        required: false
+        hint: "The product is also shown on these projects' pages. / המוצר יוצג גם בעמודי הפרויקטים האלה."
+      - name: buy_url
+        label: "Buy link (optional) / קישור לקנייה"
+        widget: string
+        required: false
+        pattern: ['^$|^https://', "Must start with https:// / חייב להתחיל ב־https://"]
+        hint: "For example your product page on a print-on-demand or store site. Empty: the button opens an order email to the address on the Contact page. / ריק: הכפתור יפתח מייל הזמנה."
+      - { name: seo_title_en, label: "Search title, English (optional) / כותרת לגוגל, אנגלית", widget: string, required: false }
+      - { name: seo_title_he, label: "Search title, Hebrew (optional) / כותרת לגוגל, עברית", widget: string, required: false }
+      - { name: seo_description_en, label: "Search description, English (optional) / תיאור לגוגל, אנגלית", widget: text, required: false }
+      - { name: seo_description_he, label: "Search description, Hebrew (optional) / תיאור לגוגל, עברית", widget: text, required: false }
+
+  # ---------------------------------------------------------------------
   - name: testimonials
     label: "Testimonials / המלצות"
     label_singular: "Testimonial / המלצה"
@@ -432,6 +549,26 @@ collections:
           - { name: seo_description_en, label: "Search description, English / תיאור לחיפוש באנגלית", widget: string, required: false, hint: "Shown by Google under the site name. About 150 characters." }
           - { name: seo_description_he, label: "Search description, Hebrew / תיאור לחיפוש בעברית", widget: string, required: false }
 
+      - name: shop
+        label: "Shop / חנות"
+        file: content/shop.json
+        format: json
+        fields:
+          - { name: intro_en, label: "Short intro, English (optional) / פתיח קצר, אנגלית", widget: text, required: false }
+          - { name: intro_he, label: "Short intro, Hebrew (optional) / פתיח קצר, עברית", widget: text, required: false }
+          - name: categories
+            label: "Categories / קטגוריות"
+            label_singular: "category / קטגוריה"
+            widget: list
+            allow_reorder: true
+            collapsed: auto
+            summary: "{{fields.name_en}} · {{fields.name_he}}"
+            hint: "Only categories that have products are shown. / מוצגות רק קטגוריות שיש בהן מוצרים."
+            fields:
+              - { name: slug, label: "Short ID (a-z and dashes) / מזהה קצר", widget: string, pattern: ['^[a-z0-9][a-z0-9-]*$', "Use a-z, 0-9 and dashes"] }
+              - { name: name_en, label: "Name, English / שם, אנגלית", widget: string }
+              - { name: name_he, label: "Name, Hebrew / שם, עברית", widget: string, required: false }
+
       - name: participation
         label: "Visitor participation / השתתפות גולשים"
         file: content/participation.json
@@ -447,10 +584,10 @@ collections:
         file: content/labels.json
         format: json
         fields:
-          - { name: work_heading_en, label: "Gallery heading, English (usual: Works) / כותרת הגלריה, אנגלית", widget: string, required: false, hint: "Leave any field on this page empty to keep the usual text. / שדה ריק משאיר את הטקסט הרגיל." }
+          - { name: work_heading_en, label: "Gallery heading, English (usual: Gallery) / כותרת הגלריה, אנגלית", widget: string, required: false, hint: "Leave any field on this page empty to keep the usual text. / שדה ריק משאיר את הטקסט הרגיל." }
           - { name: work_heading_he, label: "Gallery heading, Hebrew (usual: עבודות) / כותרת הגלריה, עברית", widget: string, required: false }
-          - { name: nav_work_en, label: "Menu: Works, English / תפריט: עבודות, אנגלית", widget: string, required: false }
-          - { name: nav_work_he, label: "Menu: Work, Hebrew / תפריט: עבודות, עברית", widget: string, required: false }
+          - { name: nav_work_en, label: "Menu: Projects, English / תפריט: פרויקטים, אנגלית", widget: string, required: false }
+          - { name: nav_work_he, label: "Menu: Projects, Hebrew / תפריט: פרויקטים, עברית", widget: string, required: false }
           - { name: nav_services_en, label: "Menu: Services, English / תפריט: שירותים, אנגלית", widget: string, required: false }
           - { name: nav_services_he, label: "Menu: Services, Hebrew / תפריט: שירותים, עברית", widget: string, required: false }
           - { name: nav_about_en, label: "Menu: About, English / תפריט: אודות, אנגלית", widget: string, required: false }
@@ -534,7 +671,8 @@ collections:
             thumbnail: photo
             hint: "Shown only when at least one person is added. Add people only with their permission."
             fields:
-              - { name: name, label: "Name / שם", widget: string }
+              - { name: name, label: "Name, English / שם באנגלית", widget: string }
+              - { name: name_he, label: "Name, Hebrew / שם בעברית", widget: string, required: false }
               - { name: role_en, label: "Role, English / תפקיד באנגלית", widget: string, required: false }
               - { name: role_he, label: "Role, Hebrew / תפקיד בעברית", widget: string, required: false }
               - { name: bio_en, label: "Short bio, English / תיאור קצר באנגלית", widget: text, required: false }

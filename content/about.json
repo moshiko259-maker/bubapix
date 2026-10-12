@@ -1,5 +1,24 @@
 {
   "body_en": "BubaPix is an independent studio where filmmaking craft meets generative tools. We treat AI as a camera, not a shortcut: every film still needs a story worth telling, a deliberate look, and someone who cares about each frame.\n\nWe make films for brands, musicians and independent storytellers, from a single scene to a complete film.",
   "body_he": "BubaPix הוא סטודיו עצמאי שבו מלאכת הקולנוע פוגשת כלים גנרטיביים. אנחנו מתייחסים לבינה המלאכותית כאל מצלמה, לא כאל קיצור דרך: כל סרט עדיין צריך סיפור ששווה לספר, מראה מכוון, ומישהו שאכפת לו מכל פריים.\n\nאנחנו יוצרים סרטים עבור מותגים, מוזיקאים ויוצרים עצמאיים, מסצנה בודדת ועד סרט שלם.",
-  "team": []
+  "team": [
+    {
+      "name": "Moses Appleboim",
+      "name_he": "משה אפלבוים",
+      "role_en": "",
+      "role_he": "",
+      "bio_en": "",
+      "bio_he": "",
+      "photo": ""
+    },
+    {
+      "name": "Dan Moskona",
+      "name_he": "דן מוסקונה",
+      "role_en": "",
+      "role_he": "",
+      "bio_en": "",
+      "bio_he": "",
+      "photo": ""
+    }
+  ]
 }

@@ -65,7 +65,7 @@
   var filters = document.querySelector(".filters");
   if (filters) {
     var buttons = filters.querySelectorAll(".filter");
-    var tiles = document.querySelectorAll(".jg-work .jg-item");
+    var tiles = document.querySelectorAll(".jg-work .jg-item, .product-grid [data-categories]");
     var apply = function (slug) {
       each(buttons, function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-filter") === slug)); });
       each(tiles, function (tile) {

@@ -16,7 +16,7 @@
   },
   "nav": {
     "home": "בית",
-    "work": "עבודות",
+    "work": "פרויקטים",
     "services": "שירותים",
     "about": "אודות",
     "testimonials": "המלצות",
@@ -24,23 +24,24 @@
     "switchLabel": "English",
     "switchTitle": "English version",
     "ideas": "רעיונות",
-    "privacy": "פרטיות"
+    "privacy": "פרטיות",
+    "shop": "חנות"
   },
   "home": {
     "selectedWork": "עבודות נבחרות",
     "allWork": "כל העבודות",
     "aboutLink": "על הסטודיו",
-    "workTitle": "עבודות",
+    "workTitle": "גלריה",
     "showreel": "שואוריל",
     "allServices": "לכל השירותים",
     "startProject": "התחילו פרויקט"
   },
   "work": {
-    "title": "עבודות",
+    "title": "פרויקטים",
     "all": "הכול",
     "imageComing": "התמונה תתווסף בקרוב",
     "empty": "הפרויקטים יופיעו כאן בקרוב.",
-    "back": "כל העבודות",
+    "back": "כל הפרויקטים",
     "previous": "הפרויקט הקודם",
     "next": "הפרויקט הבא",
     "video": "וידאו",
@@ -56,7 +57,7 @@
   },
   "about": {
     "title": "אודות",
-    "team": "הצוות"
+    "team": "היוצרים"
   },
   "testimonials": {
     "title": "המלצות"
@@ -151,5 +152,32 @@
     "previous": "התמונה הקודמת",
     "next": "התמונה הבאה",
     "count": "{n} מתוך {total}"
+  },
+  "shop": {
+    "title": "חנות",
+    "empty": "המוצרים בדרך.",
+    "all": "הכול",
+    "price": "מחיר",
+    "from": "החל מ־",
+    "buy": "לקנייה",
+    "orderEmail": "להזמנה במייל",
+    "orderSubject": "הזמנה",
+    "contact": "לשאלה על המוצר",
+    "variants": "אפשרויות",
+    "type": "סוג",
+    "fromProject": "מתוך הפרויקט",
+    "projectShop": "מהחנות",
+    "availability": {
+      "available": "זמין",
+      "preorder": "בהזמנה מוקדמת",
+      "soon": "בקרוב",
+      "soldout": "אזל"
+    },
+    "types": {
+      "physical": "מוצר פיזי",
+      "digital": "הורדה דיגיטלית",
+      "personalized": "מותאם אישית",
+      "made-to-order": "בהזמנה אישית"
+    }
   }
 }

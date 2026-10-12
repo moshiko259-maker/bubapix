@@ -67,6 +67,19 @@ Saving requires a GitHub account with write access to this repository **and** a 
 - Image picking offers only your own uploaded files (stock photo sites are
   turned off). There are no categories.
 
+## Shop (admin: Shop products / מוצרים בחנות)
+
+- **New** → product name → photo → price → **Save**. Each product gets its own
+  page at `/shop/<name>/`. A product without a photo is not shown.
+- Categories (dolls, clothing, posters, art prints, printed products) are edited
+  in Settings › Shop; only categories that have products are shown.
+- A product can be linked to projects; it then also appears on their pages.
+- No online payment yet. The button opens the product's **Buy link** (e.g. a
+  print-on-demand store page) or, without one, an order email to the address
+  on the Contact page. Without either, no button is shown.
+- Prices, options (size, color), availability and search texts are all edited
+  in the admin; nothing is invented.
+
 ## Visitor comments, ratings, ideas and consultations
 
 **All four are off by default.** Turn them on in Settings › Visitor

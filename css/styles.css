@@ -629,6 +629,44 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 :lang(en) .button-large { text-transform: uppercase; }
 .button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
+/* ---------- Shop ---------- */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: clamp(1.5rem, 3vw, 2.5rem) clamp(1rem, 2vw, 1.5rem);
+}
+.product-card { display: block; color: inherit; text-decoration: none; }
+.product-card[hidden] { display: none; }
+.product-media {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--paper-2);
+}
+/* The whole photo is always shown (never cropped). */
+.product-media img { width: 100%; height: 100%; object-fit: contain; transition: transform 0.8s var(--ease); }
+.product-card:hover .product-media img { transform: scale(1.02); }
+.product-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: var(--radius); }
+.product-name { display: block; margin-top: 0.75rem; font-family: var(--font-display); font-weight: 600; font-size: 1.0625rem; line-height: 1.3; }
+.product-price { display: block; margin-top: 0.15rem; color: var(--ink-2); }
+.product-badge { display: inline-block; margin-top: 0.35rem; padding: 0.05rem 0.6rem; border: 1px solid var(--line); border-radius: 999px; font-size: 0.8125rem; color: var(--ink-2); }
+.shop-empty { font-family: var(--font-display); font-size: clamp(1.25rem, 2vw, 1.5rem); color: var(--ink-2); }
+.product-page .crumb { margin-bottom: 1.25rem; }
+.product-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: start; }
+.product-info { display: grid; gap: 1rem; align-content: start; }
+.product-price-large { font-family: var(--font-display); font-size: clamp(1.375rem, 2.2vw, 1.75rem); font-weight: 600; }
+.product-meta { color: var(--ink-2); font-size: 0.9375rem; }
+.product-action { margin-top: 0.5rem; }
+.product-projects { font-size: 0.9375rem; color: var(--ink-2); }
+@media (max-width: 860px) { .product-layout { grid-template-columns: 1fr; } }
+
+/* ---------- Footer social links ---------- */
+.footer-social { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; }
+.footer-social a { color: var(--ink-2); text-decoration: none; }
+.footer-social a:hover { color: var(--ink); text-decoration: underline; }
+
 @media (max-width: 1100px) {
   .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .service-list { grid-template-columns: 1fr; }
