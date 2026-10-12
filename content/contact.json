@@ -1,9 +1,26 @@
 {
   "intro_en": "",
   "intro_he": "",
-  "email": "",
+  "email": "studio@bubapix.com",
   "phone": "",
   "location_en": "",
   "location_he": "",
-  "social": []
+  "social": [
+    {
+      "label": "YouTube",
+      "url": "https://www.youtube.com/@bubapix"
+    },
+    {
+      "label": "Instagram",
+      "url": "https://www.instagram.com/bubapix369/"
+    },
+    {
+      "label": "TikTok",
+      "url": "https://www.tiktok.com/@bubapix"
+    },
+    {
+      "label": "Facebook",
+      "url": "https://www.facebook.com/share/19fPNuFeaT/"
+    }
+  ]
 }
