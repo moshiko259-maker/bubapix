@@ -188,7 +188,7 @@ function layout(ctx, { title, description, image, main, current = "", community 
   <link rel="alternate" hreflang="en" href="${absUrl("en")}">
   <link rel="alternate" hreflang="he" href="${absUrl("he")}">
   <link rel="alternate" hreflang="x-default" href="${absUrl("en")}">
-  <meta name="theme-color" content="#fcfbf8">
+  <meta name="theme-color" content="#f0eee2">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="BubaPix">
   <meta property="og:title" content="${e(title)}">

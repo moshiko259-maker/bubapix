@@ -1,5 +1,5 @@
 /* BubaPix moderation page */
-:root { --paper: #fcfbf8; --card: #ffffff; --ink: #16161d; --ink-2: #4b4b57; --line: rgba(22, 22, 29, 0.16); --accent: #2f3de0; --ok: #1d6b3a; --bad: #a1271b; }
+:root { --paper: #f0eee2; --card: #fbfaf5; --ink: #16161d; --ink-2: #4b4b57; --line: rgba(22, 22, 29, 0.16); --accent: #2f3de0; --ok: #1d6b3a; --bad: #a1271b; }
 * { box-sizing: border-box; }
 body { margin: 0; padding: 1rem clamp(1rem, 4vw, 2.5rem) 3rem; background: var(--paper); color: var(--ink); font: 16px/1.55 "Heebo", system-ui, -apple-system, "Segoe UI", Arial, sans-serif; }
 [hidden] { display: none !important; }
