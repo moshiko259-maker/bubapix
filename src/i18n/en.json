@@ -139,13 +139,17 @@
   "privacy": {
     "title": "Privacy",
     "items": [
-      "What we collect: the display name you choose, your message, and your email address if you give it. We ask for nothing else.",
-      "Why: to review and answer your message. Comments and questions, and ideas you allow us to share, are published with your display name only after review. Private consultations are never published.",
-      "Your email address is never published. We use it only to answer you.",
-      "Ratings are anonymous. To allow one rating per project and to stop spam, we keep a one-way coded form of your internet address, never the address itself.",
-      "Where: the data is stored with Supabase in Frankfurt, Germany (European Union).",
-      "To ask us to remove something you sent, write to us through the private consultation form."
-    ]
+      "What we collect: in the site's forms, the display name you choose, your message, and your email address if you give it. For a shop order, what is in the email sent from your own email app (name, items, notes and your email address).",
+      "Why: to review and answer your message and to handle your order. Comments and questions, and ideas you allow us to share, are published with your display name only, after review. Private consultations are never published.",
+      "You are not legally required to give these details; giving them is your choice. Without a name and message we cannot receive your note, and without an email address we cannot answer you privately.",
+      "Your email address is never published, never passed to others and never used for advertising. We use it only to answer you.",
+      "To stop spam we keep a one-way coded form of your internet address, never the address itself.",
+      "Where: messages are stored with Supabase in Frankfurt, Germany (European Union). The site itself is hosted on GitHub Pages.",
+      "In your own browser only: the site remembers your language, chosen currency and order list so they stay from page to page. This is not sent to us.",
+      "Your rights: to see the information kept about you, and to ask us to correct or delete it. Write to us through the private consultation form or by email."
+    ],
+    "ratings": "Ratings are anonymous: only a one-way coded form is kept, to allow one rating per project.",
+    "noAnalytics": "The site has no tracking cookies and no traffic-analysis tools."
   },
   "viewer": {
     "label": "Image viewer",

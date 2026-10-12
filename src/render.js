@@ -242,8 +242,8 @@ ${editBar(ctx, edits)}
         ${nav.map(([path, label]) => `<li><a href="${link(path)}">${e(label)}</a></li>`).join("\n        ")}${footerPages.map((p) => `
         <li><a href="${link(`pages/${p.slug}/`)}">${e(p.title)}</a></li>`).join("")}
 ${data.participation.ideas ? `
-        <li><a href="${link("ideas/")}"${current === "ideas" ? ' aria-current="page"' : ""}>${e(t.nav.ideas)}</a></li>` : ""}${data.participation.any ? `
-        <li><a href="${link("privacy/")}"${current === "privacy" ? ' aria-current="page"' : ""}>${e(t.nav.privacy)}</a></li>` : ""}
+        <li><a href="${link("ideas/")}"${current === "ideas" ? ' aria-current="page"' : ""}>${e(t.nav.ideas)}</a></li>` : ""}
+        <li><a href="${link("privacy/")}"${current === "privacy" ? ' aria-current="page"' : ""}>${e(t.nav.privacy)}</a></li>
       </ul>
     </nav>
     ${footerContact(ctx)}
@@ -863,7 +863,11 @@ function ideas(ctx) {
 }
 
 function privacy(ctx) {
-  const { t } = ctx;
+  const { t, data } = ctx;
+  // Lines that are true only in some setups are shown only then.
+  const items = [...t.privacy.items];
+  if (data.participation.ratings) items.splice(5, 0, t.privacy.ratings);
+  if (!data.analytics) items.splice(items.length - 1, 0, t.privacy.noAnalytics);
   return layout(ctx, {
     title: pageTitle(ctx, t.privacy.title),
     description: t.privacy.items[0],
@@ -872,7 +876,7 @@ function privacy(ctx) {
     <div class="page">
       <header class="page-head"><h1 class="page-title">${e(t.privacy.title)}</h1></header>
       <div class="prose prose-large">
-        <ul>${t.privacy.items.map((x) => `
+        <ul>${items.map((x) => `
           <li>${e(x)}</li>`).join("")}
         </ul>
         <p><a class="text-link" href="${makeLink(ctx)("contact/")}">${e(t.consult.title)}</a></p>
@@ -930,7 +934,7 @@ function productCard(ctx, x) {
   const { t } = ctx;
   const href = link(`shop/${x.slug}/`);
   const sub = [x.category && x.category.name, x.availability !== "available" && t.shop.availability[x.availability], x.type === "digital" && t.shop.types.digital].filter(Boolean);
-  return `<article class="product-card" data-categories="${e(x.category ? x.category.slug : "")}">
+  return `<article class="product-card" data-categories="${e(x.category ? [x.category.slug, x.category.parent].filter(Boolean).join(" ") : "")}">
           <a class="product-media${x.cardFit === "fill" ? ` is-fill focus-${x.cardFocus}` : ""}" href="${href}" tabindex="-1" aria-hidden="true">${img(ctx, x.thumb, { sizes: "(max-width: 560px) 100vw, (max-width: 1100px) 50vw, 33vw" })}</a>
           <div class="product-body">${x.example ? `
             <p class="example-badge">${e(t.shop.exampleBadge)}</p>` : ""}
@@ -956,8 +960,12 @@ function shop(ctx) {
         </button>`;
   const filters = cats.length
     ? `
-      <div class="filters cat-strip" role="group" aria-label="${e(t.shop.categoriesLabel)}" hidden>${tile("", t.shop.all, `<span class="cat-letter">${icon("grid")}</span>`, data.products.length, true)}${cats.map((c) => tile(c.slug, c.name, c.image ? img(ctx, c.image, { sizes: "120px" }) : `<span class="cat-letter">${e([...c.name][0] || "")}</span>`, c.count, false)).join("")}
-      </div>
+      <div class="filters cat-strip" role="group" aria-label="${e(t.shop.categoriesLabel)}" hidden>${tile("", t.shop.all, `<span class="cat-letter">${icon("grid")}</span>`, data.products.length, true)}${cats.filter((c) => !c.parent).map((c) => tile(c.slug, c.name, c.image ? img(ctx, c.image, { sizes: "120px" }) : `<span class="cat-letter">${e([...c.name][0] || "")}</span>`, c.count, false)).join("")}
+      </div>${cats.filter((c) => c.subs && c.subs.length).map((c) => `
+      <div class="filters sub-strip" role="group" aria-label="${e(c.name)}" data-parent="${e(c.slug)}" hidden>
+        <button type="button" class="filter sub-chip" data-filter="${e(c.slug)}" aria-pressed="false">${e(t.shop.all)}</button>${c.subs.map((s) => `
+        <button type="button" class="filter sub-chip" data-filter="${e(s.slug)}" aria-pressed="false">${e(s.name)} <span class="sub-count">${e(s.count ? String(s.count) : t.shop.comingSoon)}</span></button>`).join("")}
+      </div>`).join("")}
       <p class="shop-empty cat-empty" data-filter-empty hidden>${e(t.shop.categoryEmpty)}</p>`
     : "";
   const grid = data.products.length

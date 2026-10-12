@@ -680,11 +680,10 @@ collections:
             widget: select
             required: false
             default: ""
-            hint: "Ask your accountant which applies to you. Empty: VAT is not mentioned. / בדקו עם רואה החשבון מה חל עליכם. ריק: מע״מ לא מוזכר."
+            hint: "Ask your accountant which applies to you. By law, prices for consumers in Israel must include VAT, so set prices with VAT included. Empty: VAT is not mentioned. / בדקו עם רואה החשבון מה חל עליכם. לפי החוק, מחיר לצרכן בישראל חייב לכלול מע״מ, לכן קבעו מחירים כולל מע״מ. ריק: מע״מ לא מוזכר."
             options:
               - { label: "Not mentioned / לא מוזכר", value: "" }
               - { label: "Prices include VAT / המחירים כוללים מע״מ", value: included }
-              - { label: "VAT is added to prices / מע״מ מתווסף למחיר", value: added }
               - { label: "No VAT (e.g. exempt dealer) / ללא מע״מ (למשל עוסק פטור)", value: none }
           - { name: vat_rate, label: "VAT rate in % / שיעור המע״מ באחוזים", widget: number, value_type: float, min: 0, max: 100, default: 18, required: false, hint: "18% in Israel since 1 January 2025. / 18% בישראל מאז 1 בינואר 2025." }
           - { name: returns_en, label: "Shipping, returns and exchanges, English (optional) / משלוח, החזרות והחלפות, אנגלית", widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list], editor_components: [] }
@@ -711,6 +710,16 @@ collections:
               - { name: slug, label: "Short ID in English letters (a-z and dashes, e.g. mugs) / מזהה קצר באותיות אנגליות (למשל mugs)", widget: string, pattern: ['^[a-z0-9][a-z0-9-]*$', "Use a-z, 0-9 and dashes"] }
               - { name: image, label: "Category picture (optional) / תמונה לקטגוריה (רשות)", widget: image, required: false }
               - { name: show_when_empty, label: "Show before it has products (\"coming soon\") / להציג גם לפני שיש מוצרים (״בקרוב״)", widget: boolean, default: false, required: false }
+              - name: parent
+                label: "Main category (only for a subcategory) / קטגוריה ראשית (רק לתת־קטגוריה)"
+                widget: relation
+                collection: settings
+                file: shop
+                value_field: "categories.*.slug"
+                search_fields: ["categories.*.name_he", "categories.*.name_en"]
+                display_fields: ["categories.*.name_he", "categories.*.name_en"]
+                required: false
+                hint: "Empty: a main category. Choose one to make this a subcategory of it (for example T-shirts under Clothing). One level only. / ריק: קטגוריה ראשית. בחירה הופכת אותה לתת־קטגוריה (למשל חולצות תחת ביגוד). רמה אחת בלבד."
           - name: currencies
             label: "Currencies visitors can choose to view prices in / מטבעות שהגולש יכול לבחור לתצוגת מחירים"
             widget: list

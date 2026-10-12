@@ -62,12 +62,22 @@
   }
 
   // ---------- 3. Work filter ----------
+  // Shop subcategories: choosing a main category opens a second row with its
+  // subcategories; the main category stays marked while one is chosen.
   var filters = document.querySelector(".filters");
   if (filters) {
-    var buttons = filters.querySelectorAll(".filter");
+    var buttons = document.querySelectorAll(".filters .filter");
+    var subStrips = document.querySelectorAll(".sub-strip");
     var tiles = document.querySelectorAll(".jg-work .jg-item, .product-grid [data-categories]");
     var apply = function (slug) {
-      each(buttons, function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-filter") === slug)); });
+      var chosen = document.querySelector('.filters [data-filter="' + slug + '"]');
+      var strip = chosen && chosen.closest(".sub-strip");
+      var main = strip ? strip.getAttribute("data-parent") : slug;
+      each(buttons, function (b) {
+        var f = b.getAttribute("data-filter");
+        b.setAttribute("aria-pressed", String(b.closest(".sub-strip") ? f === slug : f === main));
+      });
+      each(subStrips, function (st) { st.hidden = st.getAttribute("data-parent") !== main; });
       var shown = 0;
       each(tiles, function (tile) {
         var cats = (tile.getAttribute("data-categories") || "").split(" ");
@@ -119,7 +129,7 @@
       syncArrows();
     }
     var start = location.hash.slice(1);
-    if (start && filters.querySelector('[data-filter="' + start.replace(/[^a-z0-9-]/g, "") + '"]')) apply(start);
+    if (start && document.querySelector('.filters [data-filter="' + start.replace(/[^a-z0-9-]/g, "") + '"]')) apply(start);
   }
 
   // ---------- 4. Language ----------

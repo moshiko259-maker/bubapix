@@ -191,14 +191,17 @@ function shopCosts(shop, exampleMode, lang) {
     if (!exampleMode) return null;
     return { ...fallback, text: money.format(fallback.amount, fallback.currency, lang), example: true };
   };
-  const vatMode = ["included", "added", "none"].includes(shop.vat) ? shop.vat : exampleMode ? "included" : "";
+  // Israeli law (Consumer Protection Law, section 17D) requires prices shown
+  // to consumers to include VAT, so "VAT is added" is not offered.
+  if (shop.vat === "added") console.warn('Warning: shop VAT "added" is ignored: consumer prices in Israel must include VAT (Consumer Protection Law, section 17D). Choose "Prices include VAT".');
+  const vatMode = ["included", "none"].includes(shop.vat) ? shop.vat : exampleMode ? "included" : "";
   const vatRate = num(shop.vat_rate) !== null ? num(shop.vat_rate) : 18;
   return {
     shipIsrael: ship(shop.shipping_israel_price, shop.shipping_israel_currency, { amount: 25, currency: "ILS" }),
     // Free shipping in Israel from this order amount (same currency as the shipping price).
     freeIsraelFrom: num(shop.free_shipping_israel_from),
     shipAbroad: ship(shop.shipping_abroad_price, shop.shipping_abroad_currency, { amount: 15, currency: "USD" }),
-    vat: vatMode ? { mode: vatMode, rate: vatRate, example: !["included", "added", "none"].includes(shop.vat) } : null,
+    vat: vatMode ? { mode: vatMode, rate: vatRate, example: !["included", "none"].includes(shop.vat) } : null,
   };
 }
 
@@ -448,9 +451,17 @@ function contentFor(lang) {
         image: c.image ? picture({ image: c.image, alt_en: c.name_en, alt_he: c.name_he }, name, `shop category "${c.slug}" image`) : null,
         // Shown in the shop even before it has products ("coming soon").
         showEmpty: c.show_when_empty === true,
+        parentSlug: safeSlug(c.parent || "") && c.parent !== c.slug ? c.parent : "",
       };
     });
   const shopCat = new Map(shopCategories.map((c) => [c.slug, c]));
+  // Subcategories: one level only. A category whose main category is missing,
+  // or is itself a subcategory, is shown as a main category.
+  for (const c of shopCategories) {
+    const main = shopCat.get(c.parentSlug);
+    c.parent = main && !main.parentSlug ? main.slug : "";
+    if (c.parentSlug && !c.parent) console.warn(`Warning: shop category "${c.slug}": main category "${c.parentSlug}" not found or is itself a subcategory; shown as a main category`);
+  }
   const projectBySlug = new Map(projects.map((p) => [p.slug, p]));
   // Preview only: while the shop has no real products, three clearly marked
   // EXAMPLE products show how the shop looks and works. They are never built
@@ -524,10 +535,18 @@ function contentFor(lang) {
       // Category tiles: those with products, those marked "show before it has
       // products", and, in the preview's example mode, all of them (so the
       // empty places can be seen and filled).
-      categories: shopCategories
-        .map((c) => ({ ...c, count: products.filter((x) => x.category && x.category.slug === c.slug).length }))
-        .filter((c) => c.count > 0 || c.showEmpty || exampleMode) },
+      // A main category counts its subcategories' products too, and is shown
+      // when any of its subcategories is shown.
+      categories: (() => {
+        const inCat = (x, slug) => x.category && (x.category.slug === slug || x.category.parent === slug);
+        const shown = (c) => c.count > 0 || c.showEmpty || exampleMode;
+        const all = shopCategories.map((c) => ({ ...c, count: products.filter((x) => inCat(x, c.slug)).length }));
+        return all
+          .filter((c) => shown(c) || (!c.parent && all.some((s) => s.parent === c.slug && shown(s))))
+          .map((c) => ({ ...c, subs: c.parent ? [] : all.filter((s) => s.parent === c.slug && shown(s)) }));
+      })() },
     participation,
+    analytics: Boolean(site.analyticsHead),
     tagline: pick(s, "tagline", lang),
     showreel: parseVideo(s.showreel_url),
     intro: pick(s, "intro", lang),
@@ -629,7 +648,8 @@ for (const lang of ["en", "he"]) {
   });
   // Pages for visitor participation exist only while it is switched on.
   if (participation.ideas) add("ideas/", render.ideas(contextFor(lang, "ideas/", data)));
-  if (participation.any) add("privacy/", render.privacy(contextFor(lang, "privacy/", data)));
+  // Always built: the shop and browser storage are described there too.
+  add("privacy/", render.privacy(contextFor(lang, "privacy/", data)));
   data.pages.forEach((p) => {
     const pagePath = `pages/${p.slug}/`;
     add(pagePath, render.customPage(contextFor(lang, pagePath, data), p));

@@ -864,6 +864,10 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .cat-name { font-size: 0.875rem; font-weight: 600; line-height: 1.25; }
 .cat-count { font-size: 0.75rem; color: var(--ink-2); }
 .cat-empty[hidden] { display: none; }
+/* Subcategories: a row of small chips under the main categories. */
+.sub-strip { margin: -0.5rem 0 1.5rem; }
+.sub-chip { min-height: 36px; padding: 0 0.85rem; font-size: 0.875rem; }
+.sub-count { font-size: 0.75rem; opacity: 0.7; margin-inline-start: 0.25rem; }
 .cat-wrap { position: relative; }
 .cat-arrow { position: absolute; top: calc(50% - 1.6rem); z-index: 2; display: none; width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-size: 1.5rem; line-height: 1; cursor: pointer; box-shadow: 0 4px 14px rgba(22, 22, 29, 0.12); }
 .cat-prev { inset-inline-start: -0.75rem; }
