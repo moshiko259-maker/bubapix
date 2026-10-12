@@ -406,6 +406,17 @@ function contentFor(lang) {
     homeGallery.push({ image: im, project, caption });
   };
   const hero = imgWithAlt(s.hero_image, pick(s, "hero_alt", lang), "opening image");
+  // Optional second opening picture, shown framed under the opening image
+  // (Homepage > "Second opening picture"). It is not repeated in the gallery.
+  const feature = (() => {
+    const im = imgWithAlt(s.feature_image, pick(s, "feature_alt", lang), "second opening picture");
+    if (!im) return null;
+    const slug = s.feature_project || "";
+    const project = slug ? projects.find((p) => p.slug === slug) || null : null;
+    if (slug && !project) images.warnings.push(`second opening picture: project "${slug}" is not shown, so the picture has no link`);
+    seen.add(im.src);
+    return { image: im, project };
+  })();
   const pictureCaption = (im) => (im.caption === "everywhere" && (im.title || im.note) ? { title: im.title, note: im.note } : null);
   // Homepage gallery chosen in the admin (Homepage > Homepage gallery). A
   // picture opens its project's page when a project is chosen for it in the
@@ -520,6 +531,7 @@ function contentFor(lang) {
 
   return {
     hero,
+    feature,
     homeGallery,
     products,
     shop: {

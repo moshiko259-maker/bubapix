@@ -202,6 +202,16 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   color: var(--ink-2);
 }
 
+/* Opening: the opening image across the page, the second opening picture
+   framed and centred under it, then the tagline. */
+.opening { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+.opening-hero .jg-item { width: 100%; }
+.opening-hero .jg-media { border-radius: 2px; }
+.opening-feature { max-width: 640px; margin: clamp(2rem, 6vw, 4.5rem) auto 0; }
+.opening-feature .jg-item { width: 100%; }
+.opening-feature .jg-media { border-radius: 14px; box-shadow: 0 18px 50px rgba(22, 22, 29, 0.12); }
+.opening-tagline { padding: clamp(1.75rem, 4vw, 2.75rem) 0 0; text-align: center; font-weight: 600; font-size: clamp(1.5rem, 3.4vw, 2.5rem); color: var(--ink); }
+
 .section {
   max-width: var(--max);
   margin: 0 auto;

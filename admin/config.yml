@@ -577,6 +577,17 @@ collections:
           - { name: hero_image, label: "Large opening image (optional) / תמונת פתיחה גדולה (לא חובה)", widget: image, required: false, hint: "Shown first, full width, never cropped. If it is also a project image, it is shown only once. / מוצגת ראשונה ברוחב מלא. אם היא גם תמונה של פרויקט, תוצג פעם אחת בלבד." }
           - { name: hero_alt_en, label: "Main image description, English / תיאור התמונה באנגלית", widget: string, required: false }
           - { name: hero_alt_he, label: "Main image description, Hebrew / תיאור התמונה בעברית", widget: string, required: false }
+          - { name: feature_image, label: "Second opening picture, framed under the opening image (optional) / תמונת פתיחה שנייה, במסגרת מתחת לתמונת הפתיחה (רשות)", widget: image, required: false, hint: "Shown centred in a frame, with the opening sentence under it. Empty: not shown. It is not repeated in the gallery. / מוצגת במרכז במסגרת, ומשפט הפתיחה מתחתיה. ריק: לא מוצגת. לא חוזרת בגלריה." }
+          - { name: feature_alt_en, label: "Second opening picture description, English / תיאור התמונה השנייה, אנגלית", widget: string, required: false }
+          - { name: feature_alt_he, label: "Second opening picture description, Hebrew / תיאור התמונה השנייה, עברית", widget: string, required: false }
+          - name: feature_project
+            label: "Second opening picture opens this project's page (optional) / לחיצה על התמונה השנייה פותחת את דף הפרויקט (רשות)"
+            widget: relation
+            collection: projects
+            value_field: "{{slug}}"
+            search_fields: [title_en, title_he]
+            display_fields: [title_en]
+            required: false
           - name: showreel_url
             label: "Showreel video link, YouTube or Vimeo (optional) / קישור לשואוריל"
             widget: string

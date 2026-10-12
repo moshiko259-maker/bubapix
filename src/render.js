@@ -405,11 +405,14 @@ function home(ctx) {
   // share one height and keep their own shape, so nothing is cropped.
   // A size chosen in the admin (large / medium / small) sets the row.
   const ratioOf = (g) => ratioClass(g.image).ratio;
+  // Opening: the opening image (full width), the second opening picture in a
+  // frame, and the tagline under them. The gallery follows.
+  const opening = !!(data.hero && data.homeGallery.length && data.homeGallery[0].image.src === data.hero.src);
   // Rows for one screen size. counts: the rhythm of pictures per row.
   const buildRows = (counts, minSum, maxPer, sized) => {
     const out = [];
-    let i = 0, k = 0;
-    if (data.homeGallery.length) { out.push([0]); i = 1; }
+    let i = opening ? 1 : 0, k = 0; // the opening image is shown above the gallery
+    if (!opening && data.homeGallery.length) { out.push([0]); i = 1; }
     while (i < data.homeGallery.length) {
       const size = data.homeGallery[i].image.size;
       let count = sized && size === "large" ? 1 : sized && size === "medium" ? 2 : sized && size === "small" ? 4 : counts[k++ % counts.length];
@@ -450,6 +453,22 @@ function home(ctx) {
   // rowsSmall); js/main.js moves the pictures into those rows on phones.
   const smallRowOf = new Map();
   rowsSmall.forEach((row, r) => row.forEach((n) => smallRowOf.set(n, `${r}:${row.length}`)));
+  const feature = data.feature
+    ? galleryItem(ctx, data.feature.image, {
+        href: data.feature.project ? link(`work/${data.feature.project.slug}/`) : ctx.assetBase + e(data.feature.image.full || data.feature.image.src),
+        label: data.feature.project ? `${data.feature.project.name} — ${t.home.openProject}` : `${t.work.openImage}: ${data.feature.image.alt}`,
+        viewer: !data.feature.project,
+        sizes: "(max-width: 700px) 92vw, 640px",
+      })
+    : "";
+  const openingBlock = opening || feature
+    ? `
+    <section class="opening" aria-label="BubaPix">${opening ? `
+      <div class="opening-hero">${cell(0, 1)}</div>` : ""}${feature ? `
+      <div class="opening-feature">${feature}</div>` : ""}${data.tagline ? `
+      <p class="tagline opening-tagline">${e(data.tagline)}</p>` : ""}
+    </section>`
+    : "";
   const items = rows.map((row) => `<div class="mrow n${row.length}">${row.map((n) => cell(n, row.length).replace(/^<(a|figure) /, `<$1 data-srow="${smallRowOf.get(n)}" `)).join("")}</div>`);
   const work = items.length
     ? `
@@ -460,7 +479,7 @@ function home(ctx) {
       </div>
     </section>`
     : "";
-  const tagline = data.tagline ? `
+  const tagline = data.tagline && !openingBlock ? `
     <p class="tagline">${e(data.tagline)}</p>` : "";
   // Showreel: only when a video link is set in the admin.
   const showreel = data.showreel
@@ -504,7 +523,7 @@ function home(ctx) {
     title: t.meta.homeTitle,
     viewer: true,
     description: data.seoDescription || data.intro,
-    main: `    <h1 class="visually-hidden">BubaPix</h1>${tagline}${showreel}${work}${services}${intro}${start}`,
+    main: `    <h1 class="visually-hidden">BubaPix</h1>${openingBlock}${tagline}${showreel}${work}${services}${intro}${start}`,
   });
 }
 
