@@ -91,7 +91,7 @@ module.exports = function render({ t, c, lang, dir, base, urls, other }) {
   <link rel="alternate" hreflang="en" href="${urls.en}">
   <link rel="alternate" hreflang="he" href="${urls.he}">
   <link rel="alternate" hreflang="x-default" href="${urls.en}">
-  <meta name="theme-color" content="#f0eee2">
+  <meta name="theme-color" content="#fcfbf8">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="BubaPix">
