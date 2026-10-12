@@ -620,6 +620,18 @@ function contentFor(lang) {
 // ---- Pages ---------------------------------------------------------------
 const outputs = new Map(); // relative file path -> contents
 
+// Version tag on style and script addresses (css/styles.css?v=…): it changes
+// whenever a file changes, so browsers and the installed app always load the
+// current file instead of an old saved copy.
+const fileVersion = (files) => crypto.createHash("sha256").update(files.map((f) => (fs.existsSync(path.join(root, f)) ? fs.readFileSync(path.join(root, f)) : "")).join("|")).digest("hex").slice(0, 10);
+const assetVersion = {
+  styles: fileVersion(["css/styles.css"]),
+  fonts: fileVersion(["css/fonts.css"]),
+  main: fileVersion(["js/main.js"]),
+  shop: fileVersion(["js/shop.js"]),
+  community: fileVersion(["js/community.js"]),
+};
+
 function contextFor(lang, pagePath, data) {
   const segments = pagePath.split("/").filter(Boolean).length;
   const up = (n) => "../".repeat(n);
@@ -635,6 +647,7 @@ function contextFor(lang, pagePath, data) {
     otherBase: lang === "he" ? assetBase : assetBase + "he/",
     site,
     preview,
+    v: assetVersion,
     data,
   };
 }
@@ -742,6 +755,11 @@ for (const [file, lang, start, desc] of [
     2
   ) + "\n"
 );
+// gallery.css is written after the pages, so its version is filled in now.
+{
+  const gv = crypto.createHash("sha256").update(outputs.get("css/gallery.css")).digest("hex").slice(0, 10);
+  for (const [rel, html] of outputs) if (rel.endsWith(".html") && html.includes("__GALLERY_V__")) outputs.set(rel, html.split("__GALLERY_V__").join(gv));
+}
 // The service worker. Pages always come from the network first (so changes
 // show at once) and fall back to the saved copy when offline; styles,
 // scripts and pictures are kept after the first visit. Its version changes

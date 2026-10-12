@@ -210,15 +210,15 @@ function layout(ctx, { title, description, image, main, current = "", community 
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="preload" href="${ctx.assetBase}assets/fonts/${lang === "he" ? "heebo-hebrew" : "heebo-latin"}-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="${ctx.assetBase}css/fonts.css">
+  <link rel="stylesheet" href="${ctx.assetBase}css/fonts.css?v=${ctx.v.fonts}">
   <script>${jsFlag}</script>
-  <link rel="stylesheet" href="${ctx.assetBase}css/styles.css">
-  <link rel="stylesheet" href="${ctx.assetBase}css/gallery.css">
-  <script src="${ctx.assetBase}js/main.js" defer></script>${shopScript ? `
+  <link rel="stylesheet" href="${ctx.assetBase}css/styles.css?v=${ctx.v.styles}">
+  <link rel="stylesheet" href="${ctx.assetBase}css/gallery.css?v=__GALLERY_V__">
+  <script src="${ctx.assetBase}js/main.js?v=${ctx.v.main}" defer></script>${shopScript ? `
   ${shopData(ctx)}
-  <script src="${ctx.assetBase}js/shop.js" defer></script>` : ""}${withCommunity ? `
+  <script src="${ctx.assetBase}js/shop.js?v=${ctx.v.shop}" defer></script>` : ""}${withCommunity ? `
   ${communityData(ctx)}
-  <script src="${ctx.assetBase}js/community.js" defer></script>` : ""}${site.analyticsHead ? `
+  <script src="${ctx.assetBase}js/community.js?v=${ctx.v.community}" defer></script>` : ""}${site.analyticsHead ? `
   ${site.analyticsHead}` : ""}
 </head>
 <body${viewer ? ` data-viewer-labels="${e(JSON.stringify(t.viewer))}"` : ""}>
