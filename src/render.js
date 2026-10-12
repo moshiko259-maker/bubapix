@@ -476,11 +476,23 @@ function home(ctx) {
       <p class="tagline opening-tagline">${e(data.tagline)}</p>` : ""}
     </section>`
     : "";
+  // Projects: one poster per project; each opens its own project page.
+  // Shown from two projects up (with one, it would repeat the opening image).
+  const posterProjects = data.posters;
+  const posters = posterProjects.length
+    ? `
+    <section class="section home-posters" aria-labelledby="posters-title">
+      <h2 id="posters-title" class="visually-hidden">${e(t.nav.work)}</h2>
+      <div class="poster-grid">${posterProjects.map((p) => `
+        ${galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${p.name} — ${t.home.openProject}`, cue: true, sizes: "(max-width: 700px) 92vw, 45vw" })}`).join("")}
+      </div>
+    </section>`
+    : "";
   const items = rows.map((row) => `<div class="mrow n${row.length}">${row.map((n) => cell(n, row.length).replace(/^<(a|figure) /, `<$1 data-srow="${smallRowOf.get(n)}" `)).join("")}</div>`);
   const work = items.length
     ? `
     <section class="section section-work" aria-labelledby="work-title">
-      <h2 id="work-title" class="section-label">${e(t.home.workTitle)}</h2>
+      <h2 id="work-title" class="visually-hidden">${e(t.home.workTitle)}</h2>
       <div class="mosaic jg-home" data-mosaic>
         ${items.join("\n        ")}
       </div>
@@ -530,7 +542,7 @@ function home(ctx) {
     title: t.meta.homeTitle,
     viewer: true,
     description: data.seoDescription || data.intro,
-    main: `    <h1 class="visually-hidden">BubaPix</h1>${openingBlock}${tagline}${showreel}${work}${services}${intro}${start}`,
+    main: `    <h1 class="visually-hidden">BubaPix</h1>${openingBlock}${tagline}${posters}${showreel}${work}${services}${intro}${start}`,
   });
 }
 

@@ -418,6 +418,11 @@ function contentFor(lang) {
     return { image: im, project };
   })();
   const pictureCaption = (im) => (im.caption === "everywhere" && (im.title || im.note) ? { title: im.title, note: im.note } : null);
+  // Homepage projects row: one poster per project, shown from two projects
+  // up. Those posters are not repeated in the gallery (the opening image
+  // keeps its place at the top).
+  const posters = projects.filter((p) => p.thumb).length >= 2 ? projects.filter((p) => p.thumb) : [];
+  for (const p of posters) if (!hero || p.thumb.src !== hero.src) seen.add(p.thumb.src);
   // Homepage gallery chosen in the admin (Homepage > Homepage gallery). A
   // picture opens its project's page when a project is chosen for it in the
   // admin; otherwise it is for looking only. When the list is empty, the
@@ -532,6 +537,7 @@ function contentFor(lang) {
   return {
     hero,
     feature,
+    posters,
     homeGallery,
     products,
     shop: {
