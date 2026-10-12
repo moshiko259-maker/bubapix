@@ -147,6 +147,18 @@ const pick = (obj, key, lang) => {
   return own || other;
 };
 
+// Prices: any three-letter currency code the browser knows (ILS, USD, EUR…).
+const money = {
+  code(value, fallback) {
+    const c = String(value || "").trim().toUpperCase();
+    if (!/^[A-Z]{3}$/.test(c)) return fallback;
+    try { new Intl.NumberFormat("en", { style: "currency", currency: c }); return c; } catch (e) { return fallback; }
+  },
+  format(amount, currency, lang) {
+    return new Intl.NumberFormat(lang === "he" ? "he-IL" : "en-US", { style: "currency", currency, maximumFractionDigits: Number.isInteger(amount) ? 0 : 2 }).format(amount);
+  },
+};
+
 function parseVideo(url) {
   if (!url) return null;
   let m = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,20})/.exec(url);
@@ -183,6 +195,10 @@ function contentFor(lang) {
     im.title = title;
     im.note = pick(o, "note", lang);
     im.onHome = o.on_home === true;
+    // Frame: "natural" keeps the picture's own shape (whole, never cropped).
+    // Other frames fill a fixed shape; "focus" says which part stays in view.
+    im.frame = ["landscape", "square", "portrait", "wide"].includes(o.frame) ? o.frame : "natural";
+    im.focus = ["top", "bottom", "left", "right"].includes(o.focus) ? o.focus : "center";
     return im;
   };
 
@@ -312,7 +328,7 @@ function contentFor(lang) {
   const shopCat = new Map(shopCategories.map((c) => [c.slug, c]));
   const projectBySlug = new Map(projects.map((p) => [p.slug, p]));
   const products = raw.products
-    .filter((x) => visible(x) && safeSlug(x.slug))
+    .filter((x) => visible(x) && safeSlug(x.slug) && x.slug !== "order") // "order" is the order page
     .sort(byOrder)
     .map((x) => {
       const name = lang === "he" ? String(x.title_he || "").trim() || String(x.title_en || "").trim() : String(x.title_en || "").trim() || String(x.title_he || "").trim();
@@ -320,7 +336,9 @@ function contentFor(lang) {
       const where = `product "${x.slug}"`;
       const pics = (x.images || []).map((g, j) => picture(g, title, `${where} photo ${j + 1}`)).filter(Boolean);
       const price = typeof x.price === "number" && isFinite(x.price) && x.price >= 0 ? x.price : null;
-      const currency = ["ILS", "USD", "EUR"].includes(x.currency) ? x.currency : "ILS";
+      const currency = money.code(x.currency, "ILS");
+      const priceAbroad = typeof x.price_abroad === "number" && isFinite(x.price_abroad) && x.price_abroad >= 0 ? x.price_abroad : null;
+      const currencyAbroad = money.code(x.currency_abroad, "USD");
       return {
         slug: x.slug,
         title,
@@ -329,7 +347,12 @@ function contentFor(lang) {
         type: ["physical", "digital", "personalized", "made-to-order"].includes(x.type) ? x.type : "physical",
         availability: ["available", "preorder", "soon", "soldout"].includes(x.availability) ? x.availability : "available",
         price,
-        priceText: price === null ? "" : new Intl.NumberFormat(lang === "he" ? "he-IL" : "en-US", { style: "currency", currency, maximumFractionDigits: Number.isInteger(price) ? 0 : 2 }).format(price),
+        currency,
+        priceText: price === null ? "" : money.format(price, currency, lang),
+        priceAbroad,
+        currencyAbroad,
+        priceAbroadText: priceAbroad === null ? "" : money.format(priceAbroad, currencyAbroad, lang),
+        shipsTo: ["israel", "worldwide", "digital"].includes(x.ships_to) ? x.ships_to : x.type === "digital" ? "digital" : "worldwide",
         priceFrom: x.price_from === true,
         variants: (x.variants || [])
           .map((v) => ({ name: pick(v, "name", lang), values: pick(v, "values", lang).split(",").map((t) => t.trim()).filter(Boolean) }))
@@ -338,6 +361,8 @@ function contentFor(lang) {
         buyUrl: /^https:\/\//.test(String(x.buy_url || "")) ? x.buy_url : "",
         images: pics,
         thumb: pics[0] || null,
+        cardFit: x.card_fit === "fill" ? "fill" : "whole",
+        cardFocus: ["top", "bottom", "left", "right"].includes(x.card_focus) ? x.card_focus : "center",
         seoTitle: pick(x, "seo_title", lang),
         seoDescription: pick(x, "seo_description", lang),
       };
@@ -352,7 +377,12 @@ function contentFor(lang) {
     hero,
     homeGallery,
     products,
-    shop: { intro: pick(raw.shop, "intro", lang), categories: shopCategories.filter((c) => products.some((x) => x.category && x.category.slug === c.slug)) },
+    shop: {
+      shippingIsrael: pick(raw.shop, "shipping_israel", lang),
+      shippingAbroad: pick(raw.shop, "shipping_abroad", lang),
+      checkout: "email", // the only method for now; online payment needs approval
+      intro: pick(raw.shop, "intro", lang),
+      categories: shopCategories.filter((c) => products.some((x) => x.category && x.category.slug === c.slug)) },
     participation,
     tagline: pick(s, "tagline", lang),
     showreel: parseVideo(s.showreel_url),
@@ -446,6 +476,7 @@ for (const lang of ["en", "he"]) {
   if (data.testimonials.length) add("testimonials/", render.testimonials(contextFor(lang, "testimonials/", data)));
   add("contact/", render.contact(contextFor(lang, "contact/", data)));
   add("shop/", render.shop(contextFor(lang, "shop/", data)));
+  outputs.set((lang === "he" ? "he/" : "") + "shop/order/index.html", render.order(contextFor(lang, "shop/order/", data)));
   data.products.forEach((x) => {
     const pagePath = `shop/${x.slug}/`;
     add(pagePath, render.product(contextFor(lang, pagePath, data), x));

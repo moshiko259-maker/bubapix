@@ -29,6 +29,8 @@
   <link rel="stylesheet" href="../../css/styles.css">
   <link rel="stylesheet" href="../../css/gallery.css">
   <script src="../../js/main.js" defer></script>
+  <script type="application/json" id="shop-data">{"lang":"he","emails":["studio@bubapix.com","bubapix369@gmail.com"],"orderUrl":"../shop/order/index.html","t":{"title":"חנות","empty":"המוצרים בדרך.","all":"הכול","price":"מחיר","from":"החל מ־","buy":"לקנייה","orderEmail":"להזמנה במייל","orderSubject":"הזמנה","contact":"לשאלה על המוצר","variants":"אפשרויות","type":"סוג","fromProject":"מתוך הפרויקט","projectShop":"מהחנות","availability":{"available":"זמין","preorder":"בהזמנה מוקדמת","soon":"בקרוב","soldout":"אזל"},"types":{"physical":"מוצר פיזי","digital":"הורדה דיגיטלית","personalized":"מותאם אישית","made-to-order":"בהזמנה אישית"},"addToOrder":"הוספה להזמנה","added":"נוסף להזמנה.","viewOrder":"ההזמנה שלכם","orderTitle":"ההזמנה שלכם","orderEmpty":"ההזמנה ריקה.","quantity":"כמות","remove":"הסרה","destination":"משלוח אל","israel":"ישראל","abroad":"חו״ל","total":"סה״כ לפני משלוח","nameLabel":"השם שלכם","notesLabel":"הערות (לא חובה)","sendOrder":"שליחת בקשת הזמנה","sendNote":"אפליקציית המייל שלכם תיפתח עם פרטי ההזמנה. שלחו את המייל כדי להגיש את הבקשה, ונחזור אליכם עם פרטי תשלום ומשלוח. באתר עצמו לא מתבצע תשלום.","opened":"אפליקציית המייל אמורה להיפתח עכשיו עם ההזמנה. אם היא לא נפתחה, כתבו לנו לכתובת:","missing":"נא לכתוב שם.","shipping":"משלוח","shipsTo":{"israel":"משלוח בישראל בלבד","worldwide":"משלוח בישראל ולחו״ל","digital":"דיגיטלי, ללא משלוח"},"priceAbroad":"מחיר בחו״ל","continue":"להמשך קנייה","mixed":"יש פריטים במטבעות שונים; נאשר את הסכום הכולל."}}</script>
+  <script src="../../js/shop.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">דלגו לתוכן</a>
@@ -51,7 +53,7 @@
   <main id="main">
 
     <div class="page">
-      <header class="page-head"><h1 class="page-title">חנות</h1></header>
+      <header class="page-head shop-head"><h1 class="page-title">חנות</h1><a class="order-link" href="../shop/order/index.html" data-order-link hidden>ההזמנה שלכם (<span data-order-count>0</span>)</a></header>
       <p class="shop-empty">המוצרים בדרך.</p>
     </div>
   </main>

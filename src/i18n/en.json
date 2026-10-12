@@ -178,6 +178,32 @@
       "digital": "Digital download",
       "personalized": "Personalized",
       "made-to-order": "Made to order"
-    }
+    },
+    "addToOrder": "Add to order",
+    "added": "Added to your order.",
+    "viewOrder": "Your order",
+    "orderTitle": "Your order",
+    "orderEmpty": "Your order is empty.",
+    "quantity": "Quantity",
+    "remove": "Remove",
+    "destination": "Shipping to",
+    "israel": "Israel",
+    "abroad": "Abroad",
+    "total": "Total before shipping",
+    "nameLabel": "Your name",
+    "notesLabel": "Notes (optional)",
+    "sendOrder": "Send order request",
+    "sendNote": "Your email app opens with the order details. Send that email to place the request; we reply with payment and delivery details. No payment is taken on this site.",
+    "opened": "Your email app should now be open with the order. If it did not open, write to us at:",
+    "missing": "Please add your name.",
+    "shipping": "Shipping",
+    "shipsTo": {
+      "israel": "Ships in Israel only",
+      "worldwide": "Ships in Israel and abroad",
+      "digital": "Digital, no shipping"
+    },
+    "priceAbroad": "Price abroad",
+    "continue": "Continue shopping",
+    "mixed": "Items are in different currencies; we will confirm the total."
   }
 }

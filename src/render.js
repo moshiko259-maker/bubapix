@@ -47,8 +47,10 @@ function logo(ctx, alt, cls, attrs = "") {
 // The proportions become small CSS classes in css/gallery.css (see build.js).
 // ---------------------------------------------------------------------------
 const usedRatios = new Set();
+const FRAMES = { wide: 240, landscape: 178, square: 100, portrait: 80 };
 function ratioClass(im) {
-  const r = im.w && im.h ? Math.round((im.w / im.h) * 100) : 150;
+  const fixed = FRAMES[im.frame];
+  const r = fixed || (im.w && im.h ? Math.round((im.w / im.h) * 100) : 150);
   const clamped = Math.min(400, Math.max(40, r));
   usedRatios.add(clamped);
   return { cls: `ar-${clamped}`, ratio: clamped / 100 };
@@ -64,7 +66,8 @@ function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = fa
   const capInner = caption && (caption.title || caption.note)
     ? `${caption.title ? `<span class="jg-title">${e(caption.title)}</span>` : ""}${caption.note ? `<span class="jg-note">${e(caption.note)}</span>` : ""}`
     : "";
-  const classes = `jg-item ${cls}${isLead ? " is-lead" : ""}`;
+  const framed = FRAMES[im.frame] ? ` fit-cover focus-${im.focus || "center"}` : "";
+  const classes = `jg-item ${cls}${isLead ? " is-lead" : ""}${framed}`;
   if (!href) {
     return `<figure class="${classes}">${picture}${capInner ? `<figcaption class="jg-caption">${capInner}</figcaption>` : ""}</figure>`;
   }
@@ -115,7 +118,19 @@ function communityData(ctx) {
   return `<script type="application/json" id="community-data">${json}</script>`;
 }
 
-function layout(ctx, { title, description, image, main, current = "", community = false, viewer = false }) {
+// Labels and settings for js/shop.js (stored as JSON, not run as code).
+function shopData(ctx) {
+  const { t, lang, data } = ctx;
+  const json = JSON.stringify({
+    lang,
+    emails: [data.contact.email, data.contact.email2].filter(Boolean),
+    orderUrl: makeLink(ctx)("shop/order/"),
+    t: t.shop,
+  }).replace(/</g, "\\u003c");
+  return `<script type="application/json" id="shop-data">${json}</script>`;
+}
+
+function layout(ctx, { title, description, image, main, current = "", community = false, viewer = false, shopScript = false, noindex = false }) {
   const { t, lang, dir, site, data } = ctx;
   const link = makeLink(ctx);
   const otherHref = ctx.otherBase + ctx.path + (ctx.preview ? "index.html" : "") + (lang === "he" ? "?lang=en" : "");
@@ -154,7 +169,8 @@ function layout(ctx, { title, description, image, main, current = "", community 
 <html lang="${lang}" dir="${dir}">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">${policy}
+  <meta name="viewport" content="width=device-width, initial-scale=1">${policy}${noindex ? `
+  <meta name="robots" content="noindex">` : ""}
   ${redirect}
   <title>${e(title)}</title>
   <meta name="description" content="${e(description)}">
@@ -179,7 +195,9 @@ function layout(ctx, { title, description, image, main, current = "", community 
   <script>${jsFlag}</script>
   <link rel="stylesheet" href="${ctx.assetBase}css/styles.css">
   <link rel="stylesheet" href="${ctx.assetBase}css/gallery.css">
-  <script src="${ctx.assetBase}js/main.js" defer></script>${withCommunity ? `
+  <script src="${ctx.assetBase}js/main.js" defer></script>${shopScript ? `
+  ${shopData(ctx)}
+  <script src="${ctx.assetBase}js/shop.js" defer></script>` : ""}${withCommunity ? `
   ${communityData(ctx)}
   <script src="${ctx.assetBase}js/community.js" defer></script>` : ""}${site.analyticsHead ? `
   ${site.analyticsHead}` : ""}
@@ -667,6 +685,9 @@ function privacy(ctx) {
 // ---------------------------------------------------------------------------
 // Shop
 // ---------------------------------------------------------------------------
+// Link to the visitor's order; js/shop.js shows it once something is added.
+const orderLink = (ctx) => `<a class="order-link" href="${makeLink(ctx)("shop/order/")}" data-order-link hidden>${e(ctx.t.shop.viewOrder)} (<span data-order-count>0</span>)</a>`;
+
 // "From" before a price: "From ₪89" in English, "החל מ־89 ₪" in Hebrew (no space after the maqaf).
 const fromPrefix = (ctx) => e(ctx.t.shop.from) + (/־$/.test(ctx.t.shop.from) ? "" : " ");
 
@@ -674,7 +695,7 @@ function productCard(ctx, x) {
   const link = makeLink(ctx);
   const { cls } = ratioClass(x.thumb);
   return `<a class="product-card" href="${link(`shop/${x.slug}/`)}">
-          <span class="product-media">${img(ctx, x.thumb, { sizes: "(max-width: 560px) 50vw, (max-width: 1100px) 33vw, 25vw" })}</span>
+          <span class="product-media${x.cardFit === "fill" ? ` is-fill focus-${x.cardFocus}` : ""}">${img(ctx, x.thumb, { sizes: "(max-width: 560px) 50vw, (max-width: 1100px) 33vw, 25vw" })}</span>
           <span class="product-name">${e(x.title)}</span>${x.priceText ? `
           <span class="product-price">${x.priceFrom ? fromPrefix(ctx) : ""}${e(x.priceText)}</span>` : ""}${x.availability !== "available" ? `
           <span class="product-badge">${e(ctx.t.shop.availability[x.availability])}</span>` : ""}
@@ -704,9 +725,10 @@ function shop(ctx) {
     current: "shop",
     main: `
     <div class="page">
-      <header class="page-head"><h1 class="page-title">${e(t.shop.title)}</h1>${data.shop.intro ? `
+      <header class="page-head shop-head"><h1 class="page-title">${e(t.shop.title)}</h1>${orderLink(ctx)}${data.shop.intro ? `
         <p class="lede">${e(data.shop.intro)}</p>` : ""}</header>${filters}${grid}
     </div>`,
+    shopScript: true,
   });
 }
 
@@ -716,11 +738,28 @@ function product(ctx, x) {
   const c = data.contact;
   // The buy button never pretends: it opens the product's own buy link, or an
   // order email to the address on the Contact page. Without either, no button.
+  // Buying: an external buy link when set; otherwise the visitor adds the
+  // product to an order and sends it as an order request by email (no online
+  // payment). Without JavaScript, a plain order email link is offered.
   let action = "";
+  const emails = [c.email, c.email2].filter(Boolean);
   if (x.availability !== "soldout" && x.availability !== "soon") {
     if (x.buyUrl) action = `<a class="button button-large" href="${e(x.buyUrl)}" rel="noopener" target="_blank">${e(t.shop.buy)}</a>`;
-    else if (c.email || c.email2) action = `<a class="button button-large" href="mailto:${[c.email, c.email2].filter(Boolean).map(e).join(",")}?subject=${encodeURIComponent(`${t.shop.orderSubject}: ${x.title}`)}">${e(t.shop.orderEmail)}</a>`;
+    else if (emails.length) {
+      const mail = `mailto:${emails.map(e).join(",")}?subject=${encodeURIComponent(`${t.shop.orderSubject}: ${x.title}`)}`;
+      action = `<form class="add-form" data-add-to-order data-slug="${e(x.slug)}" data-title="${e(x.title)}" data-price="${x.price === null ? "" : x.price}" data-currency="${e(x.currency)}" data-price-abroad="${x.priceAbroad === null ? "" : x.priceAbroad}" data-currency-abroad="${e(x.currencyAbroad)}" data-ships="${e(x.shipsTo)}" hidden>${x.variants.map((v, i) => `
+            <label class="field"><span>${e(v.name)}</span><select name="opt${i}" data-option="${e(v.name)}">${v.values.map((val) => `<option>${e(val)}</option>`).join("")}</select></label>`).join("")}
+            <label class="field field-qty"><span>${e(t.shop.quantity)}</span><input type="number" name="qty" min="1" max="99" value="1" inputmode="numeric"></label>
+            <button type="submit" class="button button-large">${e(t.shop.addToOrder)}</button>
+            <p class="form-status" role="status" aria-live="polite"></p>
+          </form>
+          <noscript><a class="button button-large" href="${mail}">${e(t.shop.orderEmail)}</a></noscript>`;
+    }
   }
+  const shipping = x.shipsTo === "digital"
+    ? ""
+    : [data.shop.shippingIsrael && `<div><dt>${e(t.shop.israel)}</dt><dd>${e(data.shop.shippingIsrael)}</dd></div>`,
+       x.shipsTo === "worldwide" && data.shop.shippingAbroad && `<div><dt>${e(t.shop.abroad)}</dt><dd>${e(data.shop.shippingAbroad)}</dd></div>`].filter(Boolean).join("");
   const pics = x.images.map((im, i) =>
     galleryItem(ctx, im, { href: ctx.assetBase + e(im.full || im.src), label: `${t.work.openImage}: ${im.alt}`, viewer: true, lead: i === 0, eager: i === 0 })
   );
@@ -730,22 +769,64 @@ function product(ctx, x) {
     image: x.thumb,
     current: "shop",
     viewer: true,
+    shopScript: true,
     main: `
     <article class="page product-page">
-      <p class="crumb"><a href="${link("shop/")}">${e(t.shop.title)}</a></p>
+      <p class="crumb shop-crumb"><a href="${link("shop/")}">${e(t.shop.title)}</a>${orderLink(ctx)}</p>
       <div class="product-layout">
         <div class="product-photos">${gallery(pics, "jg-product")}</div>
         <div class="product-info">
           <h1 class="page-title">${e(x.title)}</h1>${x.priceText ? `
           <p class="product-price-large">${x.priceFrom ? fromPrefix(ctx) : ""}${e(x.priceText)}</p>` : ""}
-          <p class="product-meta">${e(t.shop.availability[x.availability])}${x.category ? ` · ${e(x.category.name)}` : ""}${x.type !== "physical" ? ` · ${e(t.shop.types[x.type])}` : ""}</p>${x.description ? `
+${x.priceAbroadText ? `
+          <p class="product-meta">${e(t.shop.priceAbroad)}: ${e(x.priceAbroadText)}</p>` : ""}
+          <p class="product-meta">${e(t.shop.availability[x.availability])}${x.category ? ` · ${e(x.category.name)}` : ""}${x.type !== "physical" ? ` · ${e(t.shop.types[x.type])}` : ""} · ${e(t.shop.shipsTo[x.shipsTo])}</p>${x.description ? `
           <div class="prose">${md(x.description)}</div>` : ""}${x.variants.length ? `
           <dl class="details product-variants">${x.variants.map((v) => `<div><dt>${e(v.name)}</dt><dd>${v.values.map(e).join(" · ")}</dd></div>`).join("")}</dl>` : ""}${action ? `
-          <p class="product-action">${action}</p>` : ""}${x.projects.length ? `
+          <div class="product-action">${action}</div>` : ""}${shipping ? `
+          <section aria-label="${e(t.shop.shipping)}"><h2 class="section-label">${e(t.shop.shipping)}</h2><dl class="details">${shipping}</dl></section>` : ""}${x.projects.length ? `
           <p class="product-projects">${e(t.shop.fromProject)}: ${x.projects.map((p) => `<a href="${link(`work/${p.slug}/`)}">${e(p.title)}</a>`).join(", ")}</p>` : ""}
         </div>
       </div>
     </article>`,
+  });
+}
+
+// The visitor's order (kept in their own browser until sent). Sending opens
+// an order email to the studio; nothing is charged on the site.
+function order(ctx) {
+  const { t, data } = ctx;
+  const link = makeLink(ctx);
+  const emails = [data.contact.email, data.contact.email2].filter(Boolean);
+  return layout(ctx, {
+    title: pageTitle(ctx, t.shop.orderTitle),
+    description: t.shop.orderTitle,
+    current: "shop",
+    shopScript: true,
+    noindex: true,
+    main: `
+    <div class="page order-page">
+      <p class="crumb"><a href="${link("shop/")}">${e(t.shop.continue)}</a></p>
+      <header class="page-head"><h1 class="page-title">${e(t.shop.orderTitle)}</h1></header>
+      <noscript><p class="muted">${e(t.community.noscript)}</p></noscript>
+      <div data-order hidden>
+        <p class="shop-empty" data-order-empty hidden>${e(t.shop.orderEmpty)}</p>
+        <ol class="order-items" data-order-items></ol>
+        <form class="cform order-form" data-order-form novalidate hidden>
+          <p class="order-total" data-order-total aria-live="polite"></p>
+          <fieldset class="cform-type">
+            <legend>${e(t.shop.destination)}</legend>
+            <label><input type="radio" name="dest" value="israel" checked> ${e(t.shop.israel)}</label>
+            <label><input type="radio" name="dest" value="abroad"> ${e(t.shop.abroad)}</label>
+          </fieldset>
+          <label class="field"><span>${e(t.shop.nameLabel)}</span><input name="name" maxlength="80" autocomplete="name" required></label>
+          <label class="field"><span>${e(t.shop.notesLabel)}</span><textarea name="notes" rows="3" maxlength="1000"></textarea></label>
+          <p class="form-note">${e(t.shop.sendNote)}</p>
+          <button type="submit" class="button button-large"${emails.length ? "" : " disabled"}>${e(t.shop.sendOrder)}</button>
+          <p class="form-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>`,
   });
 }
 
@@ -794,4 +875,4 @@ function notFound(site, en, he, preview) {
 `;
 }
 
-module.exports = { usedRatios, shop, product, home, work, project, services, about, testimonials, contact, ideas, privacy, customPage, notFound };
+module.exports = { usedRatios, shop, product, order, home, work, project, services, about, testimonials, contact, ideas, privacy, customPage, notFound };

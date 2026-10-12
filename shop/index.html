@@ -29,6 +29,8 @@
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/gallery.css">
   <script src="../js/main.js" defer></script>
+  <script type="application/json" id="shop-data">{"lang":"en","emails":["studio@bubapix.com","bubapix369@gmail.com"],"orderUrl":"../shop/order/index.html","t":{"title":"Shop","empty":"Products are on the way.","all":"All","price":"Price","from":"From","buy":"Buy","orderEmail":"Order by email","orderSubject":"Order","contact":"Ask about this product","variants":"Options","type":"Type","fromProject":"From the project","projectShop":"Shop","availability":{"available":"Available","preorder":"Pre-order","soon":"Coming soon","soldout":"Sold out"},"types":{"physical":"Physical product","digital":"Digital download","personalized":"Personalized","made-to-order":"Made to order"},"addToOrder":"Add to order","added":"Added to your order.","viewOrder":"Your order","orderTitle":"Your order","orderEmpty":"Your order is empty.","quantity":"Quantity","remove":"Remove","destination":"Shipping to","israel":"Israel","abroad":"Abroad","total":"Total before shipping","nameLabel":"Your name","notesLabel":"Notes (optional)","sendOrder":"Send order request","sendNote":"Your email app opens with the order details. Send that email to place the request; we reply with payment and delivery details. No payment is taken on this site.","opened":"Your email app should now be open with the order. If it did not open, write to us at:","missing":"Please add your name.","shipping":"Shipping","shipsTo":{"israel":"Ships in Israel only","worldwide":"Ships in Israel and abroad","digital":"Digital, no shipping"},"priceAbroad":"Price abroad","continue":"Continue shopping","mixed":"Items are in different currencies; we will confirm the total."}}</script>
+  <script src="../js/shop.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -51,7 +53,7 @@
   <main id="main">
 
     <div class="page">
-      <header class="page-head"><h1 class="page-title">Shop</h1></header>
+      <header class="page-head shop-head"><h1 class="page-title">Shop</h1><a class="order-link" href="../shop/order/index.html" data-order-link hidden>Your order (<span data-order-count>0</span>)</a></header>
       <p class="shop-empty">Products are on the way.</p>
     </div>
   </main>

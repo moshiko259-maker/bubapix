@@ -229,6 +229,29 @@ collections:
                       - { label: "On the project page only / בעמוד הפרויקט בלבד", value: project }
                       - { label: "Also under the image on the homepage / גם מתחת לתמונה בדף הבית", value: everywhere }
                   - { name: on_home, label: "Also show this image in the homepage gallery / להציג גם בגלריה של דף הבית", widget: boolean, default: false, required: false }
+                  - name: frame
+                    label: "Frame shape / צורת המסגרת"
+                    widget: select
+                    default: natural
+                    required: false
+                    hint: "Natural: the whole picture, never cropped. Other shapes fill the frame; choose below which part stays in view. / טבעית: התמונה כולה. צורות אחרות ממלאות את המסגרת."
+                    options:
+                      - { label: "Natural, whole picture / טבעית, התמונה כולה", value: natural }
+                      - { label: "Cinema wide 2.4:1 / קולנוע רחב", value: wide }
+                      - { label: "Landscape 16:9 / רוחבית", value: landscape }
+                      - { label: "Square 1:1 / ריבועית", value: square }
+                      - { label: "Portrait 4:5 / לאורך", value: portrait }
+                  - name: focus
+                    label: "Part that stays in view / החלק שנשאר במסגרת"
+                    widget: select
+                    default: center
+                    required: false
+                    options:
+                      - { label: "Center / מרכז", value: center }
+                      - { label: "Top / למעלה", value: top }
+                      - { label: "Bottom / למטה", value: bottom }
+                      - { label: "Left / שמאל", value: left }
+                      - { label: "Right / ימין", value: right }
           - name: gallery
             label: "Image gallery / גלריית תמונות"
             widget: object
@@ -380,13 +403,44 @@ collections:
           - { name: image, label: "Photo / תמונה", widget: image }
           - { name: alt_en, label: "Description for blind visitors, English / תיאור לעיוורים, אנגלית", widget: string, required: false }
           - { name: alt_he, label: "Description for blind visitors, Hebrew / תיאור לעיוורים, עברית", widget: string, required: false }
+      - name: card_fit
+        label: "Main photo in the shop grid / התמונה הראשית ברשת החנות"
+        widget: select
+        default: whole
+        required: false
+        options:
+          - { label: "Whole photo / התמונה כולה", value: whole }
+          - { label: "Fill the frame / מילוי המסגרת", value: fill }
+      - name: card_focus
+        label: "Part that stays in view (when filling) / החלק שנשאר במסגרת"
+        widget: select
+        default: center
+        required: false
+        options:
+          - { label: "Center / מרכז", value: center }
+          - { label: "Top / למעלה", value: top }
+          - { label: "Bottom / למטה", value: bottom }
+          - { label: "Left / שמאל", value: left }
+          - { label: "Right / ימין", value: right }
       - { name: price, label: "Price (empty = not shown) / מחיר (ריק = לא מוצג)", widget: number, value_type: float, min: 0, required: false }
       - name: currency
         label: "Currency / מטבע"
-        widget: select
+        widget: string
         default: ILS
         required: false
-        options: [ { label: "₪ ILS", value: ILS }, { label: "$ USD", value: USD }, { label: "€ EUR", value: EUR } ]
+        pattern: ['^$|^[A-Z]{3}$', "Three capital letters, e.g. ILS, USD, EUR, GBP / שלוש אותיות גדולות"]
+        hint: "Any currency code: ILS (₪), USD ($), EUR (€), GBP (£), CAD, AUD, JPY… / כל קוד מטבע."
+      - { name: price_abroad, label: "Price abroad (optional) / מחיר לחו״ל (לא חובה)", widget: number, value_type: float, min: 0, required: false, hint: "Shown as an extra line, e.g. for customers outside Israel. / מוצג כשורה נוספת." }
+      - { name: currency_abroad, label: "Currency of the price abroad / מטבע המחיר לחו״ל", widget: string, default: USD, required: false, pattern: ['^$|^[A-Z]{3}$', "Three capital letters / שלוש אותיות גדולות"] }
+      - name: ships_to
+        label: "Shipping / משלוח"
+        widget: select
+        default: worldwide
+        required: false
+        options:
+          - { label: "Israel and abroad / ישראל וחו״ל", value: worldwide }
+          - { label: "Israel only / ישראל בלבד", value: israel }
+          - { label: "Digital, no shipping / דיגיטלי, ללא משלוח", value: digital }
       - { name: price_from, label: "Price starts from (several options) / המחיר הוא \"החל מ־\"", widget: boolean, default: false, required: false }
       - name: availability
         label: "Availability / זמינות"
@@ -427,7 +481,7 @@ collections:
         widget: string
         required: false
         pattern: ['^$|^https://', "Must start with https:// / חייב להתחיל ב־https://"]
-        hint: "For example your product page on a print-on-demand or store site. Empty: the button opens an order email to the address on the Contact page. / ריק: הכפתור יפתח מייל הזמנה."
+        hint: "For example your product page on a print-on-demand or store site. Empty: visitors add the product to an order and send it to you as an order request by email. / ריק: המבקרים מוסיפים להזמנה ושולחים בקשת הזמנה במייל."
       - { name: seo_title_en, label: "Search title, English (optional) / כותרת לגוגל, אנגלית", widget: string, required: false }
       - { name: seo_title_he, label: "Search title, Hebrew (optional) / כותרת לגוגל, עברית", widget: string, required: false }
       - { name: seo_description_en, label: "Search description, English (optional) / תיאור לגוגל, אנגלית", widget: text, required: false }
@@ -542,6 +596,29 @@ collections:
                 options:
                   - { label: "No (kept, not shown) / לא (נשמר, לא מוצג)", value: hidden }
                   - { label: "Yes / כן", value: everywhere }
+              - name: frame
+                label: "Frame shape / צורת המסגרת"
+                widget: select
+                default: natural
+                required: false
+                hint: "Natural: the whole picture, never cropped. Other shapes fill the frame; choose below which part stays in view. / טבעית: התמונה כולה. צורות אחרות ממלאות את המסגרת."
+                options:
+                  - { label: "Natural, whole picture / טבעית, התמונה כולה", value: natural }
+                  - { label: "Cinema wide 2.4:1 / קולנוע רחב", value: wide }
+                  - { label: "Landscape 16:9 / רוחבית", value: landscape }
+                  - { label: "Square 1:1 / ריבועית", value: square }
+                  - { label: "Portrait 4:5 / לאורך", value: portrait }
+              - name: focus
+                label: "Part that stays in view / החלק שנשאר במסגרת"
+                widget: select
+                default: center
+                required: false
+                options:
+                  - { label: "Center / מרכז", value: center }
+                  - { label: "Top / למעלה", value: top }
+                  - { label: "Bottom / למטה", value: bottom }
+                  - { label: "Left / שמאל", value: left }
+                  - { label: "Right / ימין", value: right }
           - { name: tagline_en, label: "Tagline, English / סלוגן באנגלית", widget: string, required: false }
           - { name: tagline_he, label: "Tagline, Hebrew / סלוגן בעברית", widget: string, required: false }
           - { name: intro_en, label: "Short intro under the gallery, English (optional) / משפט פתיחה מתחת לגלריה, אנגלית", widget: text, required: false }
@@ -556,6 +633,18 @@ collections:
         fields:
           - { name: intro_en, label: "Short intro, English (optional) / פתיח קצר, אנגלית", widget: text, required: false }
           - { name: intro_he, label: "Short intro, Hebrew (optional) / פתיח קצר, עברית", widget: text, required: false }
+          - { name: shipping_israel_en, label: "Shipping in Israel, English (price, time…) / משלוח בישראל, אנגלית", widget: text, required: false, hint: "Shown on product pages. Write only real terms. Empty: not shown. / מוצג בעמודי המוצרים. רק תנאים אמיתיים." }
+          - { name: shipping_israel_he, label: "Shipping in Israel, Hebrew / משלוח בישראל, עברית", widget: text, required: false }
+          - { name: shipping_abroad_en, label: "Shipping abroad, English / משלוח לחו״ל, אנגלית", widget: text, required: false }
+          - { name: shipping_abroad_he, label: "Shipping abroad, Hebrew / משלוח לחו״ל, עברית", widget: text, required: false }
+          - name: checkout
+            label: "How orders are sent / איך נשלחות הזמנות"
+            widget: select
+            default: email
+            required: false
+            options:
+              - { label: "Order request by email (no online payment) / בקשת הזמנה במייל (בלי תשלום אונליין)", value: email }
+            hint: "Online payment can be added later with a payment provider; that needs your approval and an account with the provider. / תשלום אונליין יתווסף בעתיד, באישורך."
           - name: categories
             label: "Categories / קטגוריות"
             label_singular: "category / קטגוריה"
