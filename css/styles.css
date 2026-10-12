@@ -289,6 +289,7 @@ a.jg-item:hover .jg-media img { transform: scale(1.015); }
 /* One short line saying what a click on a picture does. */
 .page-hint { margin: 0.5rem 0 0; font-size: 0.9375rem; color: var(--ink-2); }
 .home-hint { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter) clamp(0.6rem, 1.2vw, 0.9rem); }
+.opening-hint { margin: 0.6rem 0 0; }
 a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: var(--radius); }
 /* A picture placed in a chosen frame fills it; "focus" keeps the chosen
    part in view. Pictures without a frame are always shown whole. */
