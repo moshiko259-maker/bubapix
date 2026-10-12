@@ -4,6 +4,7 @@
 
 const crypto = require("crypto");
 const md = require("./markdown.js");
+const { icon, networkOf } = require("./icons.js");
 
 function e(s) {
   return String(s == null ? "" : s)
@@ -125,6 +126,8 @@ function shopData(ctx) {
     lang,
     emails: [data.contact.email, data.contact.email2].filter(Boolean),
     orderUrl: makeLink(ctx)("shop/order/"),
+    currency: data.shop.currency,
+    payments: data.shop.payments,
     t: t.shop,
   }).replace(/</g, "\\u003c");
   return `<script type="application/json" id="shop-data">${json}</script>`;
@@ -231,9 +234,8 @@ ${data.participation.ideas ? `
         <li><a href="${link("privacy/")}"${current === "privacy" ? ' aria-current="page"' : ""}>${e(t.nav.privacy)}</a></li>` : ""}
       </ul>
     </nav>
-    ${data.contact.social.length ? `<ul class="footer-social" aria-label="${e(t.contact.social)}">${data.contact.social.map((x) => `<li><a href="${e(x.url)}" rel="noopener me" target="_blank">${e(x.label)}</a></li>`).join("")}</ul>` : ""}
+    ${footerContact(ctx)}
     <div class="footer-meta">
-      ${[data.contact.email, data.contact.email2].filter(Boolean).map((m) => `<a class="footer-email" href="mailto:${e(m)}">${e(m)}</a>`).join("\n      ")}
       <a class="lang-switch" href="${otherHref}" hreflang="${otherLang}" lang="${otherLang}" data-lang="${otherLang}">${e(t.nav.switchLabel)}</a>
       <p>&copy; <span data-year>${new Date().getFullYear()}</span> BubaPix</p>
       <a href="#main">${e(t.footer.top)}</a>
@@ -242,6 +244,30 @@ ${data.participation.ideas ? `
 </body>
 </html>
 `;
+}
+
+// Social profiles as icons. The visible name is optional; the link always has
+// an accessible name and opens the studio's own profile in a new tab.
+function socialList(ctx, cls, named = false) {
+  const { t, data } = ctx;
+  if (!data.contact.social.length) return "";
+  return `<ul class="${cls}" aria-label="${e(t.contact.social)}">${data.contact.social
+    .map((x) => {
+      const label = x.label || networkOf(x.url);
+      return `<li><a href="${e(x.url)}" rel="noopener me" target="_blank"${named ? "" : ` aria-label="${e(label)}" title="${e(label)}"`}>${icon(networkOf(x.url))}${named ? `<span>${e(label)}</span>` : ""}</a></li>`;
+    })
+    .join("")}</ul>`;
+}
+
+// Footer contact band: the emails (clearly visible) and the social icons.
+function footerContact(ctx) {
+  const { t, data } = ctx;
+  const mails = [data.contact.email, data.contact.email2].filter(Boolean);
+  if (!mails.length && !data.contact.social.length) return "";
+  return `<div class="footer-contact">${mails.length ? `
+      <p class="footer-mails">${icon("email")}${mails.map((m) => `<a class="footer-email" href="mailto:${e(m)}">${e(m)}</a>`).join(`<span class="sep" aria-hidden="true">·</span>`)}</p>` : ""}
+      ${socialList(ctx, "footer-social")}
+    </div>`;
 }
 
 const pageTitle = (ctx, title) => `${title} — ${ctx.t.meta.titleSuffix}`;
@@ -253,13 +279,16 @@ const pageTitle = (ctx, title) => `${title} — ${ctx.t.meta.titleSuffix}`;
 function home(ctx) {
   const { t, data } = ctx;
   const link = makeLink(ctx);
-  // Homepage pictures are for looking only: they do not open project pages
-  // (projects are reached from the Work page).
+  // A homepage picture opens its project's page only when a project was
+  // chosen for it in the admin; otherwise it is for looking only.
+  const linked = (g) => !!g.project;
   const items = data.homeGallery.map((g, i) =>
     galleryItem(ctx, g.image, {
       caption: g.caption,
       lead: i === 0,
       eager: i === 0,
+      href: linked(g) ? link(`work/${g.project.slug}/`) : "",
+      label: linked(g) ? `${g.project.name} — ${t.home.openProject}` : "",
     })
   );
   const work = items.length
@@ -609,7 +638,7 @@ function contact(ctx) {
     c.location && [t.contact.location, `<span>${e(c.location)}</span>`],
   ].filter(Boolean);
   const social = c.social.length
-    ? `<div><dt>${e(t.contact.social)}</dt><dd><ul class="social">${c.social.map((s) => `<li><a href="${e(s.url)}" rel="noopener" target="_blank">${e(s.label)}</a></li>`).join("")}</ul></dd></div>`
+    ? `<div><dt>${e(t.contact.social)}</dt><dd>${socialList(ctx, "social social-named", true)}</dd></div>`
     : "";
   return layout(ctx, {
     title: pageTitle(ctx, t.contact.title),
@@ -688,6 +717,28 @@ function privacy(ctx) {
 // Link to the visitor's order; js/shop.js shows it once something is added.
 const orderLink = (ctx) => `<a class="order-link" href="${makeLink(ctx)("shop/order/")}" data-order-link hidden>${e(ctx.t.shop.viewOrder)} (<span data-order-count>0</span>)</a>`;
 
+// The amount and currency of a price, for js/shop.js (approximate prices in
+// the visitor's chosen currency).
+const priceAttrs = (amount, currency, from) =>
+  amount === null ? "" : ` data-amount="${amount}" data-cur="${e(currency)}"${from ? ' data-from="1"' : ""}`;
+
+// "Show prices in" chooser. Shown by js/shop.js only when exchange rates exist.
+function currencyPicker(ctx) {
+  const { t, data } = ctx;
+  const cur = data.shop.currency;
+  if (!cur.codes.length) return "";
+  return `
+      <div class="currency-pick" data-currency-box hidden>
+        <label><span>${e(t.shop.showIn)}</span>
+          <select data-currency-pick>
+            <option value="">${e(t.shop.originalCurrency)}</option>${cur.codes.map((c) => `
+            <option value="${c}">${c}</option>`).join("")}
+          </select>
+        </label>
+        <p class="currency-note" data-currency-note hidden></p>
+      </div>`;
+}
+
 // "From" before a price: "From ₪89" in English, "החל מ־89 ₪" in Hebrew (no space after the maqaf).
 const fromPrefix = (ctx) => e(ctx.t.shop.from) + (/־$/.test(ctx.t.shop.from) ? "" : " ");
 
@@ -697,7 +748,7 @@ function productCard(ctx, x) {
   return `<a class="product-card" href="${link(`shop/${x.slug}/`)}">
           <span class="product-media${x.cardFit === "fill" ? ` is-fill focus-${x.cardFocus}` : ""}">${img(ctx, x.thumb, { sizes: "(max-width: 560px) 50vw, (max-width: 1100px) 33vw, 25vw" })}</span>
           <span class="product-name">${e(x.title)}</span>${x.priceText ? `
-          <span class="product-price">${x.priceFrom ? fromPrefix(ctx) : ""}${e(x.priceText)}</span>` : ""}${x.availability !== "available" ? `
+          <span class="product-price"${priceAttrs(x.price, x.currency, x.priceFrom)}>${x.priceFrom ? fromPrefix(ctx) : ""}${e(x.priceText)}</span>` : ""}${x.availability !== "available" ? `
           <span class="product-badge">${e(ctx.t.shop.availability[x.availability])}</span>` : ""}
         </a>`;
 }
@@ -726,7 +777,7 @@ function shop(ctx) {
     main: `
     <div class="page">
       <header class="page-head shop-head"><h1 class="page-title">${e(t.shop.title)}</h1>${orderLink(ctx)}${data.shop.intro ? `
-        <p class="lede">${e(data.shop.intro)}</p>` : ""}</header>${filters}${grid}
+        <p class="lede">${e(data.shop.intro)}</p>` : ""}</header>${filters}${data.products.some((x) => x.priceText) ? currencyPicker(ctx) : ""}${grid}
     </div>`,
     shopScript: true,
   });
@@ -777,9 +828,9 @@ function product(ctx, x) {
         <div class="product-photos">${gallery(pics, "jg-product")}</div>
         <div class="product-info">
           <h1 class="page-title">${e(x.title)}</h1>${x.priceText ? `
-          <p class="product-price-large">${x.priceFrom ? fromPrefix(ctx) : ""}${e(x.priceText)}</p>` : ""}
+          <p class="product-price-large"${priceAttrs(x.price, x.currency, x.priceFrom)}>${x.priceFrom ? fromPrefix(ctx) : ""}${e(x.priceText)}</p>` : ""}
 ${x.priceAbroadText ? `
-          <p class="product-meta">${e(t.shop.priceAbroad)}: ${e(x.priceAbroadText)}</p>` : ""}
+          <p class="product-meta">${e(t.shop.priceAbroad)}: <span${priceAttrs(x.priceAbroad, x.currencyAbroad, false)}>${e(x.priceAbroadText)}</span></p>` : ""}${x.priceText ? currencyPicker(ctx) : ""}
           <p class="product-meta">${e(t.shop.availability[x.availability])}${x.category ? ` · ${e(x.category.name)}` : ""}${x.type !== "physical" ? ` · ${e(t.shop.types[x.type])}` : ""} · ${e(t.shop.shipsTo[x.shipsTo])}</p>${x.description ? `
           <div class="prose">${md(x.description)}</div>` : ""}${x.variants.length ? `
           <dl class="details product-variants">${x.variants.map((v) => `<div><dt>${e(v.name)}</dt><dd>${v.values.map(e).join(" · ")}</dd></div>`).join("")}</dl>` : ""}${action ? `
@@ -813,7 +864,7 @@ function order(ctx) {
         <p class="shop-empty" data-order-empty hidden>${e(t.shop.orderEmpty)}</p>
         <ol class="order-items" data-order-items></ol>
         <form class="cform order-form" data-order-form novalidate hidden>
-          <p class="order-total" data-order-total aria-live="polite"></p>
+          <p class="order-total" data-order-total aria-live="polite"></p>${currencyPicker(ctx)}
           <fieldset class="cform-type">
             <legend>${e(t.shop.destination)}</legend>
             <label><input type="radio" name="dest" value="israel" checked> ${e(t.shop.israel)}</label>
@@ -824,7 +875,13 @@ function order(ctx) {
           <p class="form-note">${e(t.shop.sendNote)}</p>
           <button type="submit" class="button button-large"${emails.length ? "" : " disabled"}>${e(t.shop.sendOrder)}</button>
           <p class="form-status" role="status" aria-live="polite"></p>
-        </form>
+        </form>${data.shop.payments.length ? `
+        <section class="pay-box" data-pay hidden aria-labelledby="pay-title">
+          <h2 id="pay-title" class="section-label">${e(t.shop.payTitle)}</h2>
+          <p class="form-note">${e(t.shop.payIntro)}</p>
+          <p class="pay-amount" data-pay-amount></p>
+          <ul class="pay-list" data-pay-list></ul>
+        </section>` : ""}
       </div>
     </div>`,
   });

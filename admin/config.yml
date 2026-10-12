@@ -578,10 +578,18 @@ collections:
             collapsed: auto
             thumbnail: image
             summary: "{{fields.alt_en}}"
-            hint: "Pictures shown on the homepage, for looking only (they do not open project pages). Drag to change the order. Turn off 'Show' to hide one without deleting it. / תמונות לתצוגה בלבד, בלי קישור לעמודי פרויקטים. גררו לשינוי הסדר."
+            hint: "Pictures shown on the homepage. Choose a project to make the picture open that project's page; leave it empty for a picture to look at only. Drag to change the order. Turn off 'Show' to hide one without deleting it. / תמונות בדף הבית. בחרו פרויקט כדי שלחיצה על התמונה תפתח את דף הפרויקט; בלי פרויקט — תמונה לתצוגה בלבד. גררו לשינוי הסדר."
             fields:
               - { name: image, label: "Image / תמונה", widget: image }
               - { name: visible, label: "Show / להציג", widget: boolean, default: true, required: false }
+              - name: project
+                label: "Opens this project's page (optional) / לחיצה פותחת את דף הפרויקט (רשות)"
+                widget: relation
+                collection: projects
+                value_field: "{{slug}}"
+                search_fields: [title_en, title_he]
+                display_fields: [title_en]
+                required: false
               - { name: alt_en, label: "Description for blind visitors, English / תיאור לעיוורים, אנגלית", widget: string, required: false }
               - { name: alt_he, label: "Description for blind visitors, Hebrew / תיאור לעיוורים, עברית", widget: string, required: false }
               - { name: title_en, label: "Title, English (optional) / כותרת, אנגלית", widget: string, required: false }
@@ -657,6 +665,46 @@ collections:
               - { name: slug, label: "Short ID (a-z and dashes) / מזהה קצר", widget: string, pattern: ['^[a-z0-9][a-z0-9-]*$', "Use a-z, 0-9 and dashes"] }
               - { name: name_en, label: "Name, English / שם, אנגלית", widget: string }
               - { name: name_he, label: "Name, Hebrew / שם, עברית", widget: string, required: false }
+          - name: currencies
+            label: "Currencies visitors can choose to view prices in / מטבעות שהגולש יכול לבחור לתצוגת מחירים"
+            widget: list
+            required: false
+            field: { name: code, label: "Currency code (USD, ILS, EUR, GBP…) / קוד מטבע", widget: string, pattern: ['^[A-Z]{3}$', "Three capital letters, e.g. USD / שלוש אותיות גדולות"] }
+            hint: "Prices in a chosen currency are approximate (converted with current exchange rates, updated automatically). Orders always use the price you set. Empty: ILS, USD, EUR. / המחירים במטבע שנבחר משוערים (לפי שערי חליפין שמתעדכנים אוטומטית). ההזמנה תמיד לפי המחיר שקבעתם."
+          - name: manual_rates
+            label: "Manual exchange rates (only if a currency is missing) / שערי חליפין ידניים (רק אם מטבע חסר)"
+            label_singular: "rate / שער"
+            widget: list
+            required: false
+            collapsed: true
+            summary: "1 USD = {{fields.per_usd}} {{fields.code}}"
+            hint: "Normally not needed: the rates are downloaded automatically from the European Central Bank. / בדרך כלל לא צריך: השערים יורדים אוטומטית מהבנק המרכזי האירופי."
+            fields:
+              - { name: code, label: "Currency code / קוד מטבע", widget: string, pattern: ['^[A-Z]{3}$', "Three capital letters / שלוש אותיות גדולות"] }
+              - { name: per_usd, label: "How much is 1 US dollar in this currency / כמה שווה דולר אחד במטבע הזה", widget: number, value_type: float, min: 0 }
+          - name: payment_methods
+            label: "Payment methods / אמצעי תשלום"
+            label_singular: "payment method / אמצעי תשלום"
+            widget: list
+            required: false
+            collapsed: auto
+            summary: "{{fields.label_en}} ({{fields.kind}}) — on: {{fields.enabled}}"
+            hint: "Prepared for the future: each method stays OFF until you switch it on with your real account details. After a visitor sends an order request, the methods that are on are offered; each opens the provider's own secure page. The site never sees card details. / מוכן לעתיד: כל אמצעי כבוי עד שתפעילו אותו עם פרטי חשבון אמיתיים. אחרי שליחת בקשת הזמנה מוצגים האמצעים הפעילים; כל אחד פותח את הדף המאובטח של חברת התשלום. האתר לא רואה פרטי כרטיס."
+            fields:
+              - { name: enabled, label: "On / פעיל", widget: boolean, default: false, required: false }
+              - name: kind
+                label: "Type / סוג"
+                widget: select
+                default: link
+                options:
+                  - { label: "PayPal.Me (the amount is filled in automatically) / פייפאל (הסכום ממולא אוטומטית)", value: paypal }
+                  - { label: "Payment link (Bit, PayBox, Grow, card payment page…) / קישור תשלום (ביט, פייבוקס, Grow, דף תשלום באשראי…)", value: link }
+              - { name: label_en, label: "Button name, English (e.g. PayPal, Bit, Credit card) / שם הכפתור, אנגלית", widget: string, required: false }
+              - { name: label_he, label: "Button name, Hebrew (e.g. ביט, כרטיס אשראי) / שם הכפתור, עברית", widget: string, required: false }
+              - { name: paypal_me, label: "PayPal.Me name (for PayPal only; the part after paypal.me/) / שם PayPal.Me (רק לפייפאל)", widget: string, required: false, pattern: ['^$|^[A-Za-z0-9]{1,40}$', "Letters and digits only / אותיות וספרות בלבד"] }
+              - { name: url, label: "Payment link (for a payment link only; starts with https://) / קישור תשלום (מתחיל ב־https://)", widget: string, required: false, pattern: ['^$|^https://', "Must start with https:// / חייב להתחיל ב־https://"] }
+              - { name: note_en, label: "Short note, English (optional) / הערה קצרה, אנגלית", widget: string, required: false }
+              - { name: note_he, label: "Short note, Hebrew (optional) / הערה קצרה, עברית", widget: string, required: false }
 
       - name: participation
         label: "Visitor participation / השתתפות גולשים"

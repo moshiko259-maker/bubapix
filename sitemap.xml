@@ -84,4 +84,16 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://moshiko259-maker.github.io/bubapix/shop/"/>
     <xhtml:link rel="alternate" hreflang="he" href="https://moshiko259-maker.github.io/bubapix/he/shop/"/>
   </url>
+  <url>
+    <loc>https://moshiko259-maker.github.io/bubapix/privacy/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://moshiko259-maker.github.io/bubapix/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="he" href="https://moshiko259-maker.github.io/bubapix/he/privacy/"/>
+  </url>
+  <url>
+    <loc>https://moshiko259-maker.github.io/bubapix/he/privacy/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://moshiko259-maker.github.io/bubapix/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="he" href="https://moshiko259-maker.github.io/bubapix/he/privacy/"/>
+  </url>
 </urlset>

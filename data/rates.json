@@ -1,0 +1,11 @@
+{
+  "source": "European Central Bank (frankfurter.dev)",
+  "date": "2026-10-09",
+  "base": "USD",
+  "rates": {
+    "USD": 1,
+    "EUR": 0.89238,
+    "GBP": 0.75641,
+    "ILS": 3.0573
+  }
+}

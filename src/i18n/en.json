@@ -34,7 +34,8 @@
     "workTitle": "Gallery",
     "showreel": "Showreel",
     "allServices": "All services",
-    "startProject": "Start a project"
+    "startProject": "Start a project",
+    "openProject": "open the project"
   },
   "work": {
     "title": "Projects",
@@ -204,6 +205,17 @@
     },
     "priceAbroad": "Price abroad",
     "continue": "Continue shopping",
-    "mixed": "Items are in different currencies; we will confirm the total."
+    "mixed": "Items are in different currencies; we will confirm the total.",
+    "showIn": "Show prices in",
+    "originalCurrency": "Original currency",
+    "approxNote": "Prices in {cur} are approximate, converted with the exchange rates of {date}. You pay in the price's original currency.",
+    "approxPrefix": "≈ ",
+    "approxEmail": "Approximately",
+    "payTitle": "Payment",
+    "payIntro": "After you send the order request, you can pay with one of these methods. Each one opens the provider's own secure page.",
+    "payAmount": "Amount to pay",
+    "payWith": "Pay with",
+    "payEnter": "Enter the amount on the payment page.",
+    "payMixed": "Your order has more than one currency; we will send you the exact amount by email."
   }
 }

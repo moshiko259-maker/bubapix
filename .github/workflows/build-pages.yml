@@ -26,9 +26,14 @@ on:
       - "css/**"
       - "js/**"
       - "build.js"
+      - "data/**"
+      - "scripts/**"
       - ".github/workflows/build-pages.yml"
   delete:
   workflow_dispatch:
+  # Weekly: refresh the exchange rates for approximate prices in the shop.
+  schedule:
+    - cron: "17 6 * * 1"
 
 permissions:
   contents: write
@@ -54,6 +59,9 @@ jobs:
 
       - name: Install the image resizer (free, open source)
         run: npm install --no-save --no-package-lock sharp@0.34.4
+
+      - name: Update exchange rates (approximate prices in other currencies)
+        run: node scripts/fetch-rates.js
 
       - name: Build the site
         run: |

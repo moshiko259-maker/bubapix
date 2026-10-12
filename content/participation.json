@@ -1,6 +1,6 @@
 {
-  "comments": false,
+  "comments": true,
   "ratings": false,
   "ideas": false,
-  "consult": false
+  "consult": true
 }

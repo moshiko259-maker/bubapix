@@ -694,9 +694,18 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 @media (max-width: 560px) { .order-item { grid-template-columns: 1fr auto; } .order-item .link-button { grid-column: 1 / -1; justify-self: start; } }
 
 /* ---------- Footer social links ---------- */
-.footer-social { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; }
-.footer-social a { color: var(--ink-2); text-decoration: none; }
-.footer-social a:hover { color: var(--ink); text-decoration: underline; }
+/* Social icons and the footer contact band. */
+.icon { width: 1.25rem; height: 1.25rem; fill: currentColor; flex: none; }
+.footer-contact { flex: 1 1 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--line); }
+.footer-mails { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.75rem; margin: 0; font-family: var(--font-display); font-size: clamp(1.05rem, 1.6vw, 1.3rem); color: var(--ink); }
+.footer-mails .icon { color: var(--ink-2); }
+.footer-mails a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+.footer-mails a:hover { border-color: var(--ink); }
+.footer-mails .sep { color: var(--ink-2); }
+.footer-social { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.footer-social a { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; color: var(--ink); background: var(--paper-2); transition: background-color 0.2s var(--ease), color 0.2s var(--ease); }
+.footer-social a:hover { background: var(--ink); color: var(--paper); }
+.social-named a { display: inline-flex; align-items: center; gap: 0.5rem; }
 
 @media (max-width: 1100px) {
   .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -730,3 +739,15 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
   .js .jg-home .is-lead img { opacity: 1; transform: none; }
   a.jg-item:hover .jg-media img { transform: none; }
 }
+
+/* ---------- Shop: currency chooser and payment ---------- */
+.currency-pick[hidden], .pay-box[hidden] { display: none; }
+.currency-pick { margin: 0 0 1.5rem; font-size: 0.9375rem; color: var(--ink-2); }
+.currency-pick label { display: inline-flex; align-items: center; gap: 0.5rem; }
+.currency-pick select { font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.35rem 0.6rem; }
+.currency-note { margin: 0.5rem 0 0; font-size: 0.8125rem; }
+.pay-box { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
+.pay-amount { font-family: var(--font-display); font-size: 1.25rem; margin: 0.5rem 0 1rem; }
+.pay-list { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; list-style: none; padding: 0; margin: 0; }
+.pay-item .form-note { margin: 0.4rem 0 0; }
+.pay-list .button { text-decoration: none; }

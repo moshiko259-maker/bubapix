@@ -4,8 +4,9 @@
 // (localStorage). Sending the order opens the visitor's email app with the
 // order details, addressed to the studio. No payment is taken on the site.
 //
-// Future online payment: replace sendByEmail() with a provider in SENDERS
-// (for example a hosted checkout). Nothing else here needs to change.
+// Payment: the methods switched on in the admin (PayPal.Me, or a payment
+// link from Bit, PayBox, Grow, a card provider…) are offered after the order
+// request is sent. A full online checkout can later be added in SENDERS.
 (function () {
   "use strict";
 
@@ -48,6 +49,57 @@
     if (item.price !== null) return { amount: item.price, currency: item.currency };
     return null;
   }
+
+  // ---- Prices in another currency (approximate) ---------------------------
+  // The visitor may choose a currency; prices are then converted with the
+  // exchange rates built into the page and marked "≈". The order and any
+  // payment always use the price's own currency.
+  var CUR_KEY = "bubapix-currency";
+  var cur = cfg.currency || { codes: [], rates: {} };
+  function picked() {
+    var c = "";
+    try { c = localStorage.getItem(CUR_KEY) || ""; } catch (e) { /* storage blocked */ }
+    return cur.codes.indexOf(c) !== -1 ? c : "";
+  }
+  function convert(amount, from, to) {
+    if (!to || from === to) return null;
+    var a = cur.rates[from], b = cur.rates[to];
+    if (!a || !b) return null;
+    var v = amount / a * b;
+    return v >= 20 ? Math.round(v) : Math.round(v * 100) / 100;
+  }
+  function approx(amount, from) {
+    var to = picked();
+    var v = convert(amount, from, to);
+    return v === null ? "" : t.approxPrefix + money(v, to);
+  }
+  function applyCurrency() {
+    var to = picked();
+    Array.prototype.forEach.call(document.querySelectorAll("[data-amount]"), function (n) {
+      if (!n.hasAttribute("data-original")) n.setAttribute("data-original", n.textContent);
+      var a = approx(Number(n.getAttribute("data-amount")), n.getAttribute("data-cur"));
+      var from = n.getAttribute("data-from") ? t.from + (/־$/.test(t.from) ? "" : " ") : "";
+      n.textContent = a ? from + a : n.getAttribute("data-original");
+      if (a) n.title = n.getAttribute("data-original"); else n.removeAttribute("title");
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-currency-pick]"), function (sel) { sel.value = to; });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-currency-note]"), function (n) {
+      n.hidden = !to;
+      n.textContent = to ? t.approxNote.replace("{cur}", to).replace("{date}", cur.date || "") : "";
+    });
+  }
+  if (cur.codes.length) {
+    Array.prototype.forEach.call(document.querySelectorAll("[data-currency-box]"), function (box) {
+      box.hidden = false;
+      box.querySelector("select").addEventListener("change", function (ev) {
+        try { if (ev.target.value) localStorage.setItem(CUR_KEY, ev.target.value); else localStorage.removeItem(CUR_KEY); } catch (e) { /* storage blocked */ }
+        applyCurrency();
+        if (typeof renderOrder === "function") renderOrder();
+      });
+    });
+    applyCurrency();
+  }
+  var renderOrder = null;
 
   // ---- Product page: add to order --------------------------------------
   var form = document.querySelector("[data-add-to-order]");
@@ -132,9 +184,13 @@
         list.appendChild(li);
       });
       var codes = Object.keys(totals);
-      totalEl.textContent = codes.length === 1 ? t.total + ": " + money(totals[codes[0]], codes[0]) : codes.length > 1 ? t.mixed : "";
+      var a = codes.length === 1 ? approx(totals[codes[0]], codes[0]) : "";
+      totalEl.textContent = codes.length === 1 ? t.total + ": " + money(totals[codes[0]], codes[0]) + (a ? " (" + a + ")" : "") : codes.length > 1 ? t.mixed : "";
+      lastTotals = totals;
       updateCount(items);
     };
+    renderOrder = render;
+    var lastTotals = {};
 
     Array.prototype.forEach.call(orderForm.querySelectorAll("input[name=dest]"), function (r) { r.addEventListener("change", render); });
 
@@ -148,7 +204,9 @@
         });
         var body = [
           t.orderTitle + ":", "", lines.join("\n"), "",
-          totalEl.textContent, t.destination + ": " + (order.dest === "abroad" ? t.abroad : t.israel),
+          totalEl.textContent.replace(/ \(≈ [^)]*\)$/, ""),
+          approxLine(),
+          t.destination + ": " + (order.dest === "abroad" ? t.abroad : t.israel),
           t.nameLabel + ": " + order.name,
           order.notes ? t.notesLabel + ": " + order.notes : "",
         ].filter(function (x) { return x !== ""; }).join("\n");
@@ -163,6 +221,43 @@
       },
     };
 
+    function approxLine() {
+      var codes = Object.keys(lastTotals);
+      var a = codes.length === 1 ? approx(lastTotals[codes[0]], codes[0]) : "";
+      return a ? t.approxEmail + ": " + a.replace(t.approxPrefix, "") : "";
+    }
+
+    // Payment methods (switched on in the admin). Each opens the provider's
+    // own secure page; the site never handles card details.
+    var payBox = root.querySelector("[data-pay]");
+    function showPayment() {
+      if (!payBox || !(cfg.payments || []).length) return;
+      var codes = Object.keys(lastTotals);
+      var one = codes.length === 1;
+      var amountEl = payBox.querySelector("[data-pay-amount]");
+      amountEl.textContent = one ? t.payAmount + ": " + money(lastTotals[codes[0]], codes[0]) : t.payMixed;
+      var list = payBox.querySelector("[data-pay-list]");
+      list.textContent = "";
+      cfg.payments.forEach(function (m) {
+        var li = el("li", "pay-item");
+        var a = el("a", "button", t.payWith + m.label);
+        a.rel = "noopener";
+        a.target = "_blank";
+        if (m.kind === "paypal") {
+          // PayPal.Me accepts the amount and currency in the address.
+          var amt = one ? "/" + (Math.round(lastTotals[codes[0]] * 100) / 100) + codes[0] : "";
+          a.href = "https://www.paypal.me/" + encodeURIComponent(m.handle) + amt;
+        } else {
+          a.href = m.url;
+        }
+        li.appendChild(a);
+        if (m.kind !== "paypal" || !one) li.appendChild(el("p", "form-note", t.payEnter));
+        if (m.note) li.appendChild(el("p", "form-note", m.note));
+        list.appendChild(li);
+      });
+      payBox.hidden = false;
+    }
+
     orderForm.addEventListener("submit", function (ev) {
       ev.preventDefault();
       var name = orderForm.elements.name.value.trim();
@@ -174,6 +269,7 @@
       // "order received"; we explain what happens and show the address.
       ostatus.className = "form-status";
       ostatus.textContent = t.opened + " " + cfg.emails.join(" · ");
+      showPayment();
     });
 
     render();

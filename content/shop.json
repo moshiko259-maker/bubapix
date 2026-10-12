@@ -32,5 +32,53 @@
   "shipping_israel_he": "",
   "shipping_abroad_en": "",
   "shipping_abroad_he": "",
-  "checkout": "email"
+  "checkout": "email",
+  "currencies": [
+    "ILS",
+    "USD",
+    "EUR"
+  ],
+  "manual_rates": [],
+  "payment_methods": [
+    {
+      "enabled": false,
+      "kind": "paypal",
+      "label_en": "PayPal",
+      "label_he": "PayPal",
+      "paypal_me": "",
+      "url": "",
+      "note_en": "",
+      "note_he": ""
+    },
+    {
+      "enabled": false,
+      "kind": "link",
+      "label_en": "Bit",
+      "label_he": "ביט",
+      "paypal_me": "",
+      "url": "",
+      "note_en": "",
+      "note_he": ""
+    },
+    {
+      "enabled": false,
+      "kind": "link",
+      "label_en": "PayBox",
+      "label_he": "פייבוקס",
+      "paypal_me": "",
+      "url": "",
+      "note_en": "",
+      "note_he": ""
+    },
+    {
+      "enabled": false,
+      "kind": "link",
+      "label_en": "Credit card",
+      "label_he": "כרטיס אשראי",
+      "paypal_me": "",
+      "url": "",
+      "note_en": "",
+      "note_he": ""
+    }
+  ]
 }

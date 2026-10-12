@@ -159,6 +159,52 @@ const money = {
   },
 };
 
+// ---- Currencies: the visitor may view prices in another currency. Those
+// prices are APPROXIMATE (converted with the exchange rates of data/rates.json,
+// updated by the build workflow, or with the manual rates set in the admin).
+// Orders and payments always use the price's own currency.
+function currencySettings(shop) {
+  const fetched = readJsonOr("data/rates.json", null);
+  const perUsd = {};
+  let date = "", source = "";
+  if (fetched && fetched.base === "USD" && fetched.rates) {
+    for (const [c, v] of Object.entries(fetched.rates)) if (/^[A-Z]{3}$/.test(c) && typeof v === "number" && v > 0) perUsd[c] = v;
+    date = /^\d{4}-\d{2}-\d{2}$/.test(fetched.date || "") ? fetched.date : "";
+    source = String(fetched.source || "");
+  }
+  // Manual rates from the admin fill in currencies the download does not have.
+  for (const r of Array.isArray(shop.manual_rates) ? shop.manual_rates : []) {
+    const c = money.code(r && r.code, "");
+    if (c && !perUsd[c] && typeof r.per_usd === "number" && r.per_usd > 0) perUsd[c] = r.per_usd;
+  }
+  perUsd.USD = 1;
+  const wanted = Array.isArray(shop.currencies) && shop.currencies.length ? shop.currencies : ["ILS", "USD", "EUR"];
+  const codes = [...new Set(wanted.map((c) => money.code(c, "")).filter((c) => c && perUsd[c]))];
+  const rates = {};
+  for (const c of Object.keys(perUsd)) rates[c] = perUsd[c];
+  return { codes: codes.length > 1 ? codes : [], rates, date, source };
+}
+
+// ---- Payment methods: prepared, but each one is OFF until it is switched on
+// in the admin with real account details. Nothing is charged by the site
+// itself: a method opens the provider's own secure payment page.
+function paymentMethods(shop, lang) {
+  return (Array.isArray(shop.payment_methods) ? shop.payment_methods : [])
+    .filter((m) => m && m.enabled === true)
+    .map((m) => {
+      const kind = ["paypal", "link"].includes(m.kind) ? m.kind : "link";
+      const label = pick(m, "label", lang) || (kind === "paypal" ? "PayPal" : "");
+      const note = pick(m, "note", lang);
+      if (kind === "paypal") {
+        const handle = String(m.paypal_me || "").trim().replace(/^https?:\/\/(www\.)?paypal\.me\//i, "").replace(/\/.*$/, "");
+        return /^[A-Za-z0-9]{1,40}$/.test(handle) ? { kind, label, note, handle } : null;
+      }
+      const url = String(m.url || "").trim();
+      return /^https:\/\/[^\s"<>]+$/.test(url) && label ? { kind, label, note, url } : null;
+    })
+    .filter(Boolean);
+}
+
 function parseVideo(url) {
   if (!url) return null;
   let m = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,20})/.exec(url);
@@ -292,13 +338,17 @@ function contentFor(lang) {
   };
   const hero = imgWithAlt(s.hero_image, pick(s, "hero_alt", lang), "opening image");
   const pictureCaption = (im) => (im.caption === "everywhere" && (im.title || im.note) ? { title: im.title, note: im.note } : null);
-  // Homepage gallery chosen in the admin (Homepage > Homepage gallery). These
-  // pictures are shown on their own, without links. When the list is empty,
-  // the chosen projects' pictures are used instead.
+  // Homepage gallery chosen in the admin (Homepage > Homepage gallery). A
+  // picture opens its project's page when a project is chosen for it in the
+  // admin; otherwise it is for looking only. When the list is empty, the
+  // chosen projects' pictures are used instead.
+  const projectsBySlug = new Map(projects.map((p) => [p.slug, p]));
   for (const [i, g] of (Array.isArray(s.gallery) ? s.gallery : []).entries()) {
     if (!g || g.visible === false) continue;
     const im = picture(g, "BubaPix", `homepage gallery image ${i + 1}`);
-    if (im) addHome(im, null, pictureCaption(im));
+    const linked = g.project ? projectsBySlug.get(g.project) || null : null;
+    if (g.project && !linked) images.warnings.push(`homepage gallery image ${i + 1}: project "${g.project}" is not shown, so the picture has no link`);
+    if (im) addHome(im, linked, pictureCaption(im));
   }
   for (const p of homeGallery.length ? [] : projects.filter((x) => x.featured)) {
     const nameCaption = p.titleInGallery ? { title: p.name, note: "" } : null;
@@ -380,7 +430,9 @@ function contentFor(lang) {
     shop: {
       shippingIsrael: pick(raw.shop, "shipping_israel", lang),
       shippingAbroad: pick(raw.shop, "shipping_abroad", lang),
-      checkout: "email", // the only method for now; online payment needs approval
+      checkout: "email", // the order request is sent by email; payment methods are optional and off by default
+      currency: currencySettings(raw.shop),
+      payments: paymentMethods(raw.shop, lang),
       intro: pick(raw.shop, "intro", lang),
       categories: shopCategories.filter((c) => products.some((x) => x.category && x.category.slug === c.slug)) },
     participation,
