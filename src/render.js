@@ -62,16 +62,16 @@ function ratioClass(im) {
 // Address for a picture's own link (see build.js picture()).
 const linkOf = (ctx, ln) => (ln.external ? e(ln.href) : makeLink(ctx)(ln.path));
 
-// A small tag on a picture that opens a project page ("View project ->"),
-// so visitors know the picture leads somewhere. Always shown on touch
-// screens; on a computer it appears on hover or keyboard focus.
+// A small quiet link line under (never on) a picture that opens a project
+// page ("View project ->"), so visitors know the picture leads somewhere.
 const projectCue = (ctx) => `<span class="jg-cue" aria-hidden="true">${e(ctx.t.home.projectCue)} <span class="jg-cue-arrow">${ctx.lang === "he" ? "←" : "→"}</span></span>`;
 
 function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = false, eager = false, viewer = false, external = false, sizes, extraClass = "", cue = false } = {}) {
   const { cls, ratio } = ratioClass(im);
   const isLead = lead && ratio >= 1.2;
   const sz = sizes || (isLead ? "(max-width: 1440px) 100vw, 1440px" : "(max-width: 560px) 100vw, (max-width: 1100px) 50vw, 40vw");
-  const picture = `<span class="jg-media">${img(ctx, im, { sizes: sz, attrs: eager ? 'fetchpriority="high" decoding="async"' : 'loading="lazy" decoding="async"' })}${cue && href ? projectCue(ctx) : ""}</span>`;
+  const picture = `<span class="jg-media">${img(ctx, im, { sizes: sz, attrs: eager ? 'fetchpriority="high" decoding="async"' : 'loading="lazy" decoding="async"' })}</span>`;
+  const cueLine = cue && href ? projectCue(ctx) : "";
   const capInner = caption && (caption.title || caption.note)
     ? `${caption.title ? `<span class="jg-title">${e(caption.title)}</span>` : ""}${caption.note ? `<span class="jg-note">${e(caption.note)}</span>` : ""}`
     : "";
@@ -80,7 +80,7 @@ function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = fa
   if (!href) {
     return `<figure class="${classes}">${picture}${capInner ? `<figcaption class="jg-caption">${capInner}</figcaption>` : ""}</figure>`;
   }
-  return `<a class="${classes}" href="${href}"${label ? ` aria-label="${e(label)}"` : ""}${viewer ? " data-viewer" : ""}${external ? ' target="_blank" rel="noopener"' : ""}>${picture}${capInner ? `<span class="jg-caption">${capInner}</span>` : ""}</a>`;
+  return `<a class="${classes}" href="${href}"${label ? ` aria-label="${e(label)}"` : ""}${viewer ? " data-viewer" : ""}${external ? ' target="_blank" rel="noopener"' : ""}>${picture}${cueLine}${capInner ? `<span class="jg-caption">${capInner}</span>` : ""}</a>`;
 }
 
 function gallery(items, extraClass = "") {
@@ -451,7 +451,7 @@ function home(ctx) {
       label: linked(g) ? `${g.project.name} — ${t.home.openProject}` : own ? g.image.alt : `${t.work.openImage}: ${g.image.alt}`,
       external: !!(own && g.image.link.external),
       viewer: !linked(g) && !own,
-      cue: linked(g),
+      cue: linked(g) && opening && n === 0, // under the opening image only; the tight gallery has the hint line
       sizes: rowLen === 1 ? "(max-width: 1440px) 100vw, 1440px" : `(max-width: 700px) ${rowLen > 2 ? 50 : 60}vw, ${Math.round(100 / rowLen) + 10}vw`,
     });
   };
@@ -492,7 +492,8 @@ function home(ctx) {
   const work = items.length
     ? `
     <section class="section section-work" aria-labelledby="work-title">
-      <h2 id="work-title" class="visually-hidden">${e(t.home.workTitle)}</h2>
+      <h2 id="work-title" class="visually-hidden">${e(t.home.workTitle)}</h2>${t.home.hint ? `
+      <p class="page-hint">${e(t.home.hint)}</p>` : ""}
       <div class="mosaic jg-home" data-mosaic>
         ${items.join("\n        ")}
       </div>
@@ -573,7 +574,8 @@ function work(ctx) {
     current: "work",
     main: `
     <div class="page">
-      <header class="page-head"><h1 class="page-title">${e(t.work.title)}</h1></header>${filters}
+      <header class="page-head"><h1 class="page-title">${e(t.work.title)}</h1>${items.length && t.work.hint ? `
+        <p class="page-hint">${e(t.work.hint)}</p>` : ""}</header>${filters}
       ${grid}
     </div>`,
   });

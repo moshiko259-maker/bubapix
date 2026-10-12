@@ -286,27 +286,16 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 }
 .jg-media img { width: 100%; height: 100%; object-fit: contain; transition: transform 0.9s var(--ease), opacity 0.6s var(--ease); }
 a.jg-item:hover .jg-media img { transform: scale(1.015); }
-/* "View project" tag on pictures that open a project page. Always visible,
-   on every screen: visitors should not have to discover it by hovering. */
-.jg-media { position: relative; }
-.jg-cue {
-  position: absolute; inset-block-end: 0.75rem; inset-inline-start: 0.75rem; z-index: 1;
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  padding: 0.45rem 0.9rem; border-radius: 999px;
-  background: rgba(22, 22, 29, 0.86); color: #fff;
-  font: 600 0.9375rem/1.2 var(--font-body);
-  box-shadow: 0 3px 14px rgba(22, 22, 29, 0.25);
-  pointer-events: none; white-space: nowrap;
-  transition: background-color 0.2s var(--ease), transform 0.2s var(--ease);
-}
-.jg-cue-arrow { font-size: 1.1em; line-height: 1; }
-a.jg-item:hover .jg-cue, a.jg-item:focus-visible .jg-cue { background: var(--ink); transform: translateY(-2px); }
-/* Larger on large pictures, so it reads at a glance. */
-.opening-hero .jg-cue, .poster-grid .jg-cue, .jg-work .jg-cue { inset-block-end: clamp(0.75rem, 1.6vw, 1.25rem); inset-inline-start: clamp(0.75rem, 1.6vw, 1.25rem); padding: clamp(0.45rem, 0.8vw, 0.65rem) clamp(0.9rem, 1.5vw, 1.3rem); font-size: clamp(0.9375rem, 1.3vw, 1.1875rem); }
-/* Small pictures in the phone mosaic get a smaller tag. */
-@media (max-width: 700px) {
-  .mosaic .jg-cue { inset-block-end: 0.4rem; inset-inline-start: 0.4rem; padding: 0.3rem 0.6rem; font-size: 0.75rem; }
-}
+/* "View project ->": a small, quiet link line under (never on) a picture
+   that opens a project page. */
+.jg-cue { display: inline-flex; align-items: center; gap: 0.35rem; margin-top: 0.6rem; font: 500 0.875rem/1.3 var(--font-body); color: var(--ink-2); }
+.jg-cue-arrow { transition: transform 0.2s var(--ease); }
+a.jg-item:hover .jg-cue, a.jg-item:focus-visible .jg-cue { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+a.jg-item:hover .jg-cue-arrow { transform: translateX(-3px); }
+[dir="ltr"] a.jg-item:hover .jg-cue-arrow { transform: translateX(3px); }
+/* One short line saying what a click on a picture does. */
+.page-hint { margin: 0.5rem 0 0; font-size: 0.9375rem; color: var(--ink-2); }
+.section-work .page-hint { margin: 0 0 clamp(0.75rem, 1.5vw, 1rem); }
 a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: var(--radius); }
 /* A picture placed in a chosen frame fills it; "focus" keeps the chosen
    part in view. Pictures without a frame are always shown whole. */

@@ -808,8 +808,12 @@ collections:
           - { name: showreel_he, label: "Homepage: Showreel heading, Hebrew (usual: שואוריל) / דף הבית: כותרת השואוריל, עברית", widget: string, required: false }
           - { name: all_services_en, label: "Homepage: All services link, English (usual: All services) / דף הבית: קישור לכל השירותים, אנגלית", widget: string, required: false }
           - { name: all_services_he, label: "Homepage: All services link, Hebrew (usual: לכל השירותים) / דף הבית: קישור לכל השירותים, עברית", widget: string, required: false }
-          - { name: project_cue_en, label: "Tag on pictures that open a project, English (usual: View project) / תגית על תמונות שפותחות פרויקט, אנגלית", widget: string, required: false }
-          - { name: project_cue_he, label: "Tag on pictures that open a project, Hebrew (usual: לדף הפרויקט) / תגית על תמונות שפותחות פרויקט, עברית", widget: string, required: false }
+          - { name: project_cue_en, label: "Link line under pictures that open a project, English (usual: View project) / שורת קישור מתחת לתמונות שפותחות פרויקט, אנגלית", widget: string, required: false }
+          - { name: project_cue_he, label: "Link line under pictures that open a project, Hebrew (usual: לדף הפרויקט) / שורת קישור מתחת לתמונות שפותחות פרויקט, עברית", widget: string, required: false }
+          - { name: home_hint_en, label: "Homepage: line above the gallery (how pictures open), English (usual: Click or tap a picture to see it large or to open its project page.) / דף הבית: שורה מעל הגלריה (מה קורה בלחיצה), אנגלית", widget: string, required: false }
+          - { name: home_hint_he, label: "Homepage: line above the gallery (how pictures open), Hebrew (usual: לחיצה על תמונה מגדילה אותה, או פותחת את דף הפרויקט שלה.) / דף הבית: שורה מעל הגלריה (מה קורה בלחיצה), עברית", widget: string, required: false }
+          - { name: work_hint_en, label: "Projects page: line under the title (how pictures open), English (usual: Click or tap a picture to open its project page.) / עמוד פרויקטים: שורה מתחת לכותרת (מה קורה בלחיצה), אנגלית", widget: string, required: false }
+          - { name: work_hint_he, label: "Projects page: line under the title (how pictures open), Hebrew (usual: לחיצה על תמונה פותחת את דף הפרויקט.) / עמוד פרויקטים: שורה מתחת לכותרת (מה קורה בלחיצה), עברית", widget: string, required: false }
           - { name: synopsis_en, label: "Project: Synopsis heading, English (usual: Synopsis) / פרויקט: כותרת תקציר, אנגלית", widget: string, required: false }
           - { name: synopsis_he, label: "Project: Synopsis heading, Hebrew (usual: תקציר) / פרויקט: כותרת תקציר, עברית", widget: string, required: false }
           - { name: creators_en, label: "Project: Words from the creators heading, English (usual: From the creators) / פרויקט: כותרת דברי היוצרים, אנגלית", widget: string, required: false }
