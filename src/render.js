@@ -248,6 +248,7 @@ ${data.participation.ideas ? `
       </ul>
     </nav>
     ${footerContact(ctx)}
+    ${installButton(ctx)}
     <div class="footer-meta">
       <a class="lang-switch" href="${otherHref}" hreflang="${otherLang}" lang="${otherLang}" data-lang="${otherLang}">${e(t.nav.switchLabel)}</a>
       <p>&copy; <span data-year>${new Date().getFullYear()}</span> BubaPix</p>
@@ -270,6 +271,21 @@ function socialList(ctx, cls, named = false) {
       return `<li><a href="${e(x.url)}" rel="noopener me" target="_blank"${named ? "" : ` aria-label="${e(label)}" title="${e(label)}"`}>${icon(networkOf(x.url))}${named ? `<span>${e(label)}</span>` : ""}</a></li>`;
     })
     .join("")}</ul>`;
+}
+
+// "Install the app": shown by js/main.js only where installing is possible
+// (Android/Chrome: the browser's own install window; iPhone: short steps).
+// Hidden when the site is already open as the installed app.
+function installButton(ctx) {
+  const { t } = ctx;
+  return `<div class="install-wrap">
+      <button type="button" class="install-button" data-install hidden>${icon("install")}<span>${e(t.app.install)}</span></button>
+      <dialog class="install-help" data-install-help aria-labelledby="install-title">
+        <h2 id="install-title">${e(t.app.iosTitle)}</h2>
+        <ol>${t.app.iosSteps.map((x) => `<li>${e(x)}</li>`).join("")}</ol>
+        <button type="button" class="button" data-install-close>${e(t.app.close)}</button>
+      </dialog>
+    </div>`;
 }
 
 // Footer contact band: the emails (clearly visible) and the social icons.

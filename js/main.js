@@ -296,4 +296,35 @@
       navigator.serviceWorker.register(new URL("sw.js", manifestLink.href).href).catch(function () { /* not available here */ });
     });
   }
+
+  // ---------- 9. "Install the app" button ----------
+  var installBtn = document.querySelector("[data-install]");
+  var installHelp = document.querySelector("[data-install-help]");
+  if (installBtn) {
+    var standalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+    var ua = navigator.userAgent || "";
+    var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    var deferred = null;
+    if (!standalone) {
+      // Android / Chrome / Edge: the browser offers its own install window.
+      window.addEventListener("beforeinstallprompt", function (e) {
+        e.preventDefault();
+        deferred = e;
+        installBtn.hidden = false;
+      });
+      // iPhone / iPad: no install window; show the steps instead.
+      if (isIOS && installHelp && installHelp.showModal) installBtn.hidden = false;
+    }
+    installBtn.addEventListener("click", function () {
+      if (deferred) {
+        deferred.prompt();
+        deferred.userChoice.then(function () { deferred = null; installBtn.hidden = true; });
+      } else if (installHelp && installHelp.showModal) {
+        installHelp.showModal();
+      }
+    });
+    window.addEventListener("appinstalled", function () { installBtn.hidden = true; });
+    var closeHelp = document.querySelector("[data-install-close]");
+    if (closeHelp) closeHelp.addEventListener("click", function () { installHelp.close(); });
+  }
 })();

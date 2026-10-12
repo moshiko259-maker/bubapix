@@ -296,5 +296,16 @@
       "Open “Comments and messages” and sign in with that email and password."
     ],
     "previewNote": "On the preview address the buttons open the editing screens, but signing in works only on your own site after it is published."
+  },
+  "app": {
+    "install": "Install the app",
+    "iosTitle": "Add BubaPix to your home screen",
+    "iosSteps": [
+      "In Safari, tap the Share button (a square with an arrow pointing up).",
+      "Scroll down and tap “Add to Home Screen”.",
+      "Tap “Add”. The BubaPix icon appears on your home screen."
+    ],
+    "close": "Close",
+    "installed": "The app is installed."
   }
 }
