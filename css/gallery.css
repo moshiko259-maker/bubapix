@@ -4,6 +4,7 @@
 .ar-79{flex-grow:79;flex-basis:calc(var(--row-h) * 0.79)}.ar-79 .jg-media{aspect-ratio:0.79}
 .ar-87{flex-grow:87;flex-basis:calc(var(--row-h) * 0.87)}.ar-87 .jg-media{aspect-ratio:0.87}
 .ar-100{flex-grow:100;flex-basis:calc(var(--row-h) * 1)}.ar-100 .jg-media{aspect-ratio:1}
+.ar-107{flex-grow:107;flex-basis:calc(var(--row-h) * 1.07)}.ar-107 .jg-media{aspect-ratio:1.07}
 .ar-113{flex-grow:113;flex-basis:calc(var(--row-h) * 1.13)}.ar-113 .jg-media{aspect-ratio:1.13}
 .ar-150{flex-grow:150;flex-basis:calc(var(--row-h) * 1.5)}.ar-150 .jg-media{aspect-ratio:1.5}
 .ar-178{flex-grow:178;flex-basis:calc(var(--row-h) * 1.78)}.ar-178 .jg-media{aspect-ratio:1.78}
