@@ -36,8 +36,7 @@
     "allServices": "All services",
     "startProject": "Start a project",
     "openProject": "open the project",
-    "projectCue": "View project",
-    "hint": "Click or tap a picture to see it large or to open its project page."
+    "hint": "Click a picture to see it large or open its project page."
   },
   "work": {
     "title": "Projects",
@@ -54,7 +53,7 @@
     "creators": "From the creators",
     "behind": "Behind the scenes",
     "openImage": "Open image",
-    "hint": "Click or tap a picture to open its project page."
+    "hint": "Click a picture to open its project page."
   },
   "services": {
     "title": "Services"
