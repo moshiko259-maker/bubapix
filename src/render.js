@@ -461,14 +461,13 @@ function home(ctx) {
         sizes: "(max-width: 700px) 92vw, 640px",
       })
     : "";
-  // One short line saying what a click on a picture does: right under the
-  // opening image (owner's choice), or at the top when there is none.
+  // One short line saying what a click on a picture does, at the bottom of
+  // the page (owner's choice).
   const hint = t.home.hint;
   const openingBlock = opening || feature
     ? `
     <section class="opening" aria-label="BubaPix">${opening ? `
-      <div class="opening-hero">${cell(0, 1)}</div>${hint ? `
-      <p class="page-hint opening-hint">${e(hint)}</p>` : ""}` : ""}${feature ? `
+      <div class="opening-hero">${cell(0, 1)}</div>` : ""}${feature ? `
       <div class="opening-feature">${feature}</div>` : ""}${data.tagline ? `
       <p class="tagline opening-tagline">${e(data.tagline)}</p>` : ""}
     </section>`
@@ -539,8 +538,8 @@ function home(ctx) {
     title: t.meta.homeTitle,
     viewer: true,
     description: data.seoDescription || data.intro,
-    main: `    <h1 class="visually-hidden">BubaPix</h1>${hint && !opening ? `
-    <p class="page-hint home-hint">${e(hint)}</p>` : ""}${openingBlock}${tagline}${posters}${showreel}${work}${services}${intro}${start}`,
+    main: `    <h1 class="visually-hidden">BubaPix</h1>${openingBlock}${tagline}${posters}${showreel}${work}${services}${intro}${start}${hint ? `
+    <p class="page-hint bottom-hint">${e(hint)}</p>` : ""}`,
   });
 }
 
@@ -570,9 +569,9 @@ function work(ctx) {
     current: "work",
     main: `
     <div class="page">
-      <header class="page-head"><h1 class="page-title">${e(t.work.title)}</h1>${items.length && t.work.hint ? `
-        <p class="page-hint">${e(t.work.hint)}</p>` : ""}</header>${filters}
-      ${grid}
+      <header class="page-head"><h1 class="page-title">${e(t.work.title)}</h1></header>${filters}
+      ${grid}${items.length && t.work.hint ? `
+      <p class="page-hint bottom-hint">${e(t.work.hint)}</p>` : ""}
     </div>`,
   });
 }
