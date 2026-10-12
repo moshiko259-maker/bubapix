@@ -6,8 +6,8 @@
    ========================================================== */
 
 :root {
-  --paper: #f0eee2;       /* page background: the logo's own paper colour */
-  --paper-2: #e5e2d4;     /* empty image frames, quiet panels */
+  --paper: #f7f6ef;       /* page background: almost white with a touch of cream (owner's choice C) */
+  --paper-2: #ecebe3;     /* empty image frames, quiet panels */
   --ink: #16161d;         /* text */
   --ink-2: #4b4b57;       /* secondary text */
   --line: rgba(22, 22, 29, 0.14);
