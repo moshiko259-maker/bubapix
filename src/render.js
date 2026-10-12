@@ -215,7 +215,7 @@ ${data.participation.ideas ? `
     </nav>
     ${data.contact.social.length ? `<ul class="footer-social" aria-label="${e(t.contact.social)}">${data.contact.social.map((x) => `<li><a href="${e(x.url)}" rel="noopener me" target="_blank">${e(x.label)}</a></li>`).join("")}</ul>` : ""}
     <div class="footer-meta">
-      ${data.contact.email ? `<a class="footer-email" href="mailto:${e(data.contact.email)}">${e(data.contact.email)}</a>` : ""}
+      ${[data.contact.email, data.contact.email2].filter(Boolean).map((m) => `<a class="footer-email" href="mailto:${e(m)}">${e(m)}</a>`).join("\n      ")}
       <a class="lang-switch" href="${otherHref}" hreflang="${otherLang}" lang="${otherLang}" data-lang="${otherLang}">${e(t.nav.switchLabel)}</a>
       <p>&copy; <span data-year>${new Date().getFullYear()}</span> BubaPix</p>
       <a href="#main">${e(t.footer.top)}</a>
@@ -276,7 +276,7 @@ function home(ctx) {
     : "";
   // "Start a project" appears only when the Contact page offers a working way
   // to reach the studio (email, phone, or the private message form).
-  const canContact = !!(data.contact.email || data.contact.phone || data.participation.consult);
+  const canContact = !!(data.contact.email || data.contact.email2 || data.contact.phone || data.participation.consult);
   const start = canContact
     ? `
     <section class="section start-project">
@@ -586,7 +586,7 @@ function contact(ctx) {
   const { t, data } = ctx;
   const c = data.contact;
   const rows = [
-    c.email && [t.contact.email, `<a class="contact-link" href="mailto:${e(c.email)}">${e(c.email)}</a>`],
+    (c.email || c.email2) && [t.contact.email, [c.email, c.email2].filter(Boolean).map((m) => `<a class="contact-link" href="mailto:${e(m)}">${e(m)}</a>`).join("<br>")],
     c.phone && [t.contact.phone, `<a class="contact-link" href="tel:${e(c.phone.replace(/[^\d+]/g, ""))}">${e(c.phone)}</a>`],
     c.location && [t.contact.location, `<span>${e(c.location)}</span>`],
   ].filter(Boolean);
@@ -719,7 +719,7 @@ function product(ctx, x) {
   let action = "";
   if (x.availability !== "soldout" && x.availability !== "soon") {
     if (x.buyUrl) action = `<a class="button button-large" href="${e(x.buyUrl)}" rel="noopener" target="_blank">${e(t.shop.buy)}</a>`;
-    else if (c.email) action = `<a class="button button-large" href="mailto:${e(c.email)}?subject=${encodeURIComponent(`${t.shop.orderSubject}: ${x.title}`)}">${e(t.shop.orderEmail)}</a>`;
+    else if (c.email || c.email2) action = `<a class="button button-large" href="mailto:${[c.email, c.email2].filter(Boolean).map(e).join(",")}?subject=${encodeURIComponent(`${t.shop.orderSubject}: ${x.title}`)}">${e(t.shop.orderEmail)}</a>`;
   }
   const pics = x.images.map((im, i) =>
     galleryItem(ctx, im, { href: ctx.assetBase + e(im.full || im.src), label: `${t.work.openImage}: ${im.alt}`, viewer: true, lead: i === 0, eager: i === 0 })

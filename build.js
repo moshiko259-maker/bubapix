@@ -387,6 +387,8 @@ function contentFor(lang) {
     contact: {
       intro: pick(raw.contact, "intro", lang),
       email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(raw.contact.email || "").trim()) ? raw.contact.email.trim() : "",
+      // Second (backup) address: shown next to the first; order emails go to both.
+      email2: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(raw.contact.email_2 || "").trim()) ? raw.contact.email_2.trim() : "",
       phone: String(raw.contact.phone || "").trim(),
       location: pick(raw.contact, "location", lang),
       social: (raw.contact.social || []).filter((x) => x && x.label && /^https:\/\//.test(x.url || "")),

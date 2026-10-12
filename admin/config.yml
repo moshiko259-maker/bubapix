@@ -687,6 +687,7 @@ collections:
           - { name: intro_en, label: "Intro, English / פתיח באנגלית", widget: text, required: false }
           - { name: intro_he, label: "Intro, Hebrew / פתיח בעברית", widget: text, required: false }
           - { name: email, label: "Email / מייל", widget: string, required: false, hint: "Only an address you have tested. Leave empty until then." }
+          - { name: email_2, label: "Second email, backup (optional) / מייל שני, גיבוי", widget: string, required: false, hint: "Shown next to the first. Order emails from the shop go to both. / מוצג ליד הראשון. הזמנות מהחנות נשלחות לשניהם." }
           - { name: phone, label: "Phone / טלפון", widget: string, required: false }
           - { name: location_en, label: "Location, English / מיקום באנגלית", widget: string, required: false }
           - { name: location_he, label: "Location, Hebrew / מיקום בעברית", widget: string, required: false }
