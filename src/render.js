@@ -199,7 +199,7 @@ function layout(ctx, { title, description, image, main, current = "", community 
   <meta property="og:locale:alternate" content="${ctx.otherT.meta.ogLocale}">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="${ctx.assetBase}favicon.svg" type="image/svg+xml">
-  <link rel="manifest" href="${ctx.assetBase}manifest.webmanifest">
+  <link rel="manifest" href="${ctx.assetBase}manifest${lang === "he" ? ".he" : ""}.webmanifest">
   <link rel="apple-touch-icon" href="${ctx.assetBase}assets/brand/icons/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-title" content="BubaPix">
   <meta name="mobile-web-app-capable" content="yes">

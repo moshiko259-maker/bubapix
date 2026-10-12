@@ -1,0 +1,39 @@
+{
+  "id": "./he/",
+  "name": "BubaPix",
+  "short_name": "BubaPix",
+  "description": "BubaPix — סטודיו לסרטים ולאנימציה",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./he/",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f6ef",
+  "theme_color": "#f7f6ef",
+  "icons": [
+    {
+      "src": "assets/brand/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/brand/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/brand/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/brand/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

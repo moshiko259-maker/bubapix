@@ -3,6 +3,8 @@
   "name": "BubaPix",
   "short_name": "BubaPix",
   "description": "BubaPix — film and animation studio",
+  "lang": "en",
+  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

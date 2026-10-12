@@ -679,15 +679,22 @@ ${sitemap
 // with the BubaPix icon. The icons are the unchanged logo on its own paper
 // colour (assets/brand/icons). Relative addresses keep it working on any
 // address the site is served from.
-outputs.set(
-  "manifest.webmanifest",
+// One manifest per language, so the app opens in the language it was
+// installed from (Hebrew pages link manifest.he.webmanifest).
+for (const [file, lang, start, desc] of [
+  ["manifest.webmanifest", "en", "./", "BubaPix — film and animation studio"],
+  ["manifest.he.webmanifest", "he", "./he/", "BubaPix — סטודיו לסרטים ולאנימציה"],
+]) outputs.set(
+  file,
   JSON.stringify(
     {
-      id: "./",
+      id: start,
       name: "BubaPix",
       short_name: "BubaPix",
-      description: "BubaPix — film and animation studio",
-      start_url: "./",
+      description: desc,
+      lang,
+      dir: lang === "he" ? "rtl" : "ltr",
+      start_url: start,
       scope: "./",
       display: "standalone",
       background_color: "#f7f6ef",
