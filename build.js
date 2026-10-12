@@ -105,18 +105,12 @@ const raw = {
     if (v) obj[key] = v;
   };
   for (const lang of ["en", "he"]) {
-    const tl = t[lang];
-    set(lang, tl.home, "workTitle", "work_heading");
-    set(lang, tl.home, "startProject", "start_project");
-    set(lang, tl.nav, "work", "nav_work");
-    set(lang, tl.work, "title", "nav_work");
-    set(lang, tl.nav, "services", "nav_services");
-    set(lang, tl.services, "title", "nav_services");
-    set(lang, tl.nav, "about", "nav_about");
-    set(lang, tl.about, "title", "nav_about");
-    set(lang, tl.nav, "contact", "nav_contact");
-    set(lang, tl.contact, "title", "nav_contact");
-    for (const k of ["synopsis", "creators", "behind", "gallery", "video", "details"]) set(lang, tl.work, k, k);
+    for (const [field, places] of require("./src/labels-map")) {
+      for (const [section, key] of places) {
+        if (!t[lang][section] || typeof t[lang][section][key] !== "string") throw new Error(`labels-map: ${section}.${key} is not an interface label`);
+        set(lang, t[lang][section], key, field);
+      }
+    }
   }
 }
 

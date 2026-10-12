@@ -767,30 +767,92 @@ collections:
         file: content/labels.json
         format: json
         fields:
-          - { name: work_heading_en, label: "Gallery heading, English (usual: Gallery) / כותרת הגלריה, אנגלית", widget: string, required: false, hint: "Leave any field on this page empty to keep the usual text. / שדה ריק משאיר את הטקסט הרגיל." }
-          - { name: work_heading_he, label: "Gallery heading, Hebrew (usual: עבודות) / כותרת הגלריה, עברית", widget: string, required: false }
-          - { name: nav_work_en, label: "Menu: Projects, English / תפריט: פרויקטים, אנגלית", widget: string, required: false }
-          - { name: nav_work_he, label: "Menu: Projects, Hebrew / תפריט: פרויקטים, עברית", widget: string, required: false }
-          - { name: nav_services_en, label: "Menu: Services, English / תפריט: שירותים, אנגלית", widget: string, required: false }
-          - { name: nav_services_he, label: "Menu: Services, Hebrew / תפריט: שירותים, עברית", widget: string, required: false }
-          - { name: nav_about_en, label: "Menu: About, English / תפריט: אודות, אנגלית", widget: string, required: false }
-          - { name: nav_about_he, label: "Menu: About, Hebrew / תפריט: אודות, עברית", widget: string, required: false }
-          - { name: nav_contact_en, label: "Menu: Contact, English / תפריט: יצירת קשר, אנגלית", widget: string, required: false }
-          - { name: nav_contact_he, label: "Menu: Contact, Hebrew / תפריט: יצירת קשר, עברית", widget: string, required: false }
-          - { name: start_project_en, label: "Homepage button: Start a project, English / כפתור: התחילו פרויקט, אנגלית", widget: string, required: false }
-          - { name: start_project_he, label: "Homepage button: Start a project, Hebrew / כפתור: התחילו פרויקט, עברית", widget: string, required: false }
-          - { name: synopsis_en, label: "Project heading: Synopsis, English / כותרת: תקציר, אנגלית", widget: string, required: false }
-          - { name: synopsis_he, label: "Project heading: Synopsis, Hebrew / כותרת: תקציר, עברית", widget: string, required: false }
-          - { name: creators_en, label: "Project heading: Words from the creators, English / כותרת: דברי היוצרים, אנגלית", widget: string, required: false }
-          - { name: creators_he, label: "Project heading: Words from the creators, Hebrew / כותרת: דברי היוצרים, עברית", widget: string, required: false }
-          - { name: behind_en, label: "Project heading: Behind the scenes, English / כותרת: מאחורי הקלעים, אנגלית", widget: string, required: false }
-          - { name: behind_he, label: "Project heading: Behind the scenes, Hebrew / כותרת: מאחורי הקלעים, עברית", widget: string, required: false }
-          - { name: gallery_en, label: "Project heading: Images, English / כותרת: תמונות, אנגלית", widget: string, required: false }
-          - { name: gallery_he, label: "Project heading: Images, Hebrew / כותרת: תמונות, עברית", widget: string, required: false }
-          - { name: video_en, label: "Project heading: Video, English / כותרת: וידאו, אנגלית", widget: string, required: false }
-          - { name: video_he, label: "Project heading: Video, Hebrew / כותרת: וידאו, עברית", widget: string, required: false }
-          - { name: details_en, label: "Project heading: Details, English / כותרת: פרטים, אנגלית", widget: string, required: false }
-          - { name: details_he, label: "Project heading: Details, Hebrew / כותרת: פרטים, עברית", widget: string, required: false }
+          # labels-fields:start (written by scripts/labels-fields.js)
+          - { name: nav_work_en, label: "Menu: Projects, English (usual: Projects) / תפריט: פרויקטים, אנגלית", widget: string, required: false, hint: "Leave a field empty to keep the usual text. / שדה ריק משאיר את הטקסט הרגיל." }
+          - { name: nav_work_he, label: "Menu: Projects, Hebrew (usual: פרויקטים) / תפריט: פרויקטים, עברית", widget: string, required: false }
+          - { name: nav_services_en, label: "Menu: Services, English (usual: Services) / תפריט: שירותים, אנגלית", widget: string, required: false }
+          - { name: nav_services_he, label: "Menu: Services, Hebrew (usual: שירותים) / תפריט: שירותים, עברית", widget: string, required: false }
+          - { name: nav_shop_en, label: "Menu: Shop, English (usual: Shop) / תפריט: חנות, אנגלית", widget: string, required: false }
+          - { name: nav_shop_he, label: "Menu: Shop, Hebrew (usual: חנות) / תפריט: חנות, עברית", widget: string, required: false }
+          - { name: nav_about_en, label: "Menu: About, English (usual: About) / תפריט: אודות, אנגלית", widget: string, required: false }
+          - { name: nav_about_he, label: "Menu: About, Hebrew (usual: אודות) / תפריט: אודות, עברית", widget: string, required: false }
+          - { name: nav_testimonials_en, label: "Menu: Testimonials, English (usual: Testimonials) / תפריט: המלצות, אנגלית", widget: string, required: false }
+          - { name: nav_testimonials_he, label: "Menu: Testimonials, Hebrew (usual: המלצות) / תפריט: המלצות, עברית", widget: string, required: false }
+          - { name: nav_contact_en, label: "Menu: Contact, English (usual: Contact) / תפריט: יצירת קשר, אנגלית", widget: string, required: false }
+          - { name: nav_contact_he, label: "Menu: Contact, Hebrew (usual: יצירת קשר) / תפריט: יצירת קשר, עברית", widget: string, required: false }
+          - { name: work_heading_en, label: "Homepage: gallery heading, English (usual: Gallery) / דף הבית: כותרת הגלריה, אנגלית", widget: string, required: false }
+          - { name: work_heading_he, label: "Homepage: gallery heading, Hebrew (usual: גלריה) / דף הבית: כותרת הגלריה, עברית", widget: string, required: false }
+          - { name: start_project_en, label: "Homepage: Start a project button, English (usual: Start a project) / דף הבית: כפתור התחילו פרויקט, אנגלית", widget: string, required: false }
+          - { name: start_project_he, label: "Homepage: Start a project button, Hebrew (usual: התחילו פרויקט) / דף הבית: כפתור התחילו פרויקט, עברית", widget: string, required: false }
+          - { name: showreel_en, label: "Homepage: Showreel heading, English (usual: Showreel) / דף הבית: כותרת השואוריל, אנגלית", widget: string, required: false }
+          - { name: showreel_he, label: "Homepage: Showreel heading, Hebrew (usual: שואוריל) / דף הבית: כותרת השואוריל, עברית", widget: string, required: false }
+          - { name: all_services_en, label: "Homepage: All services link, English (usual: All services) / דף הבית: קישור לכל השירותים, אנגלית", widget: string, required: false }
+          - { name: all_services_he, label: "Homepage: All services link, Hebrew (usual: לכל השירותים) / דף הבית: קישור לכל השירותים, עברית", widget: string, required: false }
+          - { name: synopsis_en, label: "Project: Synopsis heading, English (usual: Synopsis) / פרויקט: כותרת תקציר, אנגלית", widget: string, required: false }
+          - { name: synopsis_he, label: "Project: Synopsis heading, Hebrew (usual: תקציר) / פרויקט: כותרת תקציר, עברית", widget: string, required: false }
+          - { name: creators_en, label: "Project: Words from the creators heading, English (usual: From the creators) / פרויקט: כותרת דברי היוצרים, אנגלית", widget: string, required: false }
+          - { name: creators_he, label: "Project: Words from the creators heading, Hebrew (usual: דברי היוצרים) / פרויקט: כותרת דברי היוצרים, עברית", widget: string, required: false }
+          - { name: behind_en, label: "Project: Behind the scenes heading, English (usual: Behind the scenes) / פרויקט: כותרת מאחורי הקלעים, אנגלית", widget: string, required: false }
+          - { name: behind_he, label: "Project: Behind the scenes heading, Hebrew (usual: מאחורי הקלעים) / פרויקט: כותרת מאחורי הקלעים, עברית", widget: string, required: false }
+          - { name: gallery_en, label: "Project: Images heading, English (usual: Images) / פרויקט: כותרת תמונות, אנגלית", widget: string, required: false }
+          - { name: gallery_he, label: "Project: Images heading, Hebrew (usual: תמונות) / פרויקט: כותרת תמונות, עברית", widget: string, required: false }
+          - { name: video_en, label: "Project: Video heading, English (usual: Video) / פרויקט: כותרת וידאו, אנגלית", widget: string, required: false }
+          - { name: video_he, label: "Project: Video heading, Hebrew (usual: וידאו) / פרויקט: כותרת וידאו, עברית", widget: string, required: false }
+          - { name: details_en, label: "Project: Details heading, English (usual: Details) / פרויקט: כותרת פרטים, אנגלית", widget: string, required: false }
+          - { name: details_he, label: "Project: Details heading, Hebrew (usual: פרטים) / פרויקט: כותרת פרטים, עברית", widget: string, required: false }
+          - { name: project_shop_en, label: "Project: From the shop heading, English (usual: Shop) / פרויקט: כותרת מהחנות, אנגלית", widget: string, required: false }
+          - { name: project_shop_he, label: "Project: From the shop heading, Hebrew (usual: מהחנות) / פרויקט: כותרת מהחנות, עברית", widget: string, required: false }
+          - { name: work_all_en, label: "Projects page: All filter, English (usual: All) / עמוד פרויקטים: מסנן הכול, אנגלית", widget: string, required: false }
+          - { name: work_all_he, label: "Projects page: All filter, Hebrew (usual: הכול) / עמוד פרויקטים: מסנן הכול, עברית", widget: string, required: false }
+          - { name: work_back_en, label: "Project: All projects link, English (usual: All projects) / פרויקט: קישור כל הפרויקטים, אנגלית", widget: string, required: false }
+          - { name: work_back_he, label: "Project: All projects link, Hebrew (usual: כל הפרויקטים) / פרויקט: קישור כל הפרויקטים, עברית", widget: string, required: false }
+          - { name: work_previous_en, label: "Project: Previous project link, English (usual: Previous project) / פרויקט: קישור הפרויקט הקודם, אנגלית", widget: string, required: false }
+          - { name: work_previous_he, label: "Project: Previous project link, Hebrew (usual: הפרויקט הקודם) / פרויקט: קישור הפרויקט הקודם, עברית", widget: string, required: false }
+          - { name: work_next_en, label: "Project: Next project link, English (usual: Next project) / פרויקט: קישור הפרויקט הבא, אנגלית", widget: string, required: false }
+          - { name: work_next_he, label: "Project: Next project link, Hebrew (usual: הפרויקט הבא) / פרויקט: קישור הפרויקט הבא, עברית", widget: string, required: false }
+          - { name: about_team_en, label: "About: Creators heading, English (usual: Creators) / אודות: כותרת היוצרים, אנגלית", widget: string, required: false }
+          - { name: about_team_he, label: "About: Creators heading, Hebrew (usual: היוצרים) / אודות: כותרת היוצרים, עברית", widget: string, required: false }
+          - { name: contact_email_en, label: "Contact: Email heading, English (usual: Email) / יצירת קשר: כותרת מייל, אנגלית", widget: string, required: false }
+          - { name: contact_email_he, label: "Contact: Email heading, Hebrew (usual: מייל) / יצירת קשר: כותרת מייל, עברית", widget: string, required: false }
+          - { name: contact_phone_en, label: "Contact: Phone heading, English (usual: Phone) / יצירת קשר: כותרת טלפון, אנגלית", widget: string, required: false }
+          - { name: contact_phone_he, label: "Contact: Phone heading, Hebrew (usual: טלפון) / יצירת קשר: כותרת טלפון, עברית", widget: string, required: false }
+          - { name: contact_location_en, label: "Contact: Location heading, English (usual: Location) / יצירת קשר: כותרת מיקום, אנגלית", widget: string, required: false }
+          - { name: contact_location_he, label: "Contact: Location heading, Hebrew (usual: מיקום) / יצירת קשר: כותרת מיקום, עברית", widget: string, required: false }
+          - { name: contact_social_en, label: "Contact: Follow us heading, English (usual: Follow) / יצירת קשר: כותרת עקבו אחרינו, אנגלית", widget: string, required: false }
+          - { name: contact_social_he, label: "Contact: Follow us heading, Hebrew (usual: עקבו אחרינו) / יצירת קשר: כותרת עקבו אחרינו, עברית", widget: string, required: false }
+          - { name: consult_title_en, label: "Contact: Private consultation heading, English (usual: Private consultation) / יצירת קשר: כותרת התייעצות פרטית, אנגלית", widget: string, required: false }
+          - { name: consult_title_he, label: "Contact: Private consultation heading, Hebrew (usual: התייעצות פרטית) / יצירת קשר: כותרת התייעצות פרטית, עברית", widget: string, required: false }
+          - { name: shop_all_en, label: "Shop: All category, English (usual: All) / חנות: קטגוריה הכול, אנגלית", widget: string, required: false }
+          - { name: shop_all_he, label: "Shop: All category, Hebrew (usual: הכול) / חנות: קטגוריה הכול, עברית", widget: string, required: false }
+          - { name: shop_empty_en, label: "Shop: no products yet, English (usual: Products are on the way.) / חנות: הודעה כשאין מוצרים, אנגלית", widget: string, required: false }
+          - { name: shop_empty_he, label: "Shop: no products yet, Hebrew (usual: המוצרים בדרך.) / חנות: הודעה כשאין מוצרים, עברית", widget: string, required: false }
+          - { name: shop_category_empty_en, label: "Shop: empty category message, English (usual: Products in this category are coming soon.) / חנות: הודעה לקטגוריה ריקה, אנגלית", widget: string, required: false }
+          - { name: shop_category_empty_he, label: "Shop: empty category message, Hebrew (usual: מוצרים בקטגוריה הזאת יגיעו בקרוב.) / חנות: הודעה לקטגוריה ריקה, עברית", widget: string, required: false }
+          - { name: shop_coming_soon_en, label: "Shop: Coming soon tag, English (usual: Coming soon) / חנות: תגית בקרוב, אנגלית", widget: string, required: false }
+          - { name: shop_coming_soon_he, label: "Shop: Coming soon tag, Hebrew (usual: בקרוב) / חנות: תגית בקרוב, עברית", widget: string, required: false }
+          - { name: shop_details_en, label: "Shop: product box button, English (usual: Details and order) / חנות: כפתור בתיבת מוצר, אנגלית", widget: string, required: false }
+          - { name: shop_details_he, label: "Shop: product box button, Hebrew (usual: לפרטים ולהזמנה) / חנות: כפתור בתיבת מוצר, עברית", widget: string, required: false }
+          - { name: shop_add_en, label: "Product: Add to order button, English (usual: Add to order) / מוצר: כפתור הוספה להזמנה, אנגלית", widget: string, required: false }
+          - { name: shop_add_he, label: "Product: Add to order button, Hebrew (usual: הוספה להזמנה) / מוצר: כפתור הוספה להזמנה, עברית", widget: string, required: false }
+          - { name: shop_from_project_en, label: "Product: From the project, English (usual: From the project) / מוצר: מתוך הפרויקט, אנגלית", widget: string, required: false }
+          - { name: shop_from_project_he, label: "Product: From the project, Hebrew (usual: מתוך הפרויקט) / מוצר: מתוך הפרויקט, עברית", widget: string, required: false }
+          - { name: shop_returns_en, label: "Product: Shipping and returns heading, English (usual: Shipping, returns and exchanges) / מוצר: כותרת משלוח והחזרות, אנגלית", widget: string, required: false }
+          - { name: shop_returns_he, label: "Product: Shipping and returns heading, Hebrew (usual: משלוח, החזרות והחלפות) / מוצר: כותרת משלוח והחזרות, עברית", widget: string, required: false }
+          - { name: shop_view_order_en, label: "Shop: Your order link, English (usual: Your order) / חנות: קישור ההזמנה שלכם, אנגלית", widget: string, required: false }
+          - { name: shop_view_order_he, label: "Shop: Your order link, Hebrew (usual: ההזמנה שלכם) / חנות: קישור ההזמנה שלכם, עברית", widget: string, required: false }
+          - { name: shop_order_title_en, label: "Order page heading, English (usual: Your order) / עמוד ההזמנה: כותרת, אנגלית", widget: string, required: false }
+          - { name: shop_order_title_he, label: "Order page heading, Hebrew (usual: ההזמנה שלכם) / עמוד ההזמנה: כותרת, עברית", widget: string, required: false }
+          - { name: shop_summary_en, label: "Order: Summary heading, English (usual: Order summary) / הזמנה: כותרת סיכום, אנגלית", widget: string, required: false }
+          - { name: shop_summary_he, label: "Order: Summary heading, Hebrew (usual: סיכום ההזמנה) / הזמנה: כותרת סיכום, עברית", widget: string, required: false }
+          - { name: shop_send_en, label: "Order: Send button, English (usual: Send order request) / הזמנה: כפתור שליחה, אנגלית", widget: string, required: false }
+          - { name: shop_send_he, label: "Order: Send button, Hebrew (usual: שליחת בקשת הזמנה) / הזמנה: כפתור שליחה, עברית", widget: string, required: false }
+          - { name: shop_continue_en, label: "Order: Continue shopping link, English (usual: Continue shopping) / הזמנה: קישור להמשך קנייה, אנגלית", widget: string, required: false }
+          - { name: shop_continue_he, label: "Order: Continue shopping link, Hebrew (usual: להמשך קנייה) / הזמנה: קישור להמשך קנייה, עברית", widget: string, required: false }
+          - { name: shop_pay_title_en, label: "Order: Payment heading, English (usual: Payment) / הזמנה: כותרת תשלום, אנגלית", widget: string, required: false }
+          - { name: shop_pay_title_he, label: "Order: Payment heading, Hebrew (usual: תשלום) / הזמנה: כותרת תשלום, עברית", widget: string, required: false }
+          - { name: footer_top_en, label: "Footer: Back to top, English (usual: Back to top) / תחתית: חזרה למעלה, אנגלית", widget: string, required: false }
+          - { name: footer_top_he, label: "Footer: Back to top, Hebrew (usual: חזרה למעלה) / תחתית: חזרה למעלה, עברית", widget: string, required: false }
+          # labels-fields:end
 
       - name: services
         label: "Services page / עמוד שירותים"
