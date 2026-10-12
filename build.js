@@ -756,7 +756,7 @@ self.addEventListener("fetch", (e) => {
     );
     return;
   }
-  if (!/\\.(css|js|webp|jpe?g|png|svg|webmanifest)$/.test(url.pathname)) return;
+  if (!/\\.(css|js|webp|jpe?g|png|svg|woff2|webmanifest)$/.test(url.pathname)) return;
   e.respondWith(
     caches.match(req).then((m) => m || fetch(req).then((res) => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }

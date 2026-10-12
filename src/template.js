@@ -104,9 +104,7 @@ module.exports = function render({ t, c, lang, dir, base, urls, other }) {
 
   <link rel="icon" href="${base}favicon.svg" type="image/svg+xml">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Heebo:wght@400..700&display=swap">
+  <link rel="stylesheet" href="${ctx.assetBase}css/fonts.css">
 ${c.hero ? `
   <link rel="preload" as="image" href="${base}${e(c.hero.src)}">` : ""}
   <script>document.documentElement.classList.add("js");</script>

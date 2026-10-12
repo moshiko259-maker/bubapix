@@ -94,8 +94,8 @@ function csp(ctx, inlineScripts) {
   return [
     "default-src 'self'",
     `script-src 'self' ${hashes.join(" ")}`,
-    "style-src 'self' https://fonts.googleapis.com",
-    "font-src https://fonts.gstatic.com",
+    "style-src 'self'",
+    "font-src 'self'",
     // Preview builds are viewed on raw.githack.com, which serves pages
     // itself but REDIRECTS images and videos to raw.githubusercontent.com.
     // Only preview builds allow that address; the live site stays 'self'.
@@ -204,9 +204,8 @@ function layout(ctx, { title, description, image, main, current = "", community 
   <meta name="apple-mobile-web-app-title" content="BubaPix">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Heebo:wght@400..700&display=swap">
+  <link rel="preload" href="${ctx.assetBase}assets/fonts/${lang === "he" ? "heebo-hebrew" : "heebo-latin"}-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="${ctx.assetBase}css/fonts.css">
   <script>${jsFlag}</script>
   <link rel="stylesheet" href="${ctx.assetBase}css/styles.css">
   <link rel="stylesheet" href="${ctx.assetBase}css/gallery.css">
@@ -1156,7 +1155,7 @@ function notFound(site, en, he, preview) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <title>${e(en.notFound.title)} — BubaPix</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Heebo:wght@400..700&display=swap">
+  <link rel="stylesheet" href="${site.url}css/fonts.css">
   <link rel="stylesheet" href="${site.url}css/styles.css">
 </head>
 <body>
