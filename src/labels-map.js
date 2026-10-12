@@ -17,6 +17,7 @@ module.exports = [
   ["start_project", [["home", "startProject"]], "Homepage: Start a project button", "דף הבית: כפתור התחילו פרויקט"],
   ["showreel", [["home", "showreel"]], "Homepage: Showreel heading", "דף הבית: כותרת השואוריל"],
   ["all_services", [["home", "allServices"]], "Homepage: All services link", "דף הבית: קישור לכל השירותים"],
+  ["project_cue", [["home", "projectCue"]], "Tag on pictures that open a project", "תגית על תמונות שפותחות פרויקט"],
   // Project page
   ["synopsis", [["work", "synopsis"]], "Project: Synopsis heading", "פרויקט: כותרת תקציר"],
   ["creators", [["work", "creators"]], "Project: Words from the creators heading", "פרויקט: כותרת דברי היוצרים"],

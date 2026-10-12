@@ -35,7 +35,8 @@
     "showreel": "Showreel",
     "allServices": "All services",
     "startProject": "Start a project",
-    "openProject": "open the project"
+    "openProject": "open the project",
+    "projectCue": "View project"
   },
   "work": {
     "title": "Projects",

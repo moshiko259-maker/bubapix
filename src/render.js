@@ -62,11 +62,16 @@ function ratioClass(im) {
 // Address for a picture's own link (see build.js picture()).
 const linkOf = (ctx, ln) => (ln.external ? e(ln.href) : makeLink(ctx)(ln.path));
 
-function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = false, eager = false, viewer = false, external = false, sizes, extraClass = "" } = {}) {
+// A small tag on a picture that opens a project page ("View project ->"),
+// so visitors know the picture leads somewhere. Always shown on touch
+// screens; on a computer it appears on hover or keyboard focus.
+const projectCue = (ctx) => `<span class="jg-cue" aria-hidden="true">${e(ctx.t.home.projectCue)} <span class="jg-cue-arrow">${ctx.lang === "he" ? "←" : "→"}</span></span>`;
+
+function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = false, eager = false, viewer = false, external = false, sizes, extraClass = "", cue = false } = {}) {
   const { cls, ratio } = ratioClass(im);
   const isLead = lead && ratio >= 1.2;
   const sz = sizes || (isLead ? "(max-width: 1440px) 100vw, 1440px" : "(max-width: 560px) 100vw, (max-width: 1100px) 50vw, 40vw");
-  const picture = `<span class="jg-media">${img(ctx, im, { sizes: sz, attrs: eager ? 'fetchpriority="high" decoding="async"' : 'loading="lazy" decoding="async"' })}</span>`;
+  const picture = `<span class="jg-media">${img(ctx, im, { sizes: sz, attrs: eager ? 'fetchpriority="high" decoding="async"' : 'loading="lazy" decoding="async"' })}${cue && href ? projectCue(ctx) : ""}</span>`;
   const capInner = caption && (caption.title || caption.note)
     ? `${caption.title ? `<span class="jg-title">${e(caption.title)}</span>` : ""}${caption.note ? `<span class="jg-note">${e(caption.note)}</span>` : ""}`
     : "";
@@ -446,6 +451,7 @@ function home(ctx) {
       label: linked(g) ? `${g.project.name} — ${t.home.openProject}` : own ? g.image.alt : `${t.work.openImage}: ${g.image.alt}`,
       external: !!(own && g.image.link.external),
       viewer: !linked(g) && !own,
+      cue: linked(g),
       sizes: rowLen === 1 ? "(max-width: 1440px) 100vw, 1440px" : `(max-width: 700px) ${rowLen > 2 ? 50 : 60}vw, ${Math.round(100 / rowLen) + 10}vw`,
     });
   };
@@ -458,6 +464,7 @@ function home(ctx) {
         href: data.feature.project ? link(`work/${data.feature.project.slug}/`) : ctx.assetBase + e(data.feature.image.full || data.feature.image.src),
         label: data.feature.project ? `${data.feature.project.name} — ${t.home.openProject}` : `${t.work.openImage}: ${data.feature.image.alt}`,
         viewer: !data.feature.project,
+        cue: !!data.feature.project,
         sizes: "(max-width: 700px) 92vw, 640px",
       })
     : "";
@@ -542,6 +549,7 @@ function work(ctx) {
     galleryItem(ctx, p.thumb, {
       href: link(`work/${p.slug}/`),
       label: p.title,
+      cue: true,
       caption: p.titleInGallery ? { title: p.name, note: p.categories.map((c) => c.name).join(", ") } : null,
     }).replace('<a class="jg-item', `<a data-categories="${e(p.categories.map((c) => c.slug).join(" "))}" class="jg-item`)
   );
