@@ -186,4 +186,30 @@
       show(current + (forward ? 1 : -1));
     }, { passive: true });
   }
+
+  // ---------- 6. Edit buttons for the site owner ----------
+  // Switched on from the Manage page and remembered only in this browser.
+  // The buttons just open the admin panel, which asks for the owner's sign-in.
+  var EDIT = "bubapix-edit";
+  function editOn() { try { return localStorage.getItem(EDIT) === "1"; } catch (e) { return false; } }
+  function setEdit(on) {
+    try { if (on) localStorage.setItem(EDIT, "1"); else localStorage.removeItem(EDIT); } catch (e) { /* storage blocked */ }
+    applyEdit();
+  }
+  function applyEdit() {
+    var on = editOn();
+    each(document.querySelectorAll("[data-edit-bar]"), function (bar) { bar.hidden = !on; });
+    root.classList.toggle("edit-mode", on);
+    each(document.querySelectorAll("[data-edit-toggle]"), function (b) {
+      b.textContent = b.getAttribute(on ? "data-off" : "data-on");
+      b.setAttribute("aria-pressed", String(on));
+    });
+  }
+  each(document.querySelectorAll("[data-edit-toggle]"), function (b) {
+    b.addEventListener("click", function () { setEdit(!editOn()); });
+  });
+  each(document.querySelectorAll("[data-edit-off]"), function (b) {
+    b.addEventListener("click", function () { setEdit(false); });
+  });
+  applyEdit();
 })();

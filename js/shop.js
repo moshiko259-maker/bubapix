@@ -138,6 +138,16 @@
     });
   }
 
+  // ---- Product photos: thumbnails choose the large photo -----------------
+  var slides = document.querySelectorAll("[data-slide]");
+  Array.prototype.forEach.call(document.querySelectorAll("[data-thumb]"), function (btn) {
+    btn.addEventListener("click", function () {
+      var n = btn.getAttribute("data-thumb");
+      Array.prototype.forEach.call(slides, function (s) { s.classList.toggle("is-active", s.getAttribute("data-slide") === n); });
+      Array.prototype.forEach.call(document.querySelectorAll("[data-thumb]"), function (b) { if (b === btn) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current"); });
+    });
+  });
+
   // ---- Order page --------------------------------------------------------
   var root = document.querySelector("[data-order]");
   if (root) {
@@ -146,6 +156,13 @@
     var empty = root.querySelector("[data-order-empty]");
     var orderForm = root.querySelector("[data-order-form]");
     var totalEl = root.querySelector("[data-order-total]");
+    var linesEl = root.querySelector("[data-order-lines]");
+    var addLine = function (dt, dd) {
+      var d = el("div");
+      d.appendChild(el("dt", null, dt));
+      d.appendChild(el("dd", null, dd));
+      linesEl.appendChild(d);
+    };
     var ostatus = orderForm.querySelector(".form-status");
     var dest = function () { var c = orderForm.querySelector("input[name=dest]:checked"); return c ? c.value : "israel"; };
 
@@ -184,9 +201,37 @@
         list.appendChild(li);
       });
       var codes = Object.keys(totals);
-      var a = codes.length === 1 ? approx(totals[codes[0]], codes[0]) : "";
-      totalEl.textContent = codes.length === 1 ? t.total + ": " + money(totals[codes[0]], codes[0]) + (a ? " (" + a + ")" : "") : codes.length > 1 ? t.mixed : "";
-      lastTotals = totals;
+      // Summary: products, VAT (when added), shipping to the chosen
+      // destination (when its price is set in the same currency), total.
+      linesEl.textContent = "";
+      var payTotals = {};
+      codes.forEach(function (c) { payTotals[c] = totals[c]; });
+      if (codes.length === 1) {
+        var c0 = codes[0], sum = totals[c0];
+        addLine(t.subtotal, money(sum, c0));
+        if (cfg.vat && cfg.vat.mode === "added") {
+          var v = Math.round(sum * cfg.vat.rate) / 100;
+          addLine(t.vatLine + " (" + cfg.vat.rate + "%)", money(v, c0));
+          sum += v;
+        } else if (cfg.vat && cfg.vat.mode === "included") {
+          addLine(t.vatLine + " (" + cfg.vat.rate + "%)", t.vatIncluded);
+        }
+        var physical = items.some(function (i) { return i.ships !== "digital"; });
+        var ship = dest() === "abroad" ? cfg.shipAbroad : cfg.shipIsrael;
+        if (!physical) addLine(t.shippingLine, t.noShipping);
+        else if (ship && ship.currency === c0) {
+          var free = dest() !== "abroad" && cfg.freeIsraelFrom !== null && cfg.freeIsraelFrom !== undefined && sum >= cfg.freeIsraelFrom;
+          addLine(t.shippingLine, free ? t.freeShipping : money(ship.amount, c0));
+          if (!free) sum += ship.amount;
+        }
+        else if (ship) addLine(t.shippingLine, money(ship.amount, ship.currency));
+        payTotals[c0] = sum;
+        var a = approx(sum, c0);
+        totalEl.textContent = (physical && !(ship && ship.currency === c0) ? t.total : t.totalPay) + ": " + money(sum, c0) + (a ? " (" + a + ")" : "");
+      } else {
+        totalEl.textContent = codes.length > 1 ? t.mixed : "";
+      }
+      lastTotals = payTotals;
       updateCount(items);
     };
     renderOrder = render;
@@ -204,6 +249,7 @@
         });
         var body = [
           t.orderTitle + ":", "", lines.join("\n"), "",
+          Array.prototype.map.call(linesEl.querySelectorAll("div"), function (d) { return d.firstChild.textContent + ": " + d.lastChild.textContent; }).join("\n"),
           totalEl.textContent.replace(/ \(≈ [^)]*\)$/, ""),
           approxLine(),
           t.destination + ": " + (order.dest === "abroad" ? t.abroad : t.israel),

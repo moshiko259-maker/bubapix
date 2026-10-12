@@ -185,6 +185,62 @@ function currencySettings(shop) {
   return { codes: codes.length > 1 ? codes : [], rates, date, source };
 }
 
+// ---- Shipping costs and VAT, shown in the product's price box and in the
+// order summary. Only what is set in the admin is shown; in the preview's
+// example mode, example values (marked as examples) fill the empty ones.
+function shopCosts(shop, exampleMode, lang) {
+  const num = (v) => (typeof v === "number" && isFinite(v) && v >= 0 ? v : null);
+  const ship = (amount, currency, fallback) => {
+    const a = num(amount);
+    if (a !== null) return { amount: a, currency: money.code(currency, fallback.currency), text: money.format(a, money.code(currency, fallback.currency), lang), example: false };
+    if (!exampleMode) return null;
+    return { ...fallback, text: money.format(fallback.amount, fallback.currency, lang), example: true };
+  };
+  const vatMode = ["included", "added", "none"].includes(shop.vat) ? shop.vat : exampleMode ? "included" : "";
+  const vatRate = num(shop.vat_rate) !== null ? num(shop.vat_rate) : 18;
+  return {
+    shipIsrael: ship(shop.shipping_israel_price, shop.shipping_israel_currency, { amount: 25, currency: "ILS" }),
+    // Free shipping in Israel from this order amount (same currency as the shipping price).
+    freeIsraelFrom: num(shop.free_shipping_israel_from),
+    shipAbroad: ship(shop.shipping_abroad_price, shop.shipping_abroad_currency, { amount: 15, currency: "USD" }),
+    vat: vatMode ? { mode: vatMode, rate: vatRate, example: !["included", "added", "none"].includes(shop.vat) } : null,
+  };
+}
+
+// Example products for the preview (see exampleMode). Original BubaPix images.
+const EXAMPLE_PRODUCTS = [
+  {
+    slug: "example-poster-print", card_fit: "fill", order: 1, category: "art-prints", type: "physical", availability: "available",
+    title_en: "Example: THE NEW OCEAN poster print", title_he: "דוגמה: הדפס פוסטר THE NEW OCEAN",
+    description_en: "An example product, shown only in the preview. Price and details are examples. It disappears automatically when you add a real product in the admin.",
+    description_he: "מוצר לדוגמה, מוצג רק בתצוגה המקדימה. המחיר והפרטים לדוגמה. הוא נעלם אוטומטית כשמוסיפים מוצר אמיתי בניהול.",
+    price: 120, currency: "ILS", price_abroad: 40, currency_abroad: "USD", ships_to: "worldwide",
+    variants: [{ name_en: "Size", name_he: "מידה", values_en: "A3, A2", values_he: "A3, A2" }],
+    projects: ["the-new-ocean"],
+    details: [
+      { title_en: "Paper and print (example)", title_he: "נייר והדפסה (דוגמה)", text_en: "Example text: paper type, print method and finish.", text_he: "טקסט לדוגמה: סוג הנייר, שיטת ההדפסה והגימור." },
+      { title_en: "Size (example)", title_he: "מידות (דוגמה)", text_en: "Example text: A3 29.7 × 42 cm, A2 42 × 59.4 cm.", text_he: "טקסט לדוגמה: A3 ‏29.7 × 42 ס״מ, A2 ‏42 × 59.4 ס״מ." },
+    ],
+    images: [{ image: "/assets/work/the-new-ocean-poster.jpg" }, { image: "/assets/work/the-new-ocean-poster-boat.jpg" }, { image: "/assets/work/turtle-island.png" }],
+  },
+  {
+    slug: "example-plush", card_fit: "fill", order: 2, category: "dolls", type: "physical", availability: "preorder",
+    title_en: "Example: fluffy character plush", title_he: "דוגמה: בובה פרוותית",
+    description_en: "An example product, shown only in the preview. Price and details are examples.",
+    description_he: "מוצר לדוגמה, מוצג רק בתצוגה המקדימה. המחיר והפרטים לדוגמה.",
+    price: 150, currency: "ILS", ships_to: "israel",
+    images: [{ image: "/assets/work/white-fluffy-turnaround.png" }, { image: "/assets/work/white-creature.jpg" }, { image: "/assets/work/winged-white-creature.png" }],
+  },
+  {
+    slug: "example-digital-poster", card_fit: "fill", order: 3, category: "posters", type: "digital", availability: "available",
+    title_en: "Example: character line-up, digital file", title_he: "דוגמה: פוסטר דמויות, קובץ דיגיטלי",
+    description_en: "An example product, shown only in the preview. Price and details are examples.",
+    description_he: "מוצר לדוגמה, מוצג רק בתצוגה המקדימה. המחיר והפרטים לדוגמה.",
+    price: 12, currency: "USD", ships_to: "digital",
+    images: [{ image: "/assets/work/character-lineup.png" }, { image: "/assets/work/furry-characters-lineup.png" }],
+  },
+];
+
 // ---- Payment methods: prepared, but each one is OFF until it is switched on
 // in the admin with real account details. Nothing is charged by the site
 // itself: a method opens the provider's own secure payment page.
@@ -245,6 +301,12 @@ function contentFor(lang) {
     // Other frames fill a fixed shape; "focus" says which part stays in view.
     im.frame = ["landscape", "square", "portrait", "wide"].includes(o.frame) ? o.frame : "natural";
     im.focus = ["top", "bottom", "left", "right"].includes(o.focus) ? o.focus : "center";
+    // Optional link: clicking the picture opens it. A full https:// address,
+    // or a page of this site written like /shop/ or /work/the-new-ocean/.
+    const ln = String(o.link || "").trim();
+    im.link = /^https:\/\/[^\s"<>]+$/.test(ln) ? { href: ln, external: true } : /^\/[a-z0-9\-\/]*$/.test(ln) ? { path: ln.replace(/^\//, ""), external: false } : null;
+    // Homepage gallery size: auto follows the layout's rhythm.
+    im.size = ["large", "medium", "small"].includes(o.size) ? o.size : "auto";
     return im;
   };
 
@@ -377,7 +439,11 @@ function contentFor(lang) {
     .map((c) => ({ slug: c.slug, name: pick(c, "name", lang) || c.slug }));
   const shopCat = new Map(shopCategories.map((c) => [c.slug, c]));
   const projectBySlug = new Map(projects.map((p) => [p.slug, p]));
-  const products = raw.products
+  // Preview only: while the shop has no real products, three clearly marked
+  // EXAMPLE products show how the shop looks and works. They are never built
+  // on the live site (main) and disappear as soon as a real product exists.
+  const exampleMode = preview && !raw.products.some((x) => visible(x) && safeSlug(x.slug));
+  const products = (exampleMode ? EXAMPLE_PRODUCTS : raw.products)
     .filter((x) => visible(x) && safeSlug(x.slug) && x.slug !== "order") // "order" is the order page
     .sort(byOrder)
     .map((x) => {
@@ -391,6 +457,7 @@ function contentFor(lang) {
       const currencyAbroad = money.code(x.currency_abroad, "USD");
       return {
         slug: x.slug,
+        example: exampleMode,
         title,
         description: pick(x, "description", lang),
         category: shopCat.get(x.category) || null,
@@ -415,6 +482,10 @@ function contentFor(lang) {
         cardFocus: ["top", "bottom", "left", "right"].includes(x.card_focus) ? x.card_focus : "center",
         seoTitle: pick(x, "seo_title", lang),
         seoDescription: pick(x, "seo_description", lang),
+        // More details, opened by the visitor (materials, size, care…).
+        details: (Array.isArray(x.details) ? x.details : [])
+          .map((d) => ({ title: pick(d, "title", lang), text: pick(d, "text", lang) }))
+          .filter((d) => d.title && d.text),
       };
     })
     .filter((x) => {
@@ -432,6 +503,9 @@ function contentFor(lang) {
       shippingAbroad: pick(raw.shop, "shipping_abroad", lang),
       checkout: "email", // the order request is sent by email; payment methods are optional and off by default
       currency: currencySettings(raw.shop),
+      ...shopCosts(raw.shop, exampleMode, lang),
+      returns: pick(raw.shop, "returns", lang),
+      example: exampleMode,
       payments: paymentMethods(raw.shop, lang),
       intro: pick(raw.shop, "intro", lang),
       categories: shopCategories.filter((c) => products.some((x) => x.category && x.category.slug === c.slug)) },
@@ -529,6 +603,8 @@ for (const lang of ["en", "he"]) {
   add("contact/", render.contact(contextFor(lang, "contact/", data)));
   add("shop/", render.shop(contextFor(lang, "shop/", data)));
   outputs.set((lang === "he" ? "he/" : "") + "shop/order/index.html", render.order(contextFor(lang, "shop/order/", data)));
+  // Owner's management page: not listed in the sitemap, not indexed.
+  outputs.set((lang === "he" ? "he/" : "") + "manage/index.html", render.manage(contextFor(lang, "manage/", data)));
   data.products.forEach((x) => {
     const pagePath = `shop/${x.slug}/`;
     add(pagePath, render.product(contextFor(lang, pagePath, data), x));

@@ -213,6 +213,7 @@ collections:
                 hint: "Drag to change the order. / גררו לשינוי הסדר."
                 fields:
                   - { name: image, label: "Image / תמונה", widget: image }
+                  - { name: link, label: "Link when the picture is clicked (optional) / קישור בלחיצה על התמונה (רשות)", widget: string, required: false, pattern: ['^$|^https://|^/[a-z0-9/-]*$', "https://… or a site page like /shop/ / ‏https://… או עמוד באתר כמו /shop/"], hint: "Empty: the picture opens large. / ריק: התמונה נפתחת בגדול." }
                   - { name: alt_en, label: "Description for blind visitors, English / תיאור לעיוורים, אנגלית", widget: string, required: false }
                   - { name: alt_he, label: "Description for blind visitors, Hebrew / תיאור לעיוורים, עברית", widget: string, required: false }
                   - { name: title_en, label: "Title, English (optional) / כותרת, אנגלית", widget: string, required: false }
@@ -454,6 +455,18 @@ collections:
           - { label: "Sold out / אזל", value: soldout }
       - { name: description_en, label: "Description, English / תיאור, אנגלית", widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list], editor_components: [] }
       - { name: description_he, label: "Description, Hebrew / תיאור, עברית", widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list], editor_components: [] }
+      - name: details
+        label: "More details (open on click: materials, size, care…) / פרטים נוספים (נפתחים בלחיצה: חומרים, מידות, טיפול…)"
+        label_singular: "detail / פרט"
+        widget: list
+        required: false
+        collapsed: auto
+        summary: "{{fields.title_he}} · {{fields.title_en}}"
+        fields:
+          - { name: title_en, label: "Title, English / כותרת, אנגלית", widget: string, required: false }
+          - { name: title_he, label: "Title, Hebrew / כותרת, עברית", widget: string, required: false }
+          - { name: text_en, label: "Text, English / טקסט, אנגלית", widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list], editor_components: [] }
+          - { name: text_he, label: "Text, Hebrew / טקסט, עברית", widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list], editor_components: [] }
       - name: variants
         label: "Options, e.g. size or color (optional) / אפשרויות, למשל מידה או צבע"
         label_singular: "option / אפשרות"
@@ -582,6 +595,18 @@ collections:
             fields:
               - { name: image, label: "Image / תמונה", widget: image }
               - { name: visible, label: "Show / להציג", widget: boolean, default: true, required: false }
+              - name: size
+                label: "Size on the homepage / גודל בדף הבית"
+                widget: select
+                default: auto
+                required: false
+                hint: "Automatic keeps an interesting rhythm of big and small pictures. / אוטומטי שומר על קצב מעניין של תמונות גדולות וקטנות."
+                options:
+                  - { label: "Automatic / אוטומטי", value: auto }
+                  - { label: "Large / גדולה", value: large }
+                  - { label: "Medium / בינונית", value: medium }
+                  - { label: "Small / קטנה", value: small }
+              - { name: link, label: "Or: another link when clicked (optional) / או: קישור אחר בלחיצה (רשות)", widget: string, required: false, pattern: ['^$|^https://|^/[a-z0-9/-]*$', "https://… or a site page like /shop/ / ‏https://… או עמוד באתר כמו /shop/"] }
               - name: project
                 label: "Opens this project's page (optional) / לחיצה פותחת את דף הפרויקט (רשות)"
                 widget: relation
@@ -645,6 +670,25 @@ collections:
           - { name: shipping_israel_he, label: "Shipping in Israel, Hebrew / משלוח בישראל, עברית", widget: text, required: false }
           - { name: shipping_abroad_en, label: "Shipping abroad, English / משלוח לחו״ל, אנגלית", widget: text, required: false }
           - { name: shipping_abroad_he, label: "Shipping abroad, Hebrew / משלוח לחו״ל, עברית", widget: text, required: false }
+          - { name: shipping_israel_price, label: "Shipping price in Israel (number, optional) / מחיר משלוח בישראל (מספר, רשות)", widget: number, value_type: float, min: 0, required: false, hint: "Shown on every product page and added in the order summary. Empty: not shown. / מוצג בכל עמוד מוצר ומתווסף בסיכום ההזמנה. ריק: לא מוצג." }
+          - { name: shipping_israel_currency, label: "Currency of the shipping price in Israel / מטבע מחיר המשלוח בישראל", widget: string, required: false, default: "ILS", pattern: ['^$|^[A-Z]{3}$', "Three capital letters, e.g. ILS / שלוש אותיות גדולות"] }
+          - { name: free_shipping_israel_from, label: "Free shipping in Israel from order amount (optional) / משלוח חינם בישראל מסכום הזמנה (רשות)", widget: number, value_type: float, min: 0, required: false }
+          - { name: shipping_abroad_price, label: "Shipping price abroad (number, optional) / מחיר משלוח לחו״ל (מספר, רשות)", widget: number, value_type: float, min: 0, required: false }
+          - { name: shipping_abroad_currency, label: "Currency of the shipping price abroad / מטבע מחיר המשלוח לחו״ל", widget: string, required: false, default: "USD", pattern: ['^$|^[A-Z]{3}$', "Three capital letters, e.g. USD / שלוש אותיות גדולות"] }
+          - name: vat
+            label: "VAT (מע״מ) / מע״מ"
+            widget: select
+            required: false
+            default: ""
+            hint: "Ask your accountant which applies to you. Empty: VAT is not mentioned. / בדקו עם רואה החשבון מה חל עליכם. ריק: מע״מ לא מוזכר."
+            options:
+              - { label: "Not mentioned / לא מוזכר", value: "" }
+              - { label: "Prices include VAT / המחירים כוללים מע״מ", value: included }
+              - { label: "VAT is added to prices / מע״מ מתווסף למחיר", value: added }
+              - { label: "No VAT (e.g. exempt dealer) / ללא מע״מ (למשל עוסק פטור)", value: none }
+          - { name: vat_rate, label: "VAT rate in % / שיעור המע״מ באחוזים", widget: number, value_type: float, min: 0, max: 100, default: 18, required: false, hint: "18% in Israel since 1 January 2025. / 18% בישראל מאז 1 בינואר 2025." }
+          - { name: returns_en, label: "Shipping, returns and exchanges, English (optional) / משלוח, החזרות והחלפות, אנגלית", widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list], editor_components: [] }
+          - { name: returns_he, label: "Shipping, returns and exchanges, Hebrew (optional) / משלוח, החזרות והחלפות, עברית", widget: markdown, required: false, buttons: [bold, italic, link, bulleted-list], editor_components: [], hint: "Shown on every product page, opened on click. Write only your real policy. / מוצג בכל עמוד מוצר, נפתח בלחיצה. כתבו רק את המדיניות האמיתית שלכם." }
           - name: checkout
             label: "How orders are sent / איך נשלחות הזמנות"
             widget: select
