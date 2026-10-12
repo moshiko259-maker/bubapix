@@ -241,7 +241,12 @@
     "summary": "Order summary",
     "freeFrom": "Free from {amount}",
     "returnsTitle": "Shipping, returns and exchanges",
-    "freeShipping": "Free"
+    "freeShipping": "Free",
+    "items": "{n} items",
+    "comingSoon": "Coming soon",
+    "categoriesLabel": "Categories",
+    "categoryEmpty": "Products in this category are coming soon.",
+    "itemsOne": "1 item"
   },
   "edit": {
     "footerLink": "Manage",

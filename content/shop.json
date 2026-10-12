@@ -5,27 +5,156 @@
     {
       "slug": "dolls",
       "name_en": "Dolls",
-      "name_he": "בובות"
+      "name_he": "בובות",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "plush",
+      "name_en": "Plush toys",
+      "name_he": "בובות פרווה",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "figures",
+      "name_en": "Figures and toys",
+      "name_he": "דמויות וצעצועים",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "t-shirts",
+      "name_en": "T-shirts",
+      "name_he": "חולצות",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "hoodies",
+      "name_en": "Hoodies and sweatshirts",
+      "name_he": "קפוצ׳ונים וסווטשירטים",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "kids-clothing",
+      "name_en": "Kids' clothing",
+      "name_he": "בגדי ילדים",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "hats",
+      "name_en": "Hats",
+      "name_he": "כובעים",
+      "image": "",
+      "show_when_empty": false
     },
     {
       "slug": "clothing",
       "name_en": "Clothing",
-      "name_he": "בגדים"
+      "name_he": "בגדים",
+      "image": "",
+      "show_when_empty": false
     },
     {
       "slug": "posters",
       "name_en": "Posters",
-      "name_he": "פוסטרים"
+      "name_he": "פוסטרים",
+      "image": "",
+      "show_when_empty": false
     },
     {
       "slug": "art-prints",
       "name_en": "Art prints",
-      "name_he": "הדפסי אמנות"
+      "name_he": "הדפסי אמנות",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "canvas",
+      "name_en": "Canvas prints",
+      "name_he": "הדפסי קנבס",
+      "image": "",
+      "show_when_empty": false
     },
     {
       "slug": "printed-products",
       "name_en": "Printed products",
-      "name_he": "מוצרים מודפסים"
+      "name_he": "מוצרים מודפסים",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "mugs",
+      "name_en": "Mugs and cups",
+      "name_he": "ספלים וכוסות",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "stickers",
+      "name_en": "Stickers",
+      "name_he": "מדבקות",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "bags",
+      "name_en": "Bags",
+      "name_he": "תיקים",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "phone-cases",
+      "name_en": "Phone cases",
+      "name_he": "כיסויים לטלפון",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "keychains-pins",
+      "name_en": "Keychains and pins",
+      "name_he": "מחזיקי מפתחות וסיכות",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "stationery",
+      "name_en": "Notebooks and stationery",
+      "name_he": "מחברות וכלי כתיבה",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "puzzles-games",
+      "name_en": "Puzzles and games",
+      "name_he": "פאזלים ומשחקים",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "books",
+      "name_en": "Books",
+      "name_he": "ספרים",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "digital",
+      "name_en": "Digital downloads",
+      "name_he": "הורדות דיגיטליות",
+      "image": "",
+      "show_when_empty": false
+    },
+    {
+      "slug": "gifts",
+      "name_en": "Gift sets",
+      "name_he": "מארזי מתנה",
+      "image": "",
+      "show_when_empty": false
     }
   ],
   "shipping_israel_en": "",

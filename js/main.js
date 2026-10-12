@@ -68,10 +68,15 @@
     var tiles = document.querySelectorAll(".jg-work .jg-item, .product-grid [data-categories]");
     var apply = function (slug) {
       each(buttons, function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-filter") === slug)); });
+      var shown = 0;
       each(tiles, function (tile) {
         var cats = (tile.getAttribute("data-categories") || "").split(" ");
         tile.hidden = !!slug && cats.indexOf(slug) === -1;
+        if (!tile.hidden) shown++;
       });
+      // A category without products yet says so.
+      var none = document.querySelector("[data-filter-empty]");
+      if (none) none.hidden = shown > 0;
     };
     each(buttons, function (b) {
       b.addEventListener("click", function () {
@@ -83,6 +88,36 @@
       });
     });
     filters.hidden = false;
+    // Category row: arrow buttons scroll it sideways (for mouse users).
+    if (filters.classList.contains("cat-strip")) {
+      var wrap = document.createElement("div");
+      wrap.className = "cat-wrap";
+      filters.parentNode.insertBefore(wrap, filters);
+      wrap.appendChild(filters);
+      var rtl = document.documentElement.dir === "rtl";
+      [["prev", "‹"], ["next", "›"]].forEach(function (d) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "cat-arrow cat-" + d[0];
+        btn.setAttribute("aria-hidden", "true");
+        btn.tabIndex = -1;
+        btn.textContent = rtl ? (d[0] === "prev" ? "›" : "‹") : d[1];
+        btn.addEventListener("click", function () {
+          var step = filters.clientWidth * 0.8 * (d[0] === "next" ? 1 : -1) * (rtl ? -1 : 1);
+          filters.scrollBy({ left: step, behavior: "smooth" });
+        });
+        wrap.appendChild(btn);
+      });
+      var syncArrows = function () {
+        var max = filters.scrollWidth - filters.clientWidth;
+        var pos = Math.abs(filters.scrollLeft);
+        wrap.classList.toggle("can-prev", pos > 4);
+        wrap.classList.toggle("can-next", pos < max - 4);
+      };
+      filters.addEventListener("scroll", syncArrows, { passive: true });
+      window.addEventListener("resize", syncArrows);
+      syncArrows();
+    }
     var start = location.hash.slice(1);
     if (start && filters.querySelector('[data-filter="' + start.replace(/[^a-z0-9-]/g, "") + '"]')) apply(start);
   }

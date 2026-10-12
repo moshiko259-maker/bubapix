@@ -279,7 +279,16 @@ function contentFor(lang) {
   };
   const categories = raw.categories
     .filter((c) => c && safeSlug(c.slug || ""))
-    .map((c) => ({ slug: c.slug, name: pick(c, "name", lang) || c.slug }));
+    .map((c) => {
+      const name = pick(c, "name", lang) || c.slug;
+      return {
+        slug: c.slug,
+        name,
+        image: c.image ? picture({ image: c.image, alt_en: c.name_en, alt_he: c.name_he }, name, `shop category "${c.slug}" image`) : null,
+        // Shown in the shop even before it has products ("coming soon").
+        showEmpty: c.show_when_empty === true,
+      };
+    });
   const catBySlug = new Map(categories.map((c) => [c.slug, c]));
 
   // One picture with its optional title and note.
@@ -436,7 +445,16 @@ function contentFor(lang) {
   // product's buy link, or an order email to the Contact page address.
   const shopCategories = (raw.shop.categories || [])
     .filter((c) => c && safeSlug(c.slug || ""))
-    .map((c) => ({ slug: c.slug, name: pick(c, "name", lang) || c.slug }));
+    .map((c) => {
+      const name = pick(c, "name", lang) || c.slug;
+      return {
+        slug: c.slug,
+        name,
+        image: c.image ? picture({ image: c.image, alt_en: c.name_en, alt_he: c.name_he }, name, `shop category "${c.slug}" image`) : null,
+        // Shown in the shop even before it has products ("coming soon").
+        showEmpty: c.show_when_empty === true,
+      };
+    });
   const shopCat = new Map(shopCategories.map((c) => [c.slug, c]));
   const projectBySlug = new Map(projects.map((p) => [p.slug, p]));
   // Preview only: while the shop has no real products, three clearly marked
@@ -508,7 +526,12 @@ function contentFor(lang) {
       example: exampleMode,
       payments: paymentMethods(raw.shop, lang),
       intro: pick(raw.shop, "intro", lang),
-      categories: shopCategories.filter((c) => products.some((x) => x.category && x.category.slug === c.slug)) },
+      // Category tiles: those with products, those marked "show before it has
+      // products", and, in the preview's example mode, all of them (so the
+      // empty places can be seen and filled).
+      categories: shopCategories
+        .map((c) => ({ ...c, count: products.filter((x) => x.category && x.category.slug === c.slug).length }))
+        .filter((c) => c.count > 0 || c.showEmpty || exampleMode) },
     participation,
     tagline: pick(s, "tagline", lang),
     showreel: parseVideo(s.showreel_url),

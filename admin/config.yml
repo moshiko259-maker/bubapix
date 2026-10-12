@@ -704,11 +704,13 @@ collections:
             allow_reorder: true
             collapsed: auto
             summary: "{{fields.name_en}} · {{fields.name_he}}"
-            hint: "Only categories that have products are shown. / מוצגות רק קטגוריות שיש בהן מוצרים."
+            hint: "Add as many as you need; drag to change the order. A category appears in the shop when it has products, or always if you turn on 'Show before it has products'. / הוסיפו כמה שצריך; גררו לשינוי הסדר. קטגוריה מוצגת כשיש בה מוצרים, או תמיד אם מפעילים ״להציג גם לפני שיש מוצרים״."
             fields:
-              - { name: slug, label: "Short ID (a-z and dashes) / מזהה קצר", widget: string, pattern: ['^[a-z0-9][a-z0-9-]*$', "Use a-z, 0-9 and dashes"] }
-              - { name: name_en, label: "Name, English / שם, אנגלית", widget: string }
               - { name: name_he, label: "Name, Hebrew / שם, עברית", widget: string, required: false }
+              - { name: name_en, label: "Name, English / שם, אנגלית", widget: string }
+              - { name: slug, label: "Short ID in English letters (a-z and dashes, e.g. mugs) / מזהה קצר באותיות אנגליות (למשל mugs)", widget: string, pattern: ['^[a-z0-9][a-z0-9-]*$', "Use a-z, 0-9 and dashes"] }
+              - { name: image, label: "Category picture (optional) / תמונה לקטגוריה (רשות)", widget: image, required: false }
+              - { name: show_when_empty, label: "Show before it has products (\"coming soon\") / להציג גם לפני שיש מוצרים (״בקרוב״)", widget: boolean, default: false, required: false }
           - name: currencies
             label: "Currencies visitors can choose to view prices in / מטבעות שהגולש יכול לבחור לתצוגת מחירים"
             widget: list

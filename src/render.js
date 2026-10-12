@@ -898,12 +898,20 @@ function productCard(ctx, x) {
 function shop(ctx) {
   const { t, data } = ctx;
   const cats = data.shop.categories;
-  const filters = cats.length > 1
+  // Category tiles in a sideways-scrolling row: picture (or first letter),
+  // name, and how many products, or "coming soon". Choosing one shows only
+  // its products; "All" shows everything.
+  const tile = (slug, name, media, count, pressed) => `
+        <button type="button" class="filter cat-tile" data-filter="${e(slug)}" aria-pressed="${pressed}">
+          <span class="cat-media">${media}</span>
+          <span class="cat-name">${e(name)}</span>
+          <span class="cat-count">${e(count === 1 ? t.shop.itemsOne : count ? t.shop.items.replace("{n}", count) : t.shop.comingSoon)}</span>
+        </button>`;
+  const filters = cats.length
     ? `
-      <div class="filters" role="group" aria-label="${e(t.shop.title)}" hidden>
-        <button type="button" class="filter" data-filter="" aria-pressed="true">${e(t.shop.all)}</button>${cats.map((c) => `
-        <button type="button" class="filter" data-filter="${e(c.slug)}" aria-pressed="false">${e(c.name)}</button>`).join("")}
-      </div>`
+      <div class="filters cat-strip" role="group" aria-label="${e(t.shop.categoriesLabel)}" hidden>${tile("", t.shop.all, `<span class="cat-letter">${icon("grid")}</span>`, data.products.length, true)}${cats.map((c) => tile(c.slug, c.name, c.image ? img(ctx, c.image, { sizes: "120px" }) : `<span class="cat-letter">${e([...c.name][0] || "")}</span>`, c.count, false)).join("")}
+      </div>
+      <p class="shop-empty cat-empty" data-filter-empty hidden>${e(t.shop.categoryEmpty)}</p>`
     : "";
   const grid = data.products.length
     ? `

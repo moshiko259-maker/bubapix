@@ -850,3 +850,23 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
   .eg .m-left { grid-column: 1 / span 5 !important; }
 }
 .eg .start-3.span-8 { grid-column: 3 / span 8; }
+
+/* ---------- Shop: category tiles (sideways-scrolling row) ---------- */
+.cat-strip { display: flex; flex-wrap: nowrap; gap: 0.75rem; overflow-x: auto; scroll-snap-type: x proximity; padding: 0.25rem 0.1rem 1rem; margin-bottom: 1.25rem; scrollbar-width: thin; }
+.cat-strip[hidden] { display: none; }
+.cat-tile { flex: 0 0 auto; width: 7.5rem; display: grid; justify-items: center; gap: 0.35rem; padding: 0.75rem 0.5rem; border: 1px solid var(--line); border-radius: 14px; background: #fbfaf5; font: inherit; color: var(--ink); cursor: pointer; scroll-snap-align: start; text-align: center; transition: border-color 0.2s var(--ease), background-color 0.2s var(--ease); }
+.cat-tile:hover { border-color: rgba(22, 22, 29, 0.35); }
+.cat-tile[aria-pressed="true"] { border-color: var(--ink); background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.cat-media { display: grid; place-items: center; width: 4.5rem; height: 4.5rem; border-radius: 50%; overflow: hidden; background: var(--paper-2); }
+.cat-media img { width: 100%; height: 100%; object-fit: cover; }
+.cat-letter { font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; color: var(--ink-2); display: grid; place-items: center; }
+.cat-letter .icon { width: 1.5rem; height: 1.5rem; }
+.cat-name { font-size: 0.875rem; font-weight: 600; line-height: 1.25; }
+.cat-count { font-size: 0.75rem; color: var(--ink-2); }
+.cat-empty[hidden] { display: none; }
+.cat-wrap { position: relative; }
+.cat-arrow { position: absolute; top: calc(50% - 1.6rem); z-index: 2; display: none; width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-size: 1.5rem; line-height: 1; cursor: pointer; box-shadow: 0 4px 14px rgba(22, 22, 29, 0.12); }
+.cat-prev { inset-inline-start: -0.75rem; }
+.cat-next { inset-inline-end: -0.75rem; }
+.cat-wrap.can-prev .cat-prev, .cat-wrap.can-next .cat-next { display: grid; place-items: center; }
+@media (hover: none) { .cat-wrap .cat-arrow { display: none !important; } }

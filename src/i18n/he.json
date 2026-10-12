@@ -241,7 +241,12 @@
     "summary": "סיכום ההזמנה",
     "freeFrom": "חינם מ־{amount}",
     "returnsTitle": "משלוח, החזרות והחלפות",
-    "freeShipping": "חינם"
+    "freeShipping": "חינם",
+    "items": "{n} פריטים",
+    "comingSoon": "בקרוב",
+    "categoriesLabel": "קטגוריות",
+    "categoryEmpty": "מוצרים בקטגוריה הזאת יגיעו בקרוב.",
+    "itemsOne": "פריט אחד"
   },
   "edit": {
     "footerLink": "ניהול",
