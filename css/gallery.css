@@ -5,6 +5,7 @@
 .ar-75{flex-grow:75;flex-basis:calc(var(--row-h) * 0.75)}.ar-75 .jg-media{aspect-ratio:0.75}
 .ar-79{flex-grow:79;flex-basis:calc(var(--row-h) * 0.79)}.ar-79 .jg-media{aspect-ratio:0.79}
 .ar-87{flex-grow:87;flex-basis:calc(var(--row-h) * 0.87)}.ar-87 .jg-media{aspect-ratio:0.87}
+.ar-92{flex-grow:92;flex-basis:calc(var(--row-h) * 0.92)}.ar-92 .jg-media{aspect-ratio:0.92}
 .ar-100{flex-grow:100;flex-basis:calc(var(--row-h) * 1)}.ar-100 .jg-media{aspect-ratio:1}
 .ar-107{flex-grow:107;flex-basis:calc(var(--row-h) * 1.07)}.ar-107 .jg-media{aspect-ratio:1.07}
 .ar-113{flex-grow:113;flex-basis:calc(var(--row-h) * 1.13)}.ar-113 .jg-media{aspect-ratio:1.13}
