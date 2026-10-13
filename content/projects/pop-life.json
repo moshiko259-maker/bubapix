@@ -1,0 +1,85 @@
+{
+  "title_en": "POP LIFE",
+  "title_he": "",
+  "visible": true,
+  "featured": true,
+  "order": 4,
+  "categories": [],
+  "text_en": "",
+  "text_he": "",
+  "description_en": "",
+  "description_he": "",
+  "cover": "/assets/work/pop-life-cans.png",
+  "cover_alt_en": "Four red POP LIFE cola cans with faces, from front to side.",
+  "cover_alt_he": "ארבע פחיות קולה אדומות של POP LIFE עם פרצופים, מחזית ועד צד.",
+  "video_url": "",
+  "video_file": "",
+  "gallery": [],
+  "details": [],
+  "sections": [
+    {
+      "type": "gallery",
+      "hidden": false,
+      "heading_en": "",
+      "heading_he": "",
+      "images": [
+        {
+          "image": "/assets/work/pop-life-city.png",
+          "link": "",
+          "alt_en": "A city made of red POP LIFE cans, with can characters, cars and a river of cola.",
+          "alt_he": "עיר עשויה מפחיות POP LIFE אדומות, עם דמויות פחית, מכוניות ונהר של קולה.",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/work/pop-life-park.png",
+          "link": "",
+          "alt_en": "A POP LIFE park: can characters, a can dog and a can bird around a cola fountain.",
+          "alt_he": "פארק של POP LIFE: דמויות פחית, כלב פחית וציפור פחית סביב מזרקת קולה.",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/work/pop-life-street.png",
+          "link": "",
+          "alt_en": "Can characters walk in the POP LIFE city at sunset, under a giant can tower.",
+          "alt_he": "דמויות פחית צועדות בעיר POP LIFE בשקיעה, מתחת למגדל פחית ענק.",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/work/pop-life-family.png",
+          "link": "",
+          "alt_en": "A POP LIFE can family walks a can dog down a red street.",
+          "alt_he": "משפחת פחיות של POP LIFE מטיילת עם כלב פחית ברחוב אדום.",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        }
+      ]
+    }
+  ]
+}

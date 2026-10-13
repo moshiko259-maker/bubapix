@@ -45,6 +45,138 @@
       "project": "the-new-ocean"
     },
     {
+      "image": "/assets/work/bubapix-letters-underwater.png",
+      "alt_en": "BUBAPIX spelled by sea creatures made of trash, on the seabed. Animation Productions.",
+      "alt_he": "BUBAPIX באותיות של יצורי ים עשויים פסולת, על קרקעית הים. Animation Productions.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/bubapix-letters-orange.png",
+      "alt_en": "BUBAPIX spelled by orange characters in colourful clothes. Animation Productions.",
+      "alt_he": "BUBAPIX באותיות של דמויות כתומות בבגדים צבעוניים. Animation Productions.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/bubapix-letters-desert-family.png",
+      "alt_en": "BUBAPIX stone letters in a desert village with a robot and a family of creatures. Animation Productions.",
+      "alt_he": "אותיות אבן BUBAPIX בכפר מדברי עם רובוט ומשפחת יצורים. Animation Productions.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/bubapix-letters-underwater-family.png",
+      "alt_en": "Letters under the sea with a robot and a family of creatures. Animation Productions.",
+      "alt_he": "אותיות מתחת לים עם רובוט ומשפחת יצורים. Animation Productions.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": false
+    },
+    {
+      "image": "/assets/work/bubapix-letters-plush.png",
+      "alt_en": "BUBAPIX spelled by colourful plush characters. Animation Productions.",
+      "alt_he": "BUBAPIX באותיות של דמויות קטיפה צבעוניות. Animation Productions.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/bubapix-letters-sketch.png",
+      "alt_en": "Pencil sketch of the word BUBAPIX in cracked bubble letters.",
+      "alt_he": "סקיצת עיפרון של המילה BUBAPIX באותיות בועה סדוקות.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/bubapix-letters-desert-family-2.png",
+      "alt_en": "BUBAPIX stone letters in a desert village, a robot and creatures leaning on them. Animation Productions.",
+      "alt_he": "אותיות אבן BUBAPIX בכפר מדברי, ורובוט ויצורים נשענים עליהן. Animation Productions.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/bubapix-logo-sketch-robot.jpg",
+      "alt_en": "Pencil sketch of a small robot character above the words BUBAPIX Animation Productions.",
+      "alt_he": "סקיצת עיפרון של דמות רובוט קטנה מעל המילים BUBAPIX Animation Productions.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/bubapix-letters-character-3d.png",
+      "alt_en": "The letters BUBA and PIX form the head and body of a cute 3D character.",
+      "alt_he": "האותיות BUBA ו־PIX יוצרות ראש וגוף של דמות תלת־ממדית חמודה.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/bubapix-letters-furry.png",
+      "alt_en": "BUBAPIX spelled by white furry creatures. Animation Productions.",
+      "alt_he": "BUBAPIX באותיות של יצורים לבנים ופרוותיים. Animation Productions.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/bubapix-letters-character-outline.png",
+      "alt_en": "Black outline drawing: the letters BUBA and PIX form a character. Animation Productions.",
+      "alt_he": "ציור קו שחור: האותיות BUBA ו־PIX יוצרות דמות. Animation Productions.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
+      "image": "/assets/work/bubapix-letters-eyes-sketch.png",
+      "alt_en": "Sketch of BUBAPIX bubble letters with round eyes.",
+      "alt_he": "סקיצה של אותיות בועה BUBAPIX עם עיניים עגולות.",
+      "title_en": "",
+      "title_he": "",
+      "note_en": "",
+      "note_he": "",
+      "caption": "hidden",
+      "visible": true
+    },
+    {
       "image": "/assets/work/the-new-ocean-poster-boat.jpg",
       "alt_en": "THE NEW OCEAN poster by BubaPix: characters on a beach and on boats, and an underwater reef.",
       "alt_he": "הפוסטר של THE NEW OCEAN מאת BubaPix: דמויות על חוף ועל סירות, ושונית מתחת למים.",

@@ -1,0 +1,85 @@
+{
+  "title_en": "GEDALIA STELNIA",
+  "title_he": "גדליה סטלניה",
+  "visible": true,
+  "featured": true,
+  "order": 3,
+  "categories": [],
+  "text_en": "",
+  "text_he": "",
+  "description_en": "",
+  "description_he": "",
+  "cover": "/assets/work/gedalia-stelnia-reporter.png",
+  "cover_alt_en": "Gedalia Stelnia, a dreadlocked field reporter, holds a BubaPix News microphone beside a satellite van.",
+  "cover_alt_he": "גדליה סטלניה, כתב שטח עם ראסטות, מחזיק מיקרופון של חדשות BubaPix ליד ניידת שידור.",
+  "video_url": "",
+  "video_file": "",
+  "gallery": [],
+  "details": [],
+  "sections": [
+    {
+      "type": "gallery",
+      "hidden": false,
+      "heading_en": "",
+      "heading_he": "",
+      "images": [
+        {
+          "image": "/assets/work/gedalia-stelnia-reporter-2.png",
+          "link": "",
+          "alt_en": "Gedalia Stelnia, a dreadlocked field reporter, holds a BubaPix News microphone beside a satellite van.",
+          "alt_he": "גדליה סטלניה, כתב שטח עם ראסטות, מחזיק מיקרופון של חדשות BubaPix ליד ניידת שידור.",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/work/gedalia-stelnia-airport.png",
+          "link": "",
+          "alt_en": "Gedalia Stelnia reports from an airport as a crowd boards a smiling Fly Duba plane.",
+          "alt_he": "גדליה סטלניה מדווח משדה תעופה בזמן שקהל עולה למטוס מחייך של פלי דובה.",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/work/gedalia-stelnia-gnn.png",
+          "link": "",
+          "alt_en": "Gedalia Stelnia with a G.N.N microphone beside a satellite van.",
+          "alt_he": "גדליה סטלניה עם מיקרופון G.N.N ליד ניידת שידור.",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/work/gedalia-stelnia-field.png",
+          "link": "",
+          "alt_en": "Gedalia Stelnia in a rasta hat reports from a battlefield with tanks and a helicopter behind him.",
+          "alt_he": "גדליה סטלניה בכובע ראסטה מדווח משדה קרב, וטנקים ומסוק מאחוריו.",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        }
+      ]
+    }
+  ]
+}
