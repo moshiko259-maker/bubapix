@@ -10,7 +10,7 @@
   "gallery": [
     {
       "image": "/assets/work/bubapix-characters-banner.png",
-      "visible": true,
+      "visible": false,
       "size": "auto",
       "link": "",
       "project": "",
