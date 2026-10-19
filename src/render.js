@@ -431,9 +431,12 @@ function home(ctx) {
     }
     return out;
   };
-  const rows = buildRows([2, 3, 1, 3, 2, 4], 2.3, 5, true);
+  // Layout chosen in the admin: a fixed number of pictures per row (a size
+  // chosen for one picture still wins), or the usual mixed rhythm.
+  const lay = data.galleryLayout || {};
+  const rows = lay.columns ? buildRows([lay.columns], 2.3, lay.columns, true) : buildRows([2, 3, 1, 3, 2, 4], 2.3, 5, true);
   // Phones: at most two pictures side by side, in the same tight style.
-  const rowsSmall = buildRows([2, 1, 2, 2], 1.4, 2, false);
+  const rowsSmall = lay.phone ? buildRows([lay.phone], 1.4, lay.phone, false) : buildRows([2, 1, 2, 2], 1.4, 2, false);
   const cell = (n, rowLen) => {
     const g = data.homeGallery[n];
     const own = !linked(g) && g.image.link;
@@ -489,7 +492,7 @@ function home(ctx) {
     ? `
     <section class="section section-work" aria-labelledby="work-title">
       <h2 id="work-title" class="visually-hidden">${e(t.home.workTitle)}</h2>
-      <div class="mosaic jg-home" data-mosaic>
+      <div class="mosaic jg-home${lay.gap ? ` gap-${lay.gap}` : ""}" data-mosaic>
         ${items.join("\n        ")}
       </div>
     </section>`

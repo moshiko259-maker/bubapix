@@ -910,6 +910,14 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
   .mosaic:not(.is-small) .mrow.n3 .jg-item, .mosaic:not(.is-small) .mrow.n4 .jg-item, .mosaic:not(.is-small) .mrow.n5 .jg-item { flex: 1 1 calc(50% - var(--mgap)) !important; }
 }
 .mrow[hidden] { display: none; }
+/* Space between the pictures, chosen in the admin (Homepage > Gallery layout). */
+.mosaic.gap-none { --mgap: 0px; }
+.mosaic.gap-small { --mgap: 14px; }
+.mosaic.gap-medium { --mgap: 28px; }
+@media (max-width: 700px) {
+  .mosaic.gap-small { --mgap: 8px; }
+  .mosaic.gap-medium { --mgap: 16px; }
+}
 
 /* ---------- "Install the app" ---------- */
 .install-wrap { flex: 1 1 100%; }

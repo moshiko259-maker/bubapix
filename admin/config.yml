@@ -594,6 +594,36 @@ collections:
             required: false
             pattern: ['^$|^https://(www\.|m\.)?(youtube\.com|youtu\.be|vimeo\.com)/', "Use a YouTube or Vimeo address / כתובת YouTube או Vimeo"]
             hint: "Shown on the homepage above the gallery only when filled in. / מוצג בדף הבית רק כשממלאים."
+          - name: gallery_columns
+            label: "Gallery layout: pictures per row on computers / פריסת הגלריה: תמונות בשורה במחשב"
+            widget: select
+            required: false
+            default: "mixed"
+            options:
+              - { label: "Mixed, changing from row to row (usual) / משתנה משורה לשורה (רגיל)", value: "mixed" }
+              - { label: "2 in every row / 2 בכל שורה", value: "2" }
+              - { label: "3 in every row / 3 בכל שורה", value: "3" }
+              - { label: "4 in every row / 4 בכל שורה", value: "4" }
+            hint: "A size chosen for one picture below (large, medium, small) still wins. / גודל שנבחר לתמונה מסוימת למטה (גדולה, בינונית, קטנה) עדיין קובע."
+          - name: gallery_phone
+            label: "Gallery layout: pictures per row on phones / פריסת הגלריה: תמונות בשורה בטלפון"
+            widget: select
+            required: false
+            default: "mixed"
+            options:
+              - { label: "Mixed, 1 or 2 (usual) / משתנה, 1 או 2 (רגיל)", value: "mixed" }
+              - { label: "1 in every row (large) / 1 בכל שורה (גדולות)", value: "1" }
+              - { label: "2 in every row / 2 בכל שורה", value: "2" }
+          - name: gallery_gap
+            label: "Gallery layout: space between pictures / פריסת הגלריה: רווח בין התמונות"
+            widget: select
+            required: false
+            default: "minimal"
+            options:
+              - { label: "None, touching / ללא, צמודות", value: "none" }
+              - { label: "Minimal (usual) / מינימלי (רגיל)", value: "minimal" }
+              - { label: "Small / קטן", value: "small" }
+              - { label: "Medium / בינוני", value: "medium" }
           - name: gallery
             label: "Homepage gallery / הגלריה בדף הבית"
             label_singular: "image / תמונה"

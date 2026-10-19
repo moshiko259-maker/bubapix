@@ -567,6 +567,13 @@ function contentFor(lang) {
     analytics: Boolean(site.analyticsHead),
     tagline: pick(s, "tagline", lang),
     showreel: parseVideo(s.showreel_url),
+    // Homepage gallery layout chosen in the admin (Homepage > "Gallery
+    // layout"). Unknown or empty values keep the usual mixed rhythm.
+    galleryLayout: {
+      columns: ["2", "3", "4"].includes(String(s.gallery_columns)) ? Number(s.gallery_columns) : 0,
+      phone: ["1", "2"].includes(String(s.gallery_phone)) ? Number(s.gallery_phone) : 0,
+      gap: ["none", "small", "medium"].includes(s.gallery_gap) ? s.gallery_gap : "",
+    },
     intro: pick(s, "intro", lang),
     seoDescription: pick(s, "seo_description", lang) || pick(s, "intro", lang),
     categories,
