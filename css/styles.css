@@ -929,3 +929,79 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .install-help::backdrop { background: rgba(22, 22, 29, 0.45); }
 .install-help h2 { margin: 0 0 1rem; font-family: var(--font-display); font-size: 1.25rem; }
 .install-help ol { list-style: decimal; display: grid; gap: 0.6rem; margin: 0 0 1.25rem; padding-inline-start: 1.25rem; }
+
+/* ---------- Owner: editing the homepage on the page itself (js/editor.js) ---------- */
+.edit-bar-page { display: flex; align-items: center; gap: 0.5rem; width: 100%; margin: 0 0 0.6rem; padding: 0.6rem 0.7rem; border: 0; border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; font-weight: 600; cursor: pointer; }
+.edit-bar-page:hover { background: #fff; }
+.page-editing .edit-bar { display: none; }
+.pe-bar { position: sticky; z-index: 80; inset-block-start: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; padding: 0.6rem 1rem; background: var(--ink); color: var(--paper); font-size: 0.875rem; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25); }
+.pe-bar-title { font-size: 1rem; }
+.pe-bar-layout { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.pe-bar-actions { display: flex; gap: 0.5rem; margin-inline-start: auto; }
+.pe-status { opacity: 0.85; }
+.pe-status.is-warn { color: #ffd479; opacity: 1; }
+.pe-status.is-ok { color: #9be7a8; opacity: 1; }
+.pe-status.is-error { color: #ffb3b3; opacity: 1; }
+.pe-signin a { color: var(--paper); }
+.pe-btn, .pe-icon, .pe-select { min-height: 34px; padding: 0 0.7rem; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: inherit; font: inherit; font-size: 0.8125rem; cursor: pointer; }
+.pe-btn:hover, .pe-icon:hover { background: rgba(255, 255, 255, 0.22); }
+.pe-btn:disabled { opacity: 0.45; cursor: default; }
+.pe-primary { background: var(--paper); color: var(--ink); border-color: var(--paper); font-weight: 600; }
+.pe-primary:hover { background: #fff; }
+.pe-ghost { background: transparent; }
+.pe-danger { border-color: #ffb3b3; }
+.pe-select option { color: var(--ink); background: var(--paper); }
+.pe-icon { min-width: 34px; padding: 0; font-size: 1.1rem; line-height: 1; }
+.pe-holder { position: relative; }
+.pe-tools { display: flex; flex-wrap: wrap; gap: 0.3rem; padding: 0.35rem; background: rgba(22, 22, 29, 0.82); color: var(--paper); border-radius: 10px; }
+.pe-item { position: relative; cursor: grab; outline: 2px dashed transparent; outline-offset: -2px; }
+.pe-item .pe-tools { position: absolute; inset-block-start: 0.4rem; inset-inline: 0.4rem; opacity: 0; transition: opacity 0.15s; }
+.pe-item:hover .pe-tools, .pe-item:focus-within .pe-tools { opacity: 1; }
+@media (hover: none) { .pe-item .pe-tools { opacity: 1; position: static; border-radius: 0 0 6px 6px; } }
+@media (max-width: 700px) {
+  .pe-bar { gap: 0.4rem; padding: 0.5rem 0.6rem; }
+  .pe-bar-layout { order: 3; width: 100%; }
+  .pe-bar-layout .pe-select { flex: 1 1 30%; min-width: 0; padding: 0 0.3rem; font-size: 0.75rem; }
+  .pe-item .pe-tools { gap: 0.2rem; padding: 0.25rem; }
+  .pe-item .pe-select { flex: 1 1 100%; font-size: 0.75rem; padding: 0 0.25rem; }
+  .pe-item .pe-btn { flex: 1 1 auto; padding: 0 0.3rem; font-size: 0.75rem; }
+  .pe-tools-top { inset-block-start: 0.4rem; inset-inline-start: 0.4rem; }
+}
+.pe-item.is-dragging { opacity: 0.4; }
+.pe-item.is-target { outline-color: var(--accent, #2f6fde); }
+.pe-tools-top { position: absolute; z-index: 2; inset-block-start: 0.75rem; inset-inline-start: 0.75rem; }
+.pe-badge { position: absolute; inset-block-end: 0.4rem; inset-inline-start: 0.4rem; padding: 0.1rem 0.5rem; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: 0.75rem; }
+.pe-editable { outline: 2px dashed rgba(22, 22, 29, 0.35); outline-offset: 6px; border-radius: 4px; cursor: text; }
+.pe-editable:focus { outline-color: var(--ink); }
+.pe-add { display: flex; justify-content: center; margin: 1.5rem 0; }
+.pe-add .pe-btn { color: var(--ink); background: var(--paper-2, #ecebe3); border-color: var(--line); padding-inline: 1.2rem; }
+.pe-strip { margin-top: 2rem; padding: 1rem; border: 1px dashed var(--line); border-radius: 12px; }
+.pe-strip-title { margin: 0 0 0.75rem; font-weight: 600; color: var(--ink-2); }
+.pe-strip-row { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.pe-thumb { margin: 0; width: 10rem; display: grid; gap: 0.35rem; }
+.pe-thumb img { width: 100%; height: 6.5rem; object-fit: cover; border-radius: 6px; }
+.pe-thumb .pe-tools { justify-content: center; }
+.pe-modal { position: fixed; z-index: 90; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(22, 22, 29, 0.55); }
+.pe-modal-box { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 0.75rem; width: min(64rem, 100%); max-height: calc(100vh - 2rem); padding: 1rem; border-radius: 14px; background: var(--paper); color: var(--ink); }
+.pe-modal-box .pe-btn { color: var(--ink); border-color: var(--line); background: transparent; }
+.pe-modal-box .pe-primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.pe-modal-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.pe-upload { font-size: 0.875rem; }
+.pe-pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: 0.5rem; overflow: auto; min-height: 8rem; }
+.pe-pick { padding: 0; border: 3px solid transparent; border-radius: 8px; background: var(--paper-2, #ecebe3); cursor: pointer; }
+.pe-pick img { display: block; width: 100%; height: 6rem; object-fit: cover; border-radius: 5px; }
+.pe-pick[aria-pressed="true"] { border-color: var(--ink); }
+.pe-modal-foot { display: grid; gap: 0.5rem; }
+.pe-modal-foot label { display: grid; gap: 0.25rem; font-size: 0.8125rem; }
+.pe-note { margin: 0; font-size: 0.8125rem; color: var(--ink-2); }
+.pe-input { min-height: 38px; padding: 0 0.6rem; border: 1px solid var(--line); border-radius: 8px; font: inherit; background: #fff; color: var(--ink); }
+.pe-tools > *, .pe-bar > *, .pe-bar-layout > * { min-width: 0; max-width: 100%; }
+.pe-item .jg-media { max-width: 100%; }
+.pe-mosaic .mrow { min-width: 0; }
+@media (max-width: 700px) {
+  .pe-bar-title { font-size: 0.9375rem; }
+  .pe-status { flex: 1 1 auto; }
+  .pe-item .pe-tools { display: grid; grid-template-columns: 1fr 1fr; }
+  .pe-item .pe-tools .pe-icon { order: -1; }
+  .pe-item .pe-tools .pe-select { grid-column: 1 / -1; width: 100%; }
+}

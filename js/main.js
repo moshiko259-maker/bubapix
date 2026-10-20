@@ -263,6 +263,18 @@
     b.addEventListener("click", function () { setEdit(false); });
   });
   applyEdit();
+  // "Edit on the page" (owner only): loads the page editor when pressed.
+  each(document.querySelectorAll("[data-page-editor]"), function (b) {
+    b.addEventListener("click", function () {
+      var details = b.closest("details");
+      if (details) details.open = false;
+      if (document.querySelector("script[data-page-editor-script]")) return;
+      var s = document.createElement("script");
+      s.src = b.getAttribute("data-src");
+      s.setAttribute("data-page-editor-script", "");
+      document.head.appendChild(s);
+    });
+  });
 
   // ---------- 7. Homepage mosaic on phones ----------
   // The pictures are moved into rows of at most two (their places are

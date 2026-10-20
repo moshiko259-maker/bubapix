@@ -41,6 +41,14 @@ const site = {
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91c2t2Y3NtY2RkZ2R1a2NvZmV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NDUxNjAsImV4cCI6MjEwNzMyMTE2MH0.SnJUMrnVZ_XzqBYRJP0DoySp8Fc9qg4BBQA9xQE8giA",
   },
 };
+// Where the owner's page editor reads and saves content: the same GitHub
+// repository and branch as the admin panel (admin/config.yml, "backend").
+{
+  const cfg = fs.readFileSync(path.join(__dirname, "admin", "config.yml"), "utf8");
+  const backend = (cfg.split(/\n(?=\S)/).find((b) => /^backend:/.test(b)) || "");
+  site.repo = (backend.match(/^\s+repo:\s*([\w.-]+\/[\w.-]+)/m) || [])[1] || "";
+  site.branch = (backend.match(/^\s+branch:\s*([\w./-]+)/m) || [])[1] || "";
+}
 // --------------------------------------------------------------------
 
 const root = __dirname;
@@ -637,6 +645,7 @@ const assetVersion = {
   main: fileVersion(["js/main.js"]),
   shop: fileVersion(["js/shop.js"]),
   community: fileVersion(["js/community.js"]),
+  editor: fileVersion(["js/editor.js"]),
 };
 
 function contextFor(lang, pagePath, data) {

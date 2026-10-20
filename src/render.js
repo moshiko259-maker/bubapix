@@ -89,7 +89,7 @@ function gallery(items, extraClass = "") {
 // two small inline ones, allowed by their exact fingerprint) and talks only to
 // the services listed here. This limits the damage if malicious text ever
 // slipped through.
-function csp(ctx, inlineScripts) {
+function csp(ctx, inlineScripts, pageEditor = false) {
   const hashes = inlineScripts.map((code) => `'sha256-${crypto.createHash("sha256").update(code).digest("base64")}'`);
   return [
     "default-src 'self'",
@@ -99,9 +99,13 @@ function csp(ctx, inlineScripts) {
     // Preview builds are viewed on raw.githack.com, which serves pages
     // itself but REDIRECTS images and videos to raw.githubusercontent.com.
     // Only preview builds allow that address; the live site stays 'self'.
-    `img-src 'self' data:${ctx.preview ? " https://raw.githubusercontent.com" : ""}`,
+    // Pages with the owner's "Edit on the page" also show pictures chosen on
+    // this computer before they are saved (blob:).
+    `img-src 'self' data:${pageEditor ? " blob:" : ""}${ctx.preview ? " https://raw.githubusercontent.com" : ""}`,
     `media-src 'self'${ctx.preview ? " https://raw.githubusercontent.com" : ""}`,
-    `connect-src ${ctx.site.community ? ctx.site.community.url : "'none'"}`,
+    // The owner's page editor reads and saves the page settings in the
+    // GitHub repository, with the owner's own sign-in.
+    `connect-src ${[ctx.site.community ? ctx.site.community.url : "", pageEditor ? "https://api.github.com" : ""].filter(Boolean).join(" ") || "'none'"}`,
     "frame-src https://www.youtube-nocookie.com https://player.vimeo.com",
     "object-src 'none'",
     "base-uri 'self'",
@@ -140,7 +144,7 @@ function shopData(ctx) {
   return `<script type="application/json" id="shop-data">${json}</script>`;
 }
 
-function layout(ctx, { title, description, image, main, current = "", community = false, viewer = false, shopScript = false, noindex = false, edits = [] }) {
+function layout(ctx, { title, description, image, main, current = "", community = false, viewer = false, shopScript = false, noindex = false, edits = [], pageEditor = false }) {
   const { t, lang, dir, site, data } = ctx;
   const link = makeLink(ctx);
   const otherHref = ctx.otherBase + ctx.path + (ctx.preview ? "index.html" : "") + (lang === "he" ? "?lang=en" : "");
@@ -173,7 +177,7 @@ function layout(ctx, { title, description, image, main, current = "", community 
   const withCommunity = community && site.community;
   const policy = site.analyticsHead
     ? ""
-    : `\n  <meta http-equiv="Content-Security-Policy" content="${csp(ctx, [redirectCode, jsFlag].filter(Boolean))}">`;
+    : `\n  <meta http-equiv="Content-Security-Policy" content="${csp(ctx, [redirectCode, jsFlag].filter(Boolean), pageEditor)}">`;
 
   return `<!doctype html>
 <html lang="${lang}" dir="${dir}">
@@ -233,7 +237,7 @@ function layout(ctx, { title, description, image, main, current = "", community 
   <main id="main">
 ${main}
   </main>
-${editBar(ctx, edits)}
+${editBar(ctx, edits, pageEditor)}
 
   <footer class="site-footer">
     <nav class="footer-nav" aria-label="${e(t.a11y.footerNav)}">
@@ -319,14 +323,18 @@ const ed = {
 // The "Edit this page" bar. Hidden for everyone; js/main.js shows it only in
 // a browser where the owner switched edit buttons on (Manage page). The links
 // only open the admin panel, which asks for the owner's own sign-in.
-function editBar(ctx, edits) {
+function editBar(ctx, edits, pageEditor = false) {
   const { t } = ctx;
+  // "Edit on the page": loads js/editor.js only when pressed (owner only).
+  const onPage = pageEditor && ctx.site.repo
+    ? `<button type="button" class="edit-bar-page" data-page-editor data-src="${ctx.assetBase}js/editor.js?v=${ctx.v.editor}" data-repo="${e(ctx.site.repo)}" data-branch="${e(ctx.site.branch)}" data-manage="${makeLink(ctx)("manage/")}">${icon("edit")}<span>${e(t.edit.onPage)}</span></button>`
+    : "";
   const items = edits
     .map(([label, hash, community]) => `<li><a href="${e(community ? communityHref(ctx) : adminHref(ctx, hash))}" target="_blank" rel="noopener">${icon("edit")}<span>${e(label)}</span></a></li>`)
     .join("");
   return `  <aside class="edit-bar" data-edit-bar hidden aria-label="${e(t.edit.bar)}">
     <details>
-      <summary class="edit-bar-title">${icon("edit")}${e(t.edit.bar)}</summary>
+      <summary class="edit-bar-title">${icon("edit")}${e(t.edit.bar)}</summary>${onPage}
       <ul>${items}<li><a href="${makeLink(ctx)("manage/")}">${e(t.edit.all)}</a></li></ul>
       <button type="button" class="edit-bar-off" data-edit-off>${e(t.edit.off)}</button>
     </details>
@@ -538,6 +546,7 @@ function home(ctx) {
 
   return layout(ctx, {
     edits: [[t.edit.gallery, ed.site], [t.edit.tagline, ed.site], [t.edit.services, ed.services], [t.edit.newProject, ed.newProject]],
+    pageEditor: true,
     title: t.meta.homeTitle,
     viewer: true,
     description: data.seoDescription || data.intro,

@@ -256,6 +256,7 @@
   },
   "edit": {
     "footerLink": "Manage",
+    "onPage": "Edit on the page",
     "bar": "Edit this page",
     "on": "Edit buttons are on (only in this browser).",
     "off": "Turn off",
