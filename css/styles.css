@@ -1024,6 +1024,22 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .pe-tip .pe-primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .pe-status .pe-btn { margin-inline-start: 0.4rem; }
 .pe-strip .pe-danger { margin-inline-start: auto; }
+/* Project page editor (js/project-editor.js) */
+.pe-proj-area { display: grid; gap: 0; }
+.pe-editable:empty::before { content: attr(data-placeholder); color: var(--ink-2); opacity: 0.7; }
+.pe-synopsis { white-space: pre-wrap; min-height: 3em; }
+.lede.pe-editable { min-height: 1.5em; }
+.pe-cover { margin: 0; }
+.pe-cover .jg-media { display: block; width: 100%; }
+.pe-cover-sec > .pe-tools { display: inline-flex; }
+.pe-cover-sec .pe-note, .pe-proj-area .project-section > .pe-note { margin-top: 0.6rem; }
+.pe-missing { position: absolute; inset-block-end: 0.4rem; inset-inline-end: 0.4rem; padding: 0.1rem 0.5rem; border-radius: 999px; background: #fff3d6; color: var(--ink); font-size: 0.75rem; pointer-events: none; }
+.pe-gal .pe-tools { grid-template-columns: 1fr 1fr; }
+.pe-small-box { width: min(34rem, 100%); grid-template-rows: auto auto; }
+.pe-proj-note { margin: 1rem 0; }
+.manage-projects-title { margin: 1rem 0 0.4rem; font-weight: 600; }
+.manage-projects { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0; padding: 0; list-style: none; }
+.manage-projects a { color: var(--ink); }
 .manage-signin { margin: 0 0 1rem; padding: 0.7rem 1rem; border-radius: 10px; background: #fff3d6; font-size: 0.9375rem; }
 .manage-signin.is-ok { background: #e3f3e6; }
 .manage-main { margin-bottom: 1.25rem; border-width: 2px; border-color: var(--ink); }

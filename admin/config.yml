@@ -218,6 +218,7 @@ collections:
                 hint: "Drag to change the order. / גררו לשינוי הסדר."
                 fields:
                   - { name: image, label: "Image / תמונה", widget: image }
+                  - { name: visible, label: "Show / להציג", widget: boolean, default: true, required: false, hint: "Off: kept, not shown on the page. / כבוי: נשמרת, לא מוצגת בדף." }
                   - { name: link, label: "Link when the picture is clicked (optional) / קישור בלחיצה על התמונה (רשות)", widget: string, required: false, pattern: ['^$|^https://|^/[a-z0-9/-]*$', "https://… or a site page like /shop/ / ‏https://… או עמוד באתר כמו /shop/"], hint: "Empty: the picture opens large. / ריק: התמונה נפתחת בגדול." }
                   - { name: alt_en, label: "Description for blind visitors, English / תיאור לעיוורים, אנגלית", widget: string, required: false }
                   - { name: alt_he, label: "Description for blind visitors, Hebrew / תיאור לעיוורים, עברית", widget: string, required: false }

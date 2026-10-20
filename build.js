@@ -358,7 +358,8 @@ function contentFor(lang) {
           const items = (sec.items || []).filter((c) => c && c.name).map((c) => ({ name: lang === "he" ? String(c.name_he || "").trim() || c.name : c.name, role: pick(c, "role", lang), text: pick(c, "text", lang) })).filter((c) => c.text || c.role);
           if (items.length) sections.push({ type: "creators", heading, items });
         } else if (sec.type === "behind" || sec.type === "gallery") {
-          const pics = (sec.images || []).map((g, j) => picture(g, title, `${at} image ${j + 1}`)).filter(Boolean);
+          // A picture hidden in the page editor (visible: false) is kept in the file but not shown.
+          const pics = (sec.images || []).map((g, j) => (g && g.visible === false ? null : picture(g, title, `${at} image ${j + 1}`))).filter(Boolean);
           const body = sec.type === "behind" ? pick(sec, "body", lang) : "";
           if (pics.length || body) sections.push({ type: sec.type, heading, body, images: pics });
         } else if (sec.type === "videos") {
@@ -658,6 +659,7 @@ const assetVersion = {
   shop: fileVersion(["js/shop.js"]),
   community: fileVersion(["js/community.js"]),
   editor: fileVersion(["js/editor.js"]),
+  projectEditor: fileVersion(["js/project-editor.js"]),
 };
 
 function contextFor(lang, pagePath, data) {

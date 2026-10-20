@@ -306,6 +306,7 @@
     "onPageTitle": "Edit on the page (the easy way)",
     "onPageText": "Open the homepage and edit right on it: pictures, order, size, layout, the opening sentence, projects and names. Every change shows at once, with Undo and earlier versions.",
     "onPageButton": "Open the homepage for editing",
+    "onPageProjects": "Or a project page:",
     "signedIn": "Signed in for editing in this browser.",
     "notSignedIn": "Not signed in for editing in this browser yet. Sign in once through “Advanced editing” with a GitHub token; then all editing tools work."
   },

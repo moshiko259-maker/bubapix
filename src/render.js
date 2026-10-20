@@ -329,8 +329,10 @@ const ed = {
 function editBar(ctx, edits, pageEditor = false) {
   const { t } = ctx;
   // "Edit on the page": loads js/editor.js only when pressed (owner only).
+  // Project pages have their own editor (js/project-editor.js).
+  const src = pageEditor === "project" ? `js/project-editor.js?v=${ctx.v.projectEditor}` : `js/editor.js?v=${ctx.v.editor}`;
   const onPage = pageEditor && ctx.site.repo
-    ? `<button type="button" class="edit-bar-page" data-page-editor data-src="${ctx.assetBase}js/editor.js?v=${ctx.v.editor}" data-repo="${e(ctx.site.repo)}" data-branch="${e(ctx.site.branch)}" data-manage="${makeLink(ctx)("manage/")}">${icon("edit")}<span>${e(t.edit.onPage)}</span></button>`
+    ? `<button type="button" class="edit-bar-page" data-page-editor data-src="${ctx.assetBase}${src}" data-repo="${e(ctx.site.repo)}" data-branch="${e(ctx.site.branch)}" data-manage="${makeLink(ctx)("manage/")}">${icon("edit")}<span>${e(t.edit.onPage)}</span></button>`
     : "";
   const items = edits
     .map(([label, hash, community]) => `<li><a href="${e(community ? communityHref(ctx) : adminHref(ctx, hash))}" target="_blank" rel="noopener">${icon("edit")}<span>${e(label)}</span></a></li>`)
@@ -368,7 +370,11 @@ function manage(ctx) {
       <section class="manage-box manage-main">
         <h2>${e(t.edit.onPageTitle)}</h2>
         <p>${e(t.edit.onPageText)}</p>
-        <a class="button button-large" href="${makeLink(ctx)("")}#edit">${e(t.edit.onPageButton)}</a>
+        <a class="button button-large" href="${makeLink(ctx)("")}#edit">${e(t.edit.onPageButton)}</a>${data.projects.length ? `
+        <p class="manage-projects-title">${e(t.edit.onPageProjects)}</p>
+        <ul class="manage-projects">${data.projects.map((p) => `
+          <li><a href="${makeLink(ctx)(`work/${p.slug}/`)}#edit">${e(p.title)}</a></li>`).join("")}
+        </ul>` : ""}
       </section>
       <div class="manage-grid">
         <section class="manage-box">
@@ -841,8 +847,9 @@ function project(ctx, p, prev, next) {
     current: "work",
     community: !!community,
     viewer: true,
+    pageEditor: "project",
     main: `
-    <article class="page project">
+    <article class="page project" data-slug="${e(p.slug)}">
       <header class="page-head">
         <p class="crumb"><a href="${link("work/")}">${e(t.work.back)}</a></p>
         <h1 class="${p.showTitle ? "page-title" : "visually-hidden"}">${e(p.title)}</h1>${cats ? `
