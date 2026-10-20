@@ -1044,3 +1044,21 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
   .pe-bar-actions { flex-wrap: wrap; }
   .pe-bar-actions .pe-btn { flex: 1 1 auto; }
 }
+
+/* ---------- Homepage: tight spacing (owner, 20.10: no large gaps between pictures) ---------- */
+.opening-feature { margin-top: clamp(0.75rem, 2vw, 1.5rem); }
+.opening-feature.feature-medium { max-width: 900px; }
+.opening-feature.feature-large { max-width: 1120px; }
+.opening-feature.feature-full { max-width: none; }
+.opening-feature.feature-full .jg-media { border-radius: 2px; box-shadow: none; }
+.opening-tagline { padding-top: clamp(0.9rem, 2.2vw, 1.5rem); }
+.home-posters { padding-top: clamp(1rem, 2.5vw, 1.75rem); }
+.home-posters + .section-work, .section-work { padding-top: clamp(0.5rem, 1.5vw, 1rem); }
+.poster-rows .poster .jg-media { border-radius: 2px; }
+.poster-rows .jg-media img { object-fit: cover; }
+.pe-poster { position: relative; }
+.pe-poster.pe-off .jg-media { opacity: 0.3; }
+.pe-tools-label { align-self: center; padding: 0 0.35rem; font-size: 0.75rem; font-weight: 600; }
+.pe-poster .pe-tools { opacity: 0; transition: opacity 0.15s; }
+.pe-poster:hover .pe-tools, .pe-poster:focus-within .pe-tools, .pe-poster.pe-off .pe-tools { opacity: 1; }
+@media (hover: none) { .pe-poster .pe-tools { opacity: 1; } }

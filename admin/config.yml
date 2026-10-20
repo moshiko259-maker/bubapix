@@ -111,6 +111,11 @@ collections:
         default: true
         required: false
         hint: "Turn off to hide the project without deleting it. / כבו כדי להסתיר בלי למחוק."
+      - name: in_posters
+        label: "Show in the homepage posters row / להציג בשורת הפוסטרים בדף הבית"
+        widget: boolean
+        default: true
+        required: false
       - name: featured
         label: "Show in the homepage gallery / להציג בגלריה של דף הבית"
         widget: boolean
@@ -580,6 +585,16 @@ collections:
           - { name: feature_image, label: "Second opening picture, framed under the opening image (optional) / תמונת פתיחה שנייה, במסגרת מתחת לתמונת הפתיחה (רשות)", widget: image, required: false, hint: "Shown centred in a frame, with the opening sentence under it. Empty: not shown. It is not repeated in the gallery. / מוצגת במרכז במסגרת, ומשפט הפתיחה מתחתיה. ריק: לא מוצגת. לא חוזרת בגלריה." }
           - { name: feature_alt_en, label: "Second opening picture description, English / תיאור התמונה השנייה, אנגלית", widget: string, required: false }
           - { name: feature_alt_he, label: "Second opening picture description, Hebrew / תיאור התמונה השנייה, עברית", widget: string, required: false }
+          - name: feature_size
+            label: "Second opening picture width / רוחב התמונה השנייה"
+            widget: select
+            required: false
+            default: "small"
+            options:
+              - { label: "Narrow (usual) / צר (רגיל)", value: "small" }
+              - { label: "Medium / בינוני", value: "medium" }
+              - { label: "Wide / רחב", value: "large" }
+              - { label: "Full width / כל הרוחב", value: "full" }
           - name: feature_project
             label: "Second opening picture opens this project's page (optional) / לחיצה על התמונה השנייה פותחת את דף הפרויקט (רשות)"
             widget: relation

@@ -483,7 +483,7 @@ function home(ctx) {
         href: data.feature.project ? link(`work/${data.feature.project.slug}/`) : ctx.assetBase + e(data.feature.image.full || data.feature.image.src),
         label: data.feature.project ? `${data.feature.project.name} — ${t.home.openProject}` : `${t.work.openImage}: ${data.feature.image.alt}`,
         viewer: !data.feature.project,
-        sizes: "(max-width: 700px) 92vw, 640px",
+        sizes: lay.feature === "full" ? "(max-width: 1440px) 100vw, 1440px" : "(max-width: 700px) 92vw, 960px",
       })
     : "";
   // One short line saying what a click on a picture does, at the bottom of
@@ -493,10 +493,29 @@ function home(ctx) {
     ? `
     <section class="opening" aria-label="BubaPix">${opening ? `
       <div class="opening-hero">${cell(0, 1)}</div>` : ""}${feature ? `
-      <div class="opening-feature">${feature}</div>` : ""}${data.tagline ? `
+      <div class="opening-feature${lay.feature ? ` feature-${lay.feature}` : ""}">${feature}</div>` : ""}${data.tagline ? `
       <p class="tagline opening-tagline">${e(data.tagline)}</p>` : ""}
     </section>`
     : "";
+  // Posters in tight rows of the same height (no empty space under shorter
+  // posters): three in a row, the last rows balanced (4 → 2+2, 5 → 3+2).
+  const posterRows = (list) => {
+    const out = [];
+    let i = 0;
+    while (i < list.length) {
+      const left = list.length - i;
+      const n = left === 4 ? 2 : left <= 3 ? left : 3;
+      out.push(list.slice(i, i + n));
+      i += n;
+    }
+    return out;
+  };
+  // Phones: posters two by two, same height in each pair (an odd last one alone).
+  const posterPhoneRow = (list, p) => {
+    const i = list.indexOf(p), last = list.length - 1;
+    const r = Math.floor(i / 2), size = list.length % 2 && i === last ? 1 : 2;
+    return `${r}:${size}`;
+  };
   // Projects: one poster per project; each opens its own project page.
   // Shown from two projects up (with one, it would repeat the opening image).
   const posterProjects = data.posters;
@@ -504,8 +523,8 @@ function home(ctx) {
     ? `
     <section class="section home-posters" aria-labelledby="posters-title">
       <h2 id="posters-title" class="visually-hidden">${e(t.nav.work)}</h2>
-      <div class="poster-grid">${posterProjects.map((p) => `
-        ${galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${p.name} — ${t.home.openProject}`, sizes: "(max-width: 700px) 92vw, 45vw" })}`).join("")}
+      <div class="mosaic poster-rows${lay.gap ? ` gap-${lay.gap}` : ""}" data-mosaic>${posterRows(posterProjects).map((row) => `
+        <div class="mrow n${row.length}">${row.map((p) => galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${p.name} — ${t.home.openProject}`, sizes: `(max-width: 700px) 50vw, ${Math.round(100 / row.length) + 5}vw`, extraClass: "poster" }).replace(/^<(a|figure) /, `<$1 data-project="${e(p.slug)}" data-srow="${posterPhoneRow(posterProjects, p)}" `)).join("")}</div>`).join("")}
       </div>
     </section>`
     : "";

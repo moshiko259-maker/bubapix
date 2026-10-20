@@ -389,6 +389,8 @@ function contentFor(lang) {
         seoTitle: pick(p, "seo_title", lang),
         seoDescription: pick(p, "seo_description", lang),
         featured: p.featured !== false,
+        // Shown in the homepage posters row (the owner can hide it there).
+        inPosters: p.in_posters !== false,
         comments: p.comments !== false,
         categories: (Array.isArray(p.categories) ? p.categories : []).map((c) => catBySlug.get(c)).filter(Boolean),
         cover,
@@ -429,7 +431,8 @@ function contentFor(lang) {
   // Homepage projects row: one poster per project, shown from two projects
   // up. Those posters are not repeated in the gallery (the opening image
   // keeps its place at the top).
-  const posters = projects.filter((p) => p.thumb).length >= 2 ? projects.filter((p) => p.thumb) : [];
+  const posterList = projects.filter((p) => p.thumb && p.inPosters);
+  const posters = posterList.length >= 2 ? posterList : [];
   for (const p of posters) if (!hero || p.thumb.src !== hero.src) seen.add(p.thumb.src);
   // Homepage gallery chosen in the admin (Homepage > Homepage gallery). A
   // picture opens its project's page when a project is chosen for it in the
@@ -581,6 +584,8 @@ function contentFor(lang) {
       columns: ["2", "3", "4"].includes(String(s.gallery_columns)) ? Number(s.gallery_columns) : 0,
       phone: ["1", "2"].includes(String(s.gallery_phone)) ? Number(s.gallery_phone) : 0,
       gap: ["none", "small", "medium"].includes(s.gallery_gap) ? s.gallery_gap : "",
+      // Width of the second opening picture: small (the usual), medium, large or the full width.
+      feature: ["medium", "large", "full"].includes(s.feature_size) ? s.feature_size : "",
     },
     intro: pick(s, "intro", lang),
     seoDescription: pick(s, "seo_description", lang) || pick(s, "intro", lang),

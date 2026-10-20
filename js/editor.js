@@ -122,6 +122,14 @@
     tipClose: "הבנתי",
     help: "עזרה",
     resizeTip: "גררו את הפינה כדי לשנות גודל",
+    posterReplace: "החלפת הפוסטר",
+    posterHide: "הסתרה מהשורה",
+    posterShow: "הצגה בשורה",
+    posterHiddenNote: "יוסתר מהשורה אחרי שמירה",
+    postersHiddenTitle: "פוסטרים מוסתרים משורת הפרויקטים",
+    posterNote: "הפוסטר הוא תמונת השער של הפרויקט. החלפה כאן מחליפה את תמונת השער.",
+    featureSize: "רוחב",
+    featureSmall: "צר", featureMedium: "בינוני", featureLarge: "רחב", featureFull: "כל הרוחב",
   } : {
     title: "Edit on the page",
     loading: "Loading the page settings…",
@@ -215,6 +223,14 @@
     tipClose: "Got it",
     help: "Help",
     resizeTip: "Drag the corner to change the size",
+    posterReplace: "Replace the poster",
+    posterHide: "Hide from the row",
+    posterShow: "Show in the row",
+    posterHiddenNote: "Hidden from the row after saving",
+    postersHiddenTitle: "Posters hidden from the projects row",
+    posterNote: "The poster is the project's cover image. Replacing it here replaces the cover.",
+    featureSize: "Width",
+    featureSmall: "Narrow", featureMedium: "Medium", featureLarge: "Wide", featureFull: "Full width",
   };
 
   // ---------- small helpers ----------
@@ -330,7 +346,8 @@
   var projects = []; // { slug, name } from content/projects, for the owner's own choice
   var pageAdds = {}; // project slug -> pictures to add to that project's page gallery
   var hasPageAdds = function () { return Object.keys(pageAdds).some(function (k) { return pageAdds[k].length; }); };
-  var renamed = function () { return projects.filter(function (p) { return !p.isNew && (p.title_he !== p.orig_he || p.title_en !== p.orig_en); }); };
+  // Existing projects changed here: names, cover (poster) or the posters row.
+  var renamed = function () { return projects.filter(function (p) { return !p.isNew && (p.title_he !== p.orig_he || p.title_en !== p.orig_en || !!p.cover || p.in_posters !== p.orig_in_posters); }); };
   var created = function () { return projects.filter(function (p) { return p.isNew; }); };
   var dirty = function () { return data && (JSON.stringify(data) !== original || hasPageAdds() || renamed().length > 0 || created().length > 0); };
   function displayName(p) { return (he ? p.title_he || p.title_en : p.title_en || p.title_he) || p.slug; }
@@ -344,7 +361,7 @@
             var d = {};
             try { d = JSON.parse(b64ToUtf8(res.content)); } catch (e) { d = {}; }
             var slug = f.name.replace(/\.json$/, "");
-            return { slug: slug, title_he: d.title_he || "", title_en: d.title_en || "", orig_he: d.title_he || "", orig_en: d.title_en || "", name: (he ? d.title_he || d.title_en : d.title_en || d.title_he) || slug, order: Number(d.order) || 99 };
+            return { slug: slug, title_he: d.title_he || "", title_en: d.title_en || "", orig_he: d.title_he || "", orig_en: d.title_en || "", name: (he ? d.title_he || d.title_en : d.title_en || d.title_he) || slug, order: Number(d.order) || 99, in_posters: d.in_posters !== false, orig_in_posters: d.in_posters !== false, origCover: d.cover || "", cover: null };
           });
         }));
       })
@@ -392,7 +409,7 @@
   // Every change keeps a copy of the state before it, in this tab only.
   var past = [], last = "";
   function snapshot() {
-    return JSON.stringify({ data: data, projects: projects.map(function (p) { return { slug: p.slug, isNew: !!p.isNew, title_he: p.title_he, title_en: p.title_en, orig_he: p.orig_he, orig_en: p.orig_en, order: p.order, name: p.name, cover: p.cover || null }; }), pageAdds: pageAdds });
+    return JSON.stringify({ data: data, projects: projects.map(function (p) { return { slug: p.slug, isNew: !!p.isNew, title_he: p.title_he, title_en: p.title_en, orig_he: p.orig_he, orig_en: p.orig_en, order: p.order, name: p.name, cover: p.cover || null, in_posters: p.in_posters !== false, orig_in_posters: p.orig_in_posters !== false, origCover: p.origCover || "" }; }), pageAdds: pageAdds });
   }
   function commit() {
     if (!data) return;
@@ -485,6 +502,7 @@
     workSection.appendChild(editArea);
 
     setupOpening();
+    setupPosters();
     render();
   }
 
@@ -510,6 +528,9 @@
     featureTools = el("div", { "class": "pe-tools pe-tools-top" });
     drawFeatureTools = function () {
       featureTools.textContent = "";
+      if (data.feature_image) featureTools.appendChild(select(T.featureSize, data.feature_size || "small",
+        [["small", T.featureSize + ": " + T.featureSmall], ["medium", T.featureSize + ": " + T.featureMedium], ["large", T.featureSize + ": " + T.featureLarge], ["full", T.featureSize + ": " + T.featureFull]],
+        function (v) { data.feature_size = v; changed(); syncPage(); }));
       featureTools.appendChild(button(data.feature_image ? T.replaceFeature : T.addFeature, function () {
         pick(function (path, alts, choice) {
           addToPage(choice.toPage && choice.project, path, alts);
@@ -550,9 +571,52 @@
       if (e.target.closest && e.target.closest("a.jg-item") && !e.target.closest(".pe-tools")) e.preventDefault();
     }, true);
   }
+  // ---------- posters row: each poster is a project's cover ----------
+  var posterEls = {}; // slug -> { el, media, original }
+  function setupPosters() {
+    Array.prototype.forEach.call(document.querySelectorAll(".home-posters [data-project]"), function (item) {
+      var slug = item.getAttribute("data-project");
+      var p = projects.filter(function (x) { return x.slug === slug; })[0];
+      if (!p) return;
+      var media = item.querySelector(".jg-media");
+      posterEls[slug] = { el: item, media: media, original: media ? media.innerHTML : "" };
+      item.classList.add("pe-holder", "pe-poster");
+      // In editing the poster never opens its page; its buttons still work.
+      item.addEventListener("click", function (e) { e.preventDefault(); }, true);
+      var tools = el("div", { "class": "pe-tools pe-tools-top" });
+      item.appendChild(tools);
+      posterEls[slug].tools = tools;
+    });
+    drawPosters();
+  }
+  function drawPosters() {
+    Object.keys(posterEls).forEach(function (slug) {
+      var pe = posterEls[slug], p = projects.filter(function (x) { return x.slug === slug; })[0];
+      if (!p || !pe.media) return;
+      // Picture: the new cover chosen here, or the original.
+      var want = p.cover ? p.cover.path : "";
+      if (pe.shown !== want) {
+        if (want) { pe.media.textContent = ""; pe.media.appendChild(picture(want, "40vw")); } else pe.media.innerHTML = pe.original;
+        pe.shown = want;
+      }
+      pe.el.classList.toggle("pe-off", p.in_posters === false);
+      pe.tools.textContent = "";
+      pe.tools.appendChild(el("span", { "class": "pe-tools-label", text: displayName(p) }));
+      pe.tools.appendChild(button(T.posterReplace, function () {
+        pick(function (path, alts) { p.cover = { path: path, alts: alts }; changed(); syncPage(); }, "", { noProject: true, note: T.posterNote });
+      }));
+      pe.tools.appendChild(p.in_posters === false
+        ? button(T.posterShow, function () { p.in_posters = true; changed(); syncPage(); })
+        : button(T.posterHide, function () { p.in_posters = false; changed(); syncPage(); }, "pe-btn pe-danger"));
+      if (p.in_posters === false) pe.tools.appendChild(el("span", { "class": "pe-tools-label", text: T.posterHiddenNote }));
+    });
+  }
+
   // Brings the opening and the toolbar in line with the state (after undo
   // or after loading an earlier version).
   function syncPage() {
+    if (featureBox) ["medium", "large", "full"].forEach(function (k) { featureBox.classList.toggle("feature-" + k, data.feature_size === k); });
+    drawPosters();
     if (layoutSelects.cols) layoutSelects.cols.value = data.gallery_columns || "mixed";
     if (layoutSelects.phone) layoutSelects.phone.value = data.gallery_phone || "mixed";
     if (layoutSelects.gap) layoutSelects.gap.value = data.gallery_gap || "minimal";
@@ -637,6 +701,20 @@
       });
     }, "pe-btn pe-primary")]));
     if (hidden.length) editArea.appendChild(strip(T.hiddenTitle, hidden, true));
+    var hiddenPosters = projects.filter(function (p) { return !p.isNew && p.in_posters === false && !posterEls[p.slug]; });
+    if (hiddenPosters.length) {
+      var hp = el("div", { "class": "pe-strip" }, [el("p", { "class": "pe-strip-title", text: T.postersHiddenTitle })]);
+      var hpRow = el("div", { "class": "pe-strip-row" });
+      hiddenPosters.forEach(function (p) {
+        hpRow.appendChild(el("figure", { "class": "pe-thumb" }, [
+          picture(p.cover ? p.cover.path : p.origCover, "160px"),
+          el("figcaption", { "class": "pe-note", text: displayName(p) }),
+          el("div", { "class": "pe-tools" }, [button(T.posterShow, function () { p.in_posters = true; changed(); })]),
+        ]));
+      });
+      hp.appendChild(hpRow);
+      editArea.appendChild(hp);
+    }
     if (elsewhere.length) editArea.appendChild(strip(T.elsewhereTitle, elsewhere, false));
   }
 
@@ -827,6 +905,7 @@
         el("label", { "class": "pe-upload" }, [document.createTextNode(T.pickUpload + " "), file]),
         grid,
         el("div", { "class": "pe-modal-foot" }, [
+          opts.note ? el("p", { "class": "pe-note", text: opts.note }) : null,
           el("p", { "class": "pe-note", text: T.altNote }),
           el("label", {}, [document.createTextNode(T.altHe), altHe]),
           el("label", {}, [document.createTextNode(T.altEn), altEn]),
@@ -944,9 +1023,11 @@
         .then(function (res) {
           var d = JSON.parse(b64ToUtf8(res.content));
           d.title_he = p.title_he; d.title_en = p.title_en;
-          return api("/contents/" + encPath(path), { method: "PUT", body: { message: "Project " + p.slug + ": name changed (on the homepage)", content: utf8ToB64(JSON.stringify(d, null, 2) + "\n"), sha: res.sha, branch: BRANCH } });
+          if (p.cover) { d.cover = "/" + p.cover.path; d.cover_alt_he = p.cover.alts.he; d.cover_alt_en = p.cover.alts.en; }
+          if (p.in_posters === false) d.in_posters = false; else delete d.in_posters;
+          return api("/contents/" + encPath(path), { method: "PUT", body: { message: "Project " + p.slug + ": changed on the homepage (name, poster or posters row)", content: utf8ToB64(JSON.stringify(d, null, 2) + "\n"), sha: res.sha, branch: BRANCH } });
         })
-        .then(function () { p.orig_he = p.title_he; p.orig_en = p.title_en; });
+        .then(function () { p.orig_he = p.title_he; p.orig_en = p.title_en; if (p.cover) p.origCover = "/" + p.cover.path; p.cover = null; p.orig_in_posters = p.in_posters; });
     });
     return chain;
   }
@@ -1058,7 +1139,7 @@
     setStatus(T.saving);
     var used = {};
     var all = [data.hero_image, data.feature_image].concat(data.gallery.map(function (g) { return g && g.image; }))
-      .concat(created().map(function (p) { return p.cover ? p.cover.path : ""; }))
+      .concat(projects.map(function (p) { return p.cover ? p.cover.path : ""; }))
       .concat([].concat.apply([], Object.keys(pageAdds).map(function (k) { return pageAdds[k].map(function (a) { return a.image; }); })));
     all.forEach(function (p) { var u = uploads[norm(p)]; if (u && !u.done) used[norm(p)] = true; });
     var chain = Promise.resolve();

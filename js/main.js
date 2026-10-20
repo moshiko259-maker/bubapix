@@ -295,8 +295,8 @@
   // ---------- 7. Homepage mosaic on phones ----------
   // The pictures are moved into rows of at most two (their places are
   // prepared by build.js in data-srow), and back when the screen widens.
-  var mosaic = document.querySelector("[data-mosaic]");
-  if (mosaic) {
+  // Every such block (the gallery and the posters row) is arranged this way.
+  each(document.querySelectorAll("[data-mosaic]"), function (mosaic) {
     var wideRows = Array.prototype.slice.call(mosaic.children);
     var cells = Array.prototype.slice.call(mosaic.querySelectorAll("[data-srow]"));
     var homes = cells.map(function (c) { return c.parentNode; });
@@ -323,7 +323,7 @@
     layout();
     if (phone.addEventListener) phone.addEventListener("change", layout);
     else if (phone.addListener) phone.addListener(layout);
-  }
+  });
 
   // ---------- 8. Installable app ----------
   // Registers the helper that lets the site be added to the home screen and
