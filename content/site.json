@@ -1,12 +1,15 @@
 {
   "hero_image": "/assets/work/bubapix-letters-desert-family-2.png",
-  "hero_alt_en": "THE NEW OCEAN poster by BubaPix: colourful characters on a beach between a tropical island and an underwater reef.",
-  "hero_alt_he": "הפוסטר של THE NEW OCEAN מאת BubaPix: דמויות צבעוניות על חוף בין אי טרופי לשונית מתחת למים.",
+  "hero_alt_en": "poster by BubaPix: colourful characters on a beach between a tropical island and an underwater reef.",
+  "hero_alt_he": "מאת BubaPix: דמויות צבעוניות על חוף בין אי טרופי לשונית מתחת למים.",
   "feature_image": "/assets/work/the-new-ocean-poster.jpg",
   "feature_alt_en": "A round white furry creature with wings and thick eyebrows.",
   "feature_alt_he": "יצור לבן, עגול ופרוותי עם כנפיים וגבות עבות.",
   "feature_project": "",
   "showreel_url": "",
+  "gallery_columns": "mixed",
+  "gallery_phone": "mixed",
+  "gallery_gap": "minimal",
   "gallery": [
     {
       "image": "/assets/work/bubapix-characters-banner.png",
