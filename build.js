@@ -322,6 +322,10 @@ function contentFor(lang) {
     im.link = /^https:\/\/[^\s"<>]+$/.test(ln) ? { href: ln, external: true } : /^\/[a-z0-9\-\/]*$/.test(ln) ? { path: ln.replace(/^\//, ""), external: false } : null;
     // Homepage gallery size: auto follows the layout's rhythm.
     im.size = ["large", "medium", "small"].includes(o.size) ? o.size : "auto";
+    // Free size on computers: width in % of the page, set by dragging in the
+    // page editor (empty = the automatic layout).
+    const fw = Number(o.fw);
+    im.fw = Number.isFinite(fw) && fw >= 10 ? Math.min(100, Math.round(fw)) : 0;
     return im;
   };
 
@@ -586,6 +590,9 @@ function contentFor(lang) {
       gap: ["none", "small", "medium"].includes(s.gallery_gap) ? s.gallery_gap : "",
       // Width of the second opening picture: small (the usual), medium, large or the full width.
       feature: ["medium", "large", "full"].includes(s.feature_size) ? s.feature_size : "",
+      // Free widths of the two opening pictures, in % of the page (computers).
+      heroW: Number(s.hero_w) >= 20 && Number(s.hero_w) < 100 ? Math.round(Number(s.hero_w)) : 0,
+      featureW: Number(s.feature_w) >= 15 && Number(s.feature_w) <= 100 ? Math.round(Number(s.feature_w)) : 0,
     },
     intro: pick(s, "intro", lang),
     seoDescription: pick(s, "seo_description", lang) || pick(s, "intro", lang),
@@ -723,7 +730,10 @@ outputs.set(
         // A narrow picture alone in its row: centred, about one screen high at most.
         (r < 130 ? `\n.mrow.n1>.ar-${r}{flex:none!important;width:min(100%,calc(80vh * ${r / 100}));margin-inline:auto}` : ""))
       .join("\n") +
-    "\n"
+    "\n" +
+    // Free sizes chosen in the page editor: computers only (phones keep the
+    // automatic two-by-two layout).
+    (render.freeRules.size ? `@media (min-width: 701px){\n${[...render.freeRules.values()].join("\n")}\n}\n` : "")
 );
 
 const today = new Date().toISOString().slice(0, 10);

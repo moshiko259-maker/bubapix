@@ -115,13 +115,16 @@
     reload: "רענון לראות",
     slow: "העדכון לוקח יותר מהרגיל. השינוי שמור; אפשר לבדוק שוב בעוד כמה דקות.",
     tipTitle: "איך עורכים",
-    tip1: "גודל: גוררים את הפינה ⤡ של התמונה, או לוחצים קטנה / בינונית / גדולה. מעבירים את העכבר על תמונה (בטלפון: הכלים מתחת לכל תמונה) גם לצורה, פרויקט, החלפה והסתרה.",
+    tip1: "גודל: לוחצים על תמונה (גם תמונות הפתיחה), ומופיעה מסגרת עם נקודות. גוררים נקודה — התמונה גדלה או קטנה, והשורה מסתדרת לבד בלי רווחים. הכלים (צורה, פרויקט, החלפה, הסתרה) מופיעים כשמעבירים עכבר על תמונה.",
     tip2: "גוררים תמונה כדי לשנות את הסדר, או משתמשים בחצים.",
     tip3: "לוחצים על משפט הפתיחה כדי לכתוב.",
     tip4: "שום דבר לא נשמר עד ״שמירה״. טעיתם? ״ביטול פעולה״.",
     tipClose: "הבנתי",
     help: "עזרה",
     resizeTip: "גררו את הפינה כדי לשנות גודל",
+    widthLabel: "רוחב",
+    freeMode: "חופשי: גודל לכל תמונה",
+    frameTip: "לחצו על תמונה כדי לבחור אותה, ואז גררו את הנקודות שבמסגרת כדי לשנות גודל",
     posterReplace: "החלפת הפוסטר",
     posterHide: "הסתרה מהשורה",
     posterShow: "הצגה בשורה",
@@ -216,13 +219,16 @@
     reload: "Reload to see it",
     slow: "The update is taking longer than usual. The change is saved; check again in a few minutes.",
     tipTitle: "How to edit",
-    tip1: "Size: drag the picture's corner ⤡, or press Small / Medium / Large. Point at a picture (on phones the tools are under each picture) for shape, project, replace and hide.",
+    tip1: "Size: click a picture (the opening ones too) and a frame with dots appears. Drag a dot: the picture grows or shrinks and its row rearranges itself without gaps. Tools (shape, project, replace, hide) appear when you point at a picture.",
     tip2: "Drag a picture to change the order, or use the arrows.",
     tip3: "Click the opening sentence to write.",
     tip4: "Nothing is saved until \"Save\". Made a mistake? \"Undo\".",
     tipClose: "Got it",
     help: "Help",
     resizeTip: "Drag the corner to change the size",
+    widthLabel: "Width",
+    freeMode: "Free: a size for each picture",
+    frameTip: "Click a picture to select it, then drag the dots on its frame to resize",
     posterReplace: "Replace the poster",
     posterHide: "Hide from the row",
     posterShow: "Show in the row",
@@ -478,8 +484,12 @@
     // Layout choices in the toolbar.
     var lay = bar.querySelector(".pe-bar-layout");
     lay.appendChild(layoutSelects.cols = select(T.perRow, data.gallery_columns || "mixed",
-      [["mixed", T.mixed], ["2", "2"], ["3", "3"], ["4", "4"]].map(function (o, i) { return i ? [o[0], o[1] + " " + T.perRow] : [o[0], T.mixed + " " + T.perRow]; }),
-      function (v) { data.gallery_columns = v; changed(); }));
+      [["mixed", T.mixed], ["2", "2"], ["3", "3"], ["4", "4"]].map(function (o, i) { return i ? [o[0], o[1] + " " + T.perRow] : [o[0], T.mixed + " " + T.perRow]; }).concat([["free", T.freeMode]]),
+      function (v) {
+        if (v === "free") { if (!isFree()) startFree(); }
+        else { data.gallery_columns = v; data.gallery.forEach(function (g) { if (g) delete g.fw; }); }
+        changed(); syncPage();
+      }));
     lay.appendChild(layoutSelects.phone = select(T.perRowPhone, data.gallery_phone || "mixed",
       [["mixed", T.mixed + " " + T.perRowPhone], ["1", "1 " + T.perRowPhone], ["2", "2 " + T.perRowPhone]],
       function (v) { data.gallery_phone = v; changed(); }));
@@ -512,6 +522,13 @@
     heroBox = opening.querySelector(".opening-hero");
     featureBox = opening.querySelector(".opening-feature");
     shownHero = norm(data.hero_image); shownFeature = norm(data.feature_image);
+    var openingWidth = function () { return opening.getBoundingClientRect().width || 1; };
+    if (heroBox) frame(heroBox, {
+      start: function () { return heroBox.getBoundingClientRect().width / openingWidth() * 100; },
+      area: openingWidth, centred: true, min: 20, max: 100,
+      live: function (pct) { heroBox.style.maxWidth = pct + "%"; heroBox.style.marginInline = "auto"; },
+      done: function (pct) { if (pct >= 100) delete data.hero_w; else data.hero_w = pct; changed(); syncPage(); },
+    });
     if (heroBox) {
       heroBox.classList.add("pe-holder");
       heroBox.appendChild(el("div", { "class": "pe-tools pe-tools-top" }, [
@@ -530,7 +547,7 @@
       featureTools.textContent = "";
       if (data.feature_image) featureTools.appendChild(select(T.featureSize, data.feature_size || "small",
         [["small", T.featureSize + ": " + T.featureSmall], ["medium", T.featureSize + ": " + T.featureMedium], ["large", T.featureSize + ": " + T.featureLarge], ["full", T.featureSize + ": " + T.featureFull]],
-        function (v) { data.feature_size = v; changed(); syncPage(); }));
+        function (v) { data.feature_size = v; delete data.feature_w; changed(); syncPage(); }));
       featureTools.appendChild(button(data.feature_image ? T.replaceFeature : T.addFeature, function () {
         pick(function (path, alts, choice) {
           addToPage(choice.toPage && choice.project, path, alts);
@@ -550,6 +567,12 @@
       opening.insertBefore(featureBox, opening.querySelector(".opening-tagline"));
     }
     featureBox.classList.add("pe-holder");
+    frame(featureBox, {
+      start: function () { return featureBox.getBoundingClientRect().width / openingWidth() * 100; },
+      area: openingWidth, centred: true, min: 15, max: 100,
+      live: function (pct) { featureBox.style.maxWidth = pct + "%"; },
+      done: function (pct) { data.feature_w = pct; changed(); syncPage(); },
+    });
     (data.feature_image ? featureBox : opening).appendChild(featureTools);
     drawFeatureTools();
 
@@ -615,6 +638,8 @@
   // Brings the opening and the toolbar in line with the state (after undo
   // or after loading an earlier version).
   function syncPage() {
+    if (heroBox) { heroBox.style.maxWidth = data.hero_w ? data.hero_w + "%" : ""; heroBox.style.marginInline = data.hero_w ? "auto" : ""; }
+    if (featureBox) featureBox.style.maxWidth = data.feature_w ? data.feature_w + "%" : "";
     if (featureBox) ["medium", "large", "full"].forEach(function (k) { featureBox.classList.toggle("feature-" + k, data.feature_size === k); });
     drawPosters();
     if (layoutSelects.cols) layoutSelects.cols.value = data.gallery_columns || "mixed";
@@ -665,7 +690,38 @@
   var phone = window.matchMedia("(max-width: 700px)");
   if (phone.addEventListener) phone.addEventListener("change", function () { if (data) render(); });
 
-  var dragFrom = -1;
+  // ---------- free sizes (computers): width in % of the page ----------
+  function isFree() { return data.gallery.some(function (g) { return g && g.visible !== false && Number(g.fw) >= 10; }); }
+  // Turning free sizes on keeps the picture sizes as they look now.
+  function startFree() {
+    var area = editArea.getBoundingClientRect().width || 1;
+    Array.prototype.forEach.call(editArea.querySelectorAll(".pe-mosaic .pe-item"), function (fig) {
+      var g = data.gallery[Number(fig.getAttribute("data-idx"))];
+      if (g) g.fw = Math.max(10, Math.min(100, Math.round(fig.getBoundingClientRect().width / area * 100)));
+    });
+  }
+  // Same rows as the built page (src/render.js): filled in order; pictures
+  // sharing a row fill it exactly with one common height.
+  function freeRows(list) {
+    var out = [], row = [], sum = 0;
+    list.forEach(function (it, n) {
+      var f = Number(it.g.fw) || 33;
+      if (row.length && sum + f > 106) { out.push(row); row = []; sum = 0; }
+      row.push(n); sum += f;
+    });
+    if (row.length) out.push(row);
+    return out;
+  }
+  function applyFree(list, row) {
+    var f = row.map(function (n) { return Number(list[n].g.fw) || 33; });
+    if (row.length === 1) { list[row[0]].free = { single: Math.min(100, f[0]) }; return; }
+    var total = f.reduce(function (a, b) { return a + b; }, 0);
+    var share = f.map(function (x) { return x / total; });
+    var h = share.reduce(function (acc, sh, k) { return acc + sh * (sh * 100 / list[row[k]].r); }, 0);
+    row.forEach(function (n, k) { list[n].free = { grow: Math.round(share[k] * 1000), ar: (share[k] * 100) / h }; });
+  }
+
+  var dragFrom = -1, selected = -1;
   function render() {
     if (!data) return;
     editArea.textContent = "";
@@ -681,12 +737,16 @@
     });
 
     var cols = Number(data.gallery_columns) || 0, ph = Number(data.gallery_phone) || 0;
-    var rows = phone.matches
+    var freeOn = isFree() && !phone.matches;
+    shown.forEach(function (it) { it.free = null; });
+    var rows = freeOn ? freeRows(shown) : phone.matches
       ? (ph ? buildRows(shown, [ph], 1.4, ph, false, !heroP) : buildRows(shown, [2, 1, 2, 2], 1.4, 2, false, !heroP))
       : (cols ? buildRows(shown, [cols], 2.3, cols, true, !heroP) : buildRows(shown, [2, 3, 1, 3, 2, 4], 2.3, 5, true, !heroP));
 
     var gapCls = ["none", "small", "medium"].indexOf(data.gallery_gap) >= 0 ? " gap-" + data.gallery_gap : "";
     var box = el("div", { "class": "mosaic pe-mosaic" + gapCls });
+    if (freeOn) rows.forEach(function (row) { applyFree(shown, row); });
+    if (layoutSelects.cols) layoutSelects.cols.value = isFree() ? "free" : (data.gallery_columns || "mixed");
     rows.forEach(function (row) {
       var r = el("div", { "class": "mrow n" + row.length });
       row.forEach(function (n) { shown[n].alone = row.length === 1; r.appendChild(cell(shown[n])); });
@@ -724,9 +784,16 @@
     media.style.aspectRatio = String(item.r);
     var fig = el("figure", { "class": "jg-item pe-item" + (FRAMES[g.frame] ? " fit-cover focus-" + (g.focus || "center") : ""), draggable: "true", "data-idx": String(idx), title: T.drag }, [media]);
     fig.style.flexGrow = String(Math.round(item.r * 100));
-    if (item.alone && item.r < 1.3) { fig.classList.add("pe-alone"); fig.style.width = "min(100%, calc(80vh * " + item.r + "))"; }
+    if (item.free && item.free.single) { fig.classList.add("pe-alone"); fig.style.width = item.free.single + "%"; }
+    else if (item.free) { fig.classList.add("pe-free"); fig.style.flexGrow = String(item.free.grow); fig.style.minWidth = "0"; media.style.aspectRatio = String(item.free.ar); media.classList.add("pe-crop"); }
+    else if (item.alone && item.r < 1.3) { fig.classList.add("pe-alone"); fig.style.width = "min(100%, calc(80vh * " + item.r + "))"; }
     if (uploads[norm(g.image)]) fig.appendChild(el("span", { "class": "pe-badge", text: T.newBadge }));
-    fig.appendChild(resizeHandle(fig, g));
+    frame(fig, {
+      start: function () { return fig.getBoundingClientRect().width / (editArea.getBoundingClientRect().width || 1) * 100; },
+      live: function (pct) { fig.style.flex = "none"; fig.style.width = pct + "%"; },
+      done: function (pct) { if (!isFree()) startFree(); g.fw = pct; selected = idx; changed(); },
+      min: 10, max: 100, selectedNow: selected === idx,
+    });
     // Arrow shapes follow the reading direction: "earlier" points right in Hebrew.
     var back = he ? "›" : "‹", fwd = he ? "‹" : "›";
     fig.appendChild(el("div", { "class": "pe-tools" }, [
@@ -783,48 +850,71 @@
   function sizeButtons(g) {
     var box = el("div", { "class": "pe-sizes", role: "group", "aria-label": T.size });
     [["small", T.sizeSmall], ["medium", T.sizeMedium], ["large", T.sizeLarge], ["auto", T.sizeAuto]].forEach(function (o) {
-      var b = button(o[1], function () { g.size = o[0]; changed(); }, "pe-btn pe-size", T.size + ": " + o[1]);
-      b.setAttribute("aria-pressed", String((g.size || "auto") === o[0]));
+      var b = button(o[1], function () {
+        if (isFree()) { if (o[0] === "auto") delete g.fw; else g.fw = { small: 25, medium: 50, large: 100 }[o[0]]; }
+        else g.size = o[0];
+        changed();
+      }, "pe-btn pe-size", T.size + ": " + o[1]);
+      b.setAttribute("aria-pressed", String(isFree() ? (o[0] === "small" && g.fw == 25) || (o[0] === "medium" && g.fw == 50) || (o[0] === "large" && g.fw == 100) : (g.size || "auto") === o[0]));
       box.appendChild(b);
     });
     return box;
   }
-  // Dragging the corner handle: further from the picture = bigger.
-  // Steps: small → medium → large (the layout keeps rows tidy).
-  function resizeHandle(fig, g) {
-    var h = el("span", { "class": "pe-resize", title: T.resizeTip, "aria-hidden": "true", text: "⤡" });
-    // Stop the picture's own drag-to-move from starting on the handle.
-    h.addEventListener("mousedown", function (e) { e.preventDefault(); e.stopPropagation(); });
-    h.addEventListener("dragstart", function (e) { e.preventDefault(); e.stopPropagation(); });
-    h.addEventListener("pointerdown", function (e) {
-      e.preventDefault(); e.stopPropagation();
-      fig.setAttribute("draggable", "false");
-      var rect = fig.getBoundingClientRect(), startX = e.clientX, startY = e.clientY, startW = rect.width;
-      var order = ["small", "medium", "large"];
-      var cur = order.indexOf(g.size) >= 0 ? g.size : (startW > editArea.clientWidth * 0.7 ? "large" : startW > editArea.clientWidth * 0.4 ? "medium" : "small");
-      var label = el("span", { "class": "pe-resize-label", text: T.size + ": " + T["size" + cur.charAt(0).toUpperCase() + cur.slice(1)] });
-      fig.appendChild(label); fig.classList.add("is-resizing");
-      try { h.setPointerCapture(e.pointerId); } catch (x) { /* old browser */ }
-      var next = cur;
-      function move(ev) {
-        // Outward (sideways) or downward = bigger; inward or upward = smaller.
-        // Downward also works for pictures at the edge of the screen.
-        var dx = (ev.clientX - startX) * (he ? -1 : 1), dy = (ev.clientY - startY) * 1.5;
-        var d = Math.abs(dx) > Math.abs(dy) ? dx : dy;
-        // Every 90 pixels is one step: small → medium → large.
-        var at = order.indexOf(cur) + Math.round(d / 90);
-        next = order[Math.max(0, Math.min(order.length - 1, at))];
-        label.textContent = T.size + ": " + T["size" + next.charAt(0).toUpperCase() + next.slice(1)];
-        fig.style.outline = "2px solid currentColor";
-      }
-      function up() {
-        h.removeEventListener("pointermove", move); h.removeEventListener("pointerup", up); h.removeEventListener("pointercancel", up);
-        fig.classList.remove("is-resizing"); label.remove(); fig.style.outline = ""; fig.setAttribute("draggable", "true");
-        if (next !== g.size) { g.size = next; changed(); }
-      }
-      h.addEventListener("pointermove", move); h.addEventListener("pointerup", up); h.addEventListener("pointercancel", up);
+  // ---------- selection frame: click a picture, drag a dot to resize ----------
+  // Dots on the four corners and the two sides. Dragging away from the
+  // picture makes it bigger, towards it smaller; the width is shown in %.
+  var frameOf = null;
+  function deselectAll() {
+    Array.prototype.forEach.call(document.querySelectorAll(".pe-selected"), function (n) { n.classList.remove("pe-selected"); });
+  }
+  function frame(box, o) {
+    box.classList.add("pe-framed");
+    if (o.selectedNow) box.classList.add("pe-selected");
+    box.setAttribute("title", T.frameTip);
+    box.addEventListener("click", function (e) {
+      if (e.target.closest(".pe-tools, .pe-dot")) return;
+      e.preventDefault();
+      var was = box.classList.contains("pe-selected");
+      deselectAll();
+      if (!was) box.classList.add("pe-selected");
     });
-    return h;
+    var label = el("span", { "class": "pe-frame-label" });
+    box.appendChild(label);
+    ["nw", "ne", "sw", "se", "w", "e"].forEach(function (pos) {
+      var dot = el("span", { "class": "pe-dot pe-dot-" + pos, "aria-hidden": "true" });
+      dot.addEventListener("mousedown", function (e) { e.preventDefault(); e.stopPropagation(); });
+      dot.addEventListener("dragstart", function (e) { e.preventDefault(); e.stopPropagation(); });
+      dot.addEventListener("pointerdown", function (e) {
+        e.preventDefault(); e.stopPropagation();
+        box.setAttribute("draggable", "false");
+        var startPct = o.start(), startX = e.clientX, startY = e.clientY;
+        var area = (o.area ? o.area() : editArea.getBoundingClientRect().width) || 1;
+        // Physical side of the dot (left/right on the screen).
+        var r = dot.getBoundingClientRect(), b = box.getBoundingClientRect();
+        var right = r.left + r.width / 2 > b.left + b.width / 2, bottom = pos.charAt(0) === "s";
+        var pct = Math.round(startPct);
+        box.classList.add("is-resizing", "pe-selected");
+        try { dot.setPointerCapture(e.pointerId); } catch (x) { /* old browser */ }
+        function move(ev) {
+          var dx = (ev.clientX - startX) * (right ? 1 : -1);
+          // Centred pictures grow on both sides, so a side drag counts twice.
+          if (o.centred) dx *= 2;
+          var dy = pos.length === 2 ? (ev.clientY - startY) * (bottom ? 1 : -1) * (b.width / Math.max(1, b.height)) : 0;
+          var d = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
+          pct = Math.max(o.min, Math.min(o.max, Math.round(startPct + d / area * 100)));
+          label.textContent = T.widthLabel + " " + pct + "%";
+          o.live(pct);
+        }
+        function up() {
+          dot.removeEventListener("pointermove", move); dot.removeEventListener("pointerup", up); dot.removeEventListener("pointercancel", up);
+          box.classList.remove("is-resizing"); box.setAttribute("draggable", "true");
+          if (pct !== Math.round(startPct)) o.done(pct);
+          setTimeout(function () { label.textContent = ""; }, 900);
+        }
+        dot.addEventListener("pointermove", move); dot.addEventListener("pointerup", up); dot.addEventListener("pointercancel", up);
+      });
+      box.appendChild(dot);
+    });
   }
   function strip(title, list, canShow) {
     var wrap = el("div", { "class": "pe-strip" }, [el("p", { "class": "pe-strip-title", text: title })]);

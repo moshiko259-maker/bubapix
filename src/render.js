@@ -48,6 +48,9 @@ function logo(ctx, alt, cls, attrs = "") {
 // The proportions become small CSS classes in css/gallery.css (see build.js).
 // ---------------------------------------------------------------------------
 const usedRatios = new Set();
+// Free sizes from the page editor: class name -> CSS rule (no inline styles,
+// which the Content-Security-Policy does not allow).
+const freeRules = new Map();
 const FRAMES = { wide: 240, landscape: 178, square: 100, portrait: 80 };
 function ratioClass(im) {
   const fixed = FRAMES[im.frame];
@@ -456,7 +459,46 @@ function home(ctx) {
   // Layout chosen in the admin: a fixed number of pictures per row (a size
   // chosen for one picture still wins), or the usual mixed rhythm.
   const lay = data.galleryLayout || {};
-  const rows = lay.columns ? buildRows([lay.columns], 2.3, lay.columns, true) : buildRows([2, 3, 1, 3, 2, 4], 2.3, 5, true);
+  // Free sizes (set by dragging in the page editor): each picture has a width
+  // in % of the page. Rows are filled in order; pictures sharing a row are
+  // stretched to fill it exactly and get one common height (cropped to it,
+  // keeping the chosen focus), so no empty space is left. A picture alone in
+  // its row keeps its width and whole shape, centred.
+  const free = data.homeGallery.some((g, n) => (opening ? n > 0 : true) && g.image.fw);
+  const freeRows = () => {
+    const out = [];
+    let i = opening ? 1 : 0, row = [], sum = 0;
+    for (; i < data.homeGallery.length; i++) {
+      const f = data.homeGallery[i].image.fw || 33;
+      if (row.length && sum + f > 106) { out.push(row); row = []; sum = 0; }
+      row.push(i); sum += f;
+    }
+    if (row.length) out.push(row);
+    return out;
+  };
+  const freeClass = new Map(); // picture index -> class
+  const rows = free ? freeRows() : lay.columns ? buildRows([lay.columns], 2.3, lay.columns, true) : buildRows([2, 3, 1, 3, 2, 4], 2.3, 5, true);
+  if (free) {
+    for (const row of rows) {
+      const f = row.map((n) => data.homeGallery[n].image.fw || 33);
+      const total = f.reduce((a, b) => a + b, 0);
+      if (row.length === 1) {
+        const w = Math.min(100, f[0]);
+        const cls = `fs-${w}`;
+        freeRules.set(cls, `.mrow>.${cls}{flex:none!important;width:${w}%;margin-inline:auto}`);
+        freeClass.set(row[0], cls);
+        continue;
+      }
+      const share = f.map((x) => x / total);
+      const h = share.reduce((acc, s, k) => acc + s * (s * 100 / ratioOf(data.homeGallery[row[k]])), 0);
+      row.forEach((n, k) => {
+        const grow = Math.round(share[k] * 1000), ar = Math.round((share[k] * 100 / h) * 100) / 100;
+        const cls = `fr-${grow}-${String(ar).replace(".", "_")}`;
+        freeRules.set(cls, `.mrow>.${cls}{flex:${grow} 1 0!important;min-width:0}.mrow>.${cls} .jg-media{aspect-ratio:${ar}}.mrow>.${cls} .jg-media img{object-fit:cover}`);
+        freeClass.set(n, cls);
+      });
+    }
+  }
   // Phones: at most two pictures side by side, in the same tight style.
   const rowsSmall = lay.phone ? buildRows([lay.phone], 1.4, lay.phone, false) : buildRows([2, 1, 2, 2], 1.4, 2, false);
   const cell = (n, rowLen) => {
@@ -472,7 +514,15 @@ function home(ctx) {
       external: !!(own && g.image.link.external),
       viewer: !linked(g) && !own,
       sizes: rowLen === 1 ? "(max-width: 1440px) 100vw, 1440px" : `(max-width: 700px) ${rowLen > 2 ? 50 : 60}vw, ${Math.round(100 / rowLen) + 10}vw`,
+      extraClass: freeClass.get(n) || "",
     });
+  };
+  // Free widths of the opening pictures (computers).
+  const openW = (kind, w) => {
+    if (!w) return "";
+    const cls = `ow-${kind}-${w}`;
+    freeRules.set(cls, `.${cls}{max-width:${w}%!important;margin-inline:auto}`);
+    return ` ${cls}`;
   };
   // Each picture also carries its place in the phone layout (row "s" of
   // rowsSmall); js/main.js moves the pictures into those rows on phones.
@@ -492,8 +542,8 @@ function home(ctx) {
   const openingBlock = opening || feature
     ? `
     <section class="opening" aria-label="BubaPix">${opening ? `
-      <div class="opening-hero">${cell(0, 1)}</div>` : ""}${feature ? `
-      <div class="opening-feature${lay.feature ? ` feature-${lay.feature}` : ""}">${feature}</div>` : ""}${data.tagline ? `
+      <div class="opening-hero${openW("h", lay.heroW)}">${cell(0, 1)}</div>` : ""}${feature ? `
+      <div class="opening-feature${lay.feature ? ` feature-${lay.feature}` : ""}${openW("f", lay.featureW)}">${feature}</div>` : ""}${data.tagline ? `
       <p class="tagline opening-tagline">${e(data.tagline)}</p>` : ""}
     </section>`
     : "";
@@ -1265,4 +1315,4 @@ function notFound(site, en, he, preview) {
 `;
 }
 
-module.exports = { usedRatios, manage, shop, product, order, home, work, project, services, about, testimonials, contact, ideas, privacy, customPage, notFound };
+module.exports = { usedRatios, freeRules, manage, shop, product, order, home, work, project, services, about, testimonials, contact, ideas, privacy, customPage, notFound };

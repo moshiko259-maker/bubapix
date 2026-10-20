@@ -203,6 +203,8 @@
       a.addEventListener("click", function (e) {
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // new tab etc.
         e.preventDefault();
+        // While the owner edits on the page, a click selects the picture instead.
+        if (root.classList.contains("page-editing")) return;
         // Previous / Next follow the order on screen (the homepage arranges
         // its pictures differently on phones).
         links = Array.prototype.slice.call(document.querySelectorAll("a[data-viewer]")).filter(function (x) { return x.getClientRects().length > 0; });
