@@ -78,6 +78,23 @@
     projectHint: "לחיצה על התמונה תפתח את דף הפרויקט שתבחרו",
     toPage: "להוסיף את התמונה גם לגלריה בדף הפרויקט",
     pickProject: "שיוך לפרויקט (רשות, לפי בחירתכם)",
+    projectsBtn: "פרויקטים: שמות ופרויקט חדש",
+    projectsTitle: "פרויקטים",
+    nameHe: "שם בעברית",
+    nameEn: "שם באנגלית",
+    address: "כתובת העמוד",
+    addressHint: "אותיות באנגלית, מספרים ומקפים. נקבעת פעם אחת ולא משתנה כשמשנים שם.",
+    newProject: "פרויקט חדש",
+    create: "יצירת הפרויקט",
+    cover: "תמונת שער (רשות)",
+    chooseCover: "בחירת תמונת שער",
+    noImageNote: "פרויקט מופיע באתר רק כשיש לו לפחות תמונה אחת (תמונת שער, או תמונה שהוספתם לדף שלו).",
+    errName: "כתבו שם לפרויקט.",
+    errAddress: "כתובת העמוד: אותיות באנגלית קטנות, מספרים ומקפים בלבד.",
+    errTaken: "כבר יש פרויקט עם הכתובת הזו.",
+    created: "נוסף. הוא יישמר כשתלחצו ״שמירה״.",
+    open: "פתיחת הדף",
+    newMark: "חדש, לא נשמר עדיין",
   } : {
     title: "Edit on the page",
     loading: "Loading the page settings…",
@@ -127,6 +144,23 @@
     projectHint: "Clicking the picture opens the project page you choose",
     toPage: "Also add the picture to the gallery on the project page",
     pickProject: "Project (optional, your choice)",
+    projectsBtn: "Projects: names and new project",
+    projectsTitle: "Projects",
+    nameHe: "Hebrew name",
+    nameEn: "English name",
+    address: "Page address",
+    addressHint: "English letters, numbers and dashes. Set once; it does not change when the name changes.",
+    newProject: "New project",
+    create: "Create the project",
+    cover: "Cover image (optional)",
+    chooseCover: "Choose a cover image",
+    noImageNote: "A project appears on the site only once it has at least one picture (a cover, or a picture added to its page).",
+    errName: "Write a name for the project.",
+    errAddress: "Page address: small English letters, numbers and dashes only.",
+    errTaken: "A project with this address already exists.",
+    created: "Added. It is saved when you press \"Save\".",
+    open: "Open the page",
+    newMark: "new, not saved yet",
   };
 
   // ---------- small helpers ----------
@@ -240,7 +274,10 @@
   var projects = []; // { slug, name } from content/projects, for the owner's own choice
   var pageAdds = {}; // project slug -> pictures to add to that project's page gallery
   var hasPageAdds = function () { return Object.keys(pageAdds).some(function (k) { return pageAdds[k].length; }); };
-  var dirty = function () { return data && (JSON.stringify(data) !== original || hasPageAdds()); };
+  var renamed = function () { return projects.filter(function (p) { return !p.isNew && (p.title_he !== p.orig_he || p.title_en !== p.orig_en); }); };
+  var created = function () { return projects.filter(function (p) { return p.isNew; }); };
+  var dirty = function () { return data && (JSON.stringify(data) !== original || hasPageAdds() || renamed().length > 0 || created().length > 0); };
+  function displayName(p) { return (he ? p.title_he || p.title_en : p.title_en || p.title_he) || p.slug; }
   var projectName = function (slug) { var p = projects.filter(function (x) { return x.slug === slug; })[0]; return p ? p.name : slug; };
   function loadProjects() {
     return api("/contents/content/projects?ref=" + encodeURIComponent(BRANCH))
@@ -251,7 +288,7 @@
             var d = {};
             try { d = JSON.parse(b64ToUtf8(res.content)); } catch (e) { d = {}; }
             var slug = f.name.replace(/\.json$/, "");
-            return { slug: slug, name: (he ? d.title_he || d.title_en : d.title_en || d.title_he) || slug, order: Number(d.order) || 99 };
+            return { slug: slug, title_he: d.title_he || "", title_en: d.title_en || "", orig_he: d.title_he || "", orig_en: d.title_en || "", name: (he ? d.title_he || d.title_en : d.title_en || d.title_he) || slug, order: Number(d.order) || 99 };
           });
         }));
       })
@@ -259,7 +296,7 @@
       .catch(function () { projects = []; });
   }
   function projectSelect(value, onChange) {
-    var opts = [["", T.project + ": " + T.noProject]].concat(projects.map(function (p) { return [p.slug, T.project + ": " + p.name]; }));
+    var opts = [["", T.project + ": " + T.noProject]].concat(projects.map(function (p) { return [p.slug, T.project + ": " + displayName(p)]; }));
     // Keep an existing link even if that project is not in the list.
     if (value && !projects.some(function (p) { return p.slug === value; })) opts.push([value, T.project + ": " + value]);
     var s = select(T.project, value || "", opts, onChange);
@@ -344,6 +381,7 @@
     lay.appendChild(select(T.gap, data.gallery_gap || "minimal",
       [["none", T.gap + ": " + T.gapNone], ["minimal", T.gap + ": " + T.gapMin], ["small", T.gap + ": " + T.gapSmall], ["medium", T.gap + ": " + T.gapMedium]],
       function (v) { data.gallery_gap = v; changed(); }));
+    lay.appendChild(button(T.projectsBtn, projectsPanel));
 
     // Gallery: the editable version takes the place of the gallery.
     if (!workSection) {
@@ -569,10 +607,13 @@
   var imageList = null;
   function listImages() {
     if (imageList) return Promise.resolve(imageList);
-    var dirs = ["assets/work", "assets/uploads"].concat(projects.map(function (p) { return "assets/uploads/" + p.slug; }));
-    return Promise.all(dirs.map(function (d) {
-      return api("/contents/" + encPath(d) + "?ref=" + encodeURIComponent(BRANCH)).catch(function () { return []; });
-    })).then(function (res) {
+    // Pictures in assets/work and assets/uploads, including one level of
+    // project folders inside assets/uploads (only folders that exist).
+    var get = function (d) { return api("/contents/" + encPath(d) + "?ref=" + encodeURIComponent(BRANCH)).catch(function () { return []; }); };
+    return Promise.all([get("assets/work"), get("assets/uploads")]).then(function (top) {
+      var sub = (Array.isArray(top[1]) ? top[1] : []).filter(function (f) { return f.type === "dir"; }).map(function (f) { return get(f.path); });
+      return Promise.all(sub).then(function (more) { return top.concat(more); });
+    }).then(function (res) {
       var out = [];
       res.forEach(function (items) {
         (Array.isArray(items) ? items : []).forEach(function (f) {
@@ -584,7 +625,8 @@
       return out;
     });
   }
-  function pick(done, currentProject) {
+  function pick(done, currentProject, opts) {
+    opts = opts || {};
     var chosen = "";
     var proj = projectSelect(currentProject || "", function () { toPage.disabled = !proj.value; if (!proj.value) toPage.checked = false; });
     proj.classList.add("pe-input");
@@ -627,8 +669,8 @@
           el("p", { "class": "pe-note", text: T.altNote }),
           el("label", {}, [document.createTextNode(T.altHe), altHe]),
           el("label", {}, [document.createTextNode(T.altEn), altEn]),
-          el("label", {}, [document.createTextNode(T.pickProject), proj]),
-          el("label", { "class": "pe-check" }, [toPage, document.createTextNode(" " + T.toPage)]),
+          opts.noProject ? null : el("label", {}, [document.createTextNode(T.pickProject), proj]),
+          opts.noProject ? null : el("label", { "class": "pe-check" }, [toPage, document.createTextNode(" " + T.toPage)]),
           chooseBtn,
         ]),
       ]),
@@ -653,13 +695,110 @@
     listImages().then(draw);
   }
 
+  // ---------- projects: names and new projects ----------
+  function slugify(str) { return String(str || "").toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60); }
+  function projectsPanel() {
+    var list = el("div", { "class": "pe-proj-list" });
+    function drawList() {
+      list.textContent = "";
+      projects.forEach(function (p) {
+        var inHe = el("input", { type: "text", dir: "rtl", "class": "pe-input", value: p.title_he });
+        var inEn = el("input", { type: "text", dir: "ltr", "class": "pe-input", value: p.title_en });
+        inHe.addEventListener("input", function () { p.title_he = inHe.value.trim(); refreshStatus(); });
+        inEn.addEventListener("input", function () { p.title_en = inEn.value.trim(); refreshStatus(); });
+        var link = p.isNew ? el("span", { "class": "pe-note", text: T.newMark }) : el("a", { href: "work/" + p.slug + "/" + (location.pathname.slice(-10) === "index.html" ? "index.html" : ""), target: "_blank", rel: "noopener", text: T.open });
+        list.appendChild(el("div", { "class": "pe-proj-row" }, [
+          el("label", {}, [document.createTextNode(T.nameHe), inHe]),
+          el("label", {}, [document.createTextNode(T.nameEn), inEn]),
+          el("div", { "class": "pe-proj-meta" }, [el("span", { "class": "pe-note", text: T.address + ": " + p.slug }), link]),
+        ]));
+      });
+    }
+    var nHe = el("input", { type: "text", dir: "rtl", "class": "pe-input" });
+    var nEn = el("input", { type: "text", dir: "ltr", "class": "pe-input" });
+    var nSlug = el("input", { type: "text", dir: "ltr", "class": "pe-input", placeholder: "my-new-project" });
+    var slugTouched = false;
+    nEn.addEventListener("input", function () { if (!slugTouched) nSlug.value = slugify(nEn.value); });
+    nSlug.addEventListener("input", function () { slugTouched = true; });
+    var cover = null;
+    var coverInfo = el("span", { "class": "pe-note" });
+    var msg = el("p", { "class": "pe-note", role: "status" });
+    var form = el("div", { "class": "pe-proj-new" }, [
+      el("strong", { text: T.newProject }),
+      el("label", {}, [document.createTextNode(T.nameHe), nHe]),
+      el("label", {}, [document.createTextNode(T.nameEn), nEn]),
+      el("label", {}, [document.createTextNode(T.address), nSlug, el("span", { "class": "pe-note", text: T.addressHint })]),
+      el("div", { "class": "pe-proj-meta" }, [button(T.chooseCover, function () {
+        pick(function (path, alts) { cover = { path: path, alts: alts }; coverInfo.textContent = path.split("/").pop(); }, "", { noProject: true });
+      }), coverInfo]),
+      el("p", { "class": "pe-note", text: T.noImageNote }),
+      msg,
+      button(T.create, function () {
+        var slug = nSlug.value.trim();
+        if (!nHe.value.trim() && !nEn.value.trim()) { msg.textContent = T.errName; return; }
+        if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) { msg.textContent = T.errAddress; return; }
+        if (projects.some(function (p) { return p.slug === slug; })) { msg.textContent = T.errTaken; return; }
+        var maxOrder = projects.reduce(function (m, p) { return Math.max(m, p.order || 0); }, 0);
+        projects.push({ slug: slug, isNew: true, title_he: nHe.value.trim(), title_en: nEn.value.trim(), orig_he: "", orig_en: "", order: maxOrder + 1, cover: cover });
+        nHe.value = ""; nEn.value = ""; nSlug.value = ""; slugTouched = false; cover = null; coverInfo.textContent = "";
+        msg.textContent = T.created;
+        drawList(); refreshStatus(); render();
+      }, "pe-btn pe-primary"),
+    ]);
+    var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": T.projectsTitle }, [
+      el("div", { "class": "pe-modal-box pe-proj-box" }, [
+        el("div", { "class": "pe-modal-head" }, [el("strong", { text: T.projectsTitle }), button(T.close, function () { close(); }, "pe-btn pe-ghost")]),
+        el("div", { "class": "pe-proj-scroll" }, [list, form]),
+      ]),
+    ]);
+    function close() { dialog.remove(); document.removeEventListener("keydown", onKey); render(); }
+    function onKey(e) { if (e.key === "Escape") close(); }
+    document.addEventListener("keydown", onKey);
+    drawList();
+    document.body.appendChild(dialog);
+  }
+  // New project files: the same fields the admin panel creates.
+  function saveNewProjects() {
+    var chain = Promise.resolve();
+    created().forEach(function (p) {
+      chain = chain.then(function () {
+        var d = {
+          title_en: p.title_en, title_he: p.title_he, show_title: true, visible: true, featured: true, order: p.order, title_in_gallery: false,
+          categories: [], text_en: "", text_he: "", description_en: "", description_he: "",
+          cover: p.cover ? "/" + p.cover.path : "", cover_alt_en: p.cover ? p.cover.alts.en : "", cover_alt_he: p.cover ? p.cover.alts.he : "",
+          video_url: "", video_file: "", gallery: [], details: [], sections: [],
+        };
+        return api("/contents/" + encPath("content/projects/" + p.slug + ".json"), { method: "PUT", body: { message: "New project: " + (p.title_en || p.title_he || p.slug) + " (created on the homepage)", content: utf8ToB64(JSON.stringify(d, null, 2) + "\n"), branch: BRANCH } });
+      }).then(function () { p.isNew = false; p.orig_he = p.title_he; p.orig_en = p.title_en; p.cover = null; });
+    });
+    return chain;
+  }
+  // Renamed projects: only the two name fields change; everything else is kept.
+  function saveRenames() {
+    var chain = Promise.resolve();
+    renamed().forEach(function (p) {
+      var path = "content/projects/" + p.slug + ".json";
+      chain = chain
+        .then(function () { return api("/contents/" + encPath(path) + "?ref=" + encodeURIComponent(BRANCH)); })
+        .then(function (res) {
+          var d = JSON.parse(b64ToUtf8(res.content));
+          d.title_he = p.title_he; d.title_en = p.title_en;
+          return api("/contents/" + encPath(path), { method: "PUT", body: { message: "Project " + p.slug + ": name changed (on the homepage)", content: utf8ToB64(JSON.stringify(d, null, 2) + "\n"), sha: res.sha, branch: BRANCH } });
+        })
+        .then(function () { p.orig_he = p.title_he; p.orig_en = p.title_en; });
+    });
+    return chain;
+  }
+
   // ---------- save ----------
   function save() {
     if (!dirty()) return;
     saveBtn.disabled = true;
     setStatus(T.saving);
     var used = {};
-    var all = [data.hero_image, data.feature_image].concat(data.gallery.map(function (g) { return g && g.image; }));
+    var all = [data.hero_image, data.feature_image].concat(data.gallery.map(function (g) { return g && g.image; }))
+      .concat(created().map(function (p) { return p.cover ? p.cover.path : ""; }))
+      .concat([].concat.apply([], Object.keys(pageAdds).map(function (k) { return pageAdds[k].map(function (a) { return a.image; }); })));
     all.forEach(function (p) { var u = uploads[norm(p)]; if (u && !u.done) used[norm(p)] = true; });
     var chain = Promise.resolve();
     Object.keys(used).forEach(function (p) {
@@ -669,6 +808,7 @@
         .then(function () { uploads[p].done = true; });
     });
     chain
+      .then(saveNewProjects)
       .then(function () { return api("/contents/" + encPath(FILE) + "?ref=" + encodeURIComponent(BRANCH)); })
       .then(function (cur) {
         if (cur.sha !== sha) { var err = new Error("changed"); err.changed = true; throw err; }
@@ -680,6 +820,7 @@
         original = JSON.stringify(data);
         return savePageAdds();
       })
+      .then(saveRenames)
       .then(function () {
         saveBtn.disabled = true;
         setStatus(T.saved, "ok");
