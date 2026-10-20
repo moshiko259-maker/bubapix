@@ -1,28 +1,38 @@
 {
-  "hero_image": "/assets/work/the-new-ocean-poster.jpg",
-  "hero_alt_en": "THE NEW OCEAN poster by BubaPix: colourful characters on a beach between a tropical island and an underwater reef.",
-  "hero_alt_he": "הפוסטר של THE NEW OCEAN מאת BubaPix: דמויות צבעוניות על חוף בין אי טרופי לשונית מתחת למים.",
+  "hero_image": "/assets/work/bubapix-letters-desert-family-2.png",
+  "hero_alt_en": "poster by BubaPix: colourful characters on a beach between a tropical island and an underwater reef.",
+  "hero_alt_he": "מאת BubaPix: דמויות צבעוניות על חוף בין אי טרופי לשונית מתחת למים.",
+  "feature_image": "/assets/work/the-new-ocean-poster.jpg",
+  "feature_alt_en": "A round white furry creature with wings and thick eyebrows.",
+  "feature_alt_he": "יצור לבן, עגול ופרוותי עם כנפיים וגבות עבות.",
+  "feature_project": "",
   "showreel_url": "",
-  "tagline_en": "From Imagination to Cinema",
-  "tagline_he": "מדמיון למציאות קולנועית",
-  "intro_en": "",
-  "intro_he": "",
-  "seo_description_en": "BubaPix is an AI-powered film and animation studio. We create films, characters and original worlds.",
-  "seo_description_he": "BubaPix הוא סטודיו לקולנוע ולאנימציה מבוסס AI. אנחנו יוצרים סרטים, דמויות ועולמות מקוריים.",
+  "gallery_columns": "mixed",
+  "gallery_phone": "mixed",
+  "gallery_gap": "minimal",
   "gallery": [
     {
       "image": "/assets/work/bubapix-characters-banner.png",
       "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "BubaPix Animation Productions: five characters sit on large stone letters spelling BUBAPIX in a desert village.",
       "alt_he": "BubaPix Animation Productions: חמש דמויות יושבות על אותיות אבן גדולות שיוצרות את המילה BUBAPIX, בכפר מדברי.",
       "title_en": "",
       "title_he": "",
       "note_en": "",
       "note_he": "",
-      "caption": "hidden"
+      "caption": "hidden",
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/bubapix-studio-banner.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "BubaPix Animation Productions banner: the orange character and furry creatures in a boat, a trash shark and divers under the sea. Films, series, AI video, creative advertising.",
       "alt_he": "באנר BubaPix Animation Productions: הדמות הכתומה ויצורים פרוותיים בסירה, כריש פסולת וצוללנים מתחת לים. סרטים, סדרות, וידאו AI ופרסום יצירתי.",
       "title_en": "",
@@ -30,10 +40,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/the-new-ocean-poster.jpg",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "the-new-ocean",
       "alt_en": "THE NEW OCEAN poster by BubaPix: colourful characters on a beach between a tropical island and an underwater reef.",
       "alt_he": "הפוסטר של THE NEW OCEAN מאת BubaPix: דמויות צבעוניות על חוף בין אי טרופי לשונית מתחת למים.",
       "title_en": "",
@@ -41,11 +56,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
-      "project": "the-new-ocean"
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/bubapix-letters-underwater.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "BUBAPIX spelled by sea creatures made of trash, on the seabed. Animation Productions.",
       "alt_he": "BUBAPIX באותיות של יצורי ים עשויים פסולת, על קרקעית הים. Animation Productions.",
       "title_en": "",
@@ -53,10 +72,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/bubapix-letters-orange.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "BUBAPIX spelled by orange characters in colourful clothes. Animation Productions.",
       "alt_he": "BUBAPIX באותיות של דמויות כתומות בבגדים צבעוניים. Animation Productions.",
       "title_en": "",
@@ -64,10 +88,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/bubapix-letters-desert-family.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "BUBAPIX stone letters in a desert village with a robot and a family of creatures. Animation Productions.",
       "alt_he": "אותיות אבן BUBAPIX בכפר מדברי עם רובוט ומשפחת יצורים. Animation Productions.",
       "title_en": "",
@@ -75,10 +104,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/bubapix-letters-underwater-family.png",
+      "visible": false,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "Letters under the sea with a robot and a family of creatures. Animation Productions.",
       "alt_he": "אותיות מתחת לים עם רובוט ומשפחת יצורים. Animation Productions.",
       "title_en": "",
@@ -86,10 +120,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": false
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/bubapix-letters-plush.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "BUBAPIX spelled by colourful plush characters. Animation Productions.",
       "alt_he": "BUBAPIX באותיות של דמויות קטיפה צבעוניות. Animation Productions.",
       "title_en": "",
@@ -97,10 +136,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/bubapix-letters-sketch.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "Pencil sketch of the word BUBAPIX in cracked bubble letters.",
       "alt_he": "סקיצת עיפרון של המילה BUBAPIX באותיות בועה סדוקות.",
       "title_en": "",
@@ -108,10 +152,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/bubapix-letters-desert-family-2.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "BUBAPIX stone letters in a desert village, a robot and creatures leaning on them. Animation Productions.",
       "alt_he": "אותיות אבן BUBAPIX בכפר מדברי, ורובוט ויצורים נשענים עליהן. Animation Productions.",
       "title_en": "",
@@ -119,10 +168,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/bubapix-logo-sketch-robot.jpg",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "Pencil sketch of a small robot character above the words BUBAPIX Animation Productions.",
       "alt_he": "סקיצת עיפרון של דמות רובוט קטנה מעל המילים BUBAPIX Animation Productions.",
       "title_en": "",
@@ -130,10 +184,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/bubapix-letters-character-3d.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "The letters BUBA and PIX form the head and body of a cute 3D character.",
       "alt_he": "האותיות BUBA ו־PIX יוצרות ראש וגוף של דמות תלת־ממדית חמודה.",
       "title_en": "",
@@ -141,10 +200,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/bubapix-letters-furry.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "BUBAPIX spelled by white furry creatures. Animation Productions.",
       "alt_he": "BUBAPIX באותיות של יצורים לבנים ופרוותיים. Animation Productions.",
       "title_en": "",
@@ -152,10 +216,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/bubapix-letters-character-outline.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "Black outline drawing: the letters BUBA and PIX form a character. Animation Productions.",
       "alt_he": "ציור קו שחור: האותיות BUBA ו־PIX יוצרות דמות. Animation Productions.",
       "title_en": "",
@@ -163,10 +232,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/bubapix-letters-eyes-sketch.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "Sketch of BUBAPIX bubble letters with round eyes.",
       "alt_he": "סקיצה של אותיות בועה BUBAPIX עם עיניים עגולות.",
       "title_en": "",
@@ -174,10 +248,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/the-new-ocean-poster-boat.jpg",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "the-new-ocean",
       "alt_en": "THE NEW OCEAN poster by BubaPix: characters on a beach and on boats, and an underwater reef.",
       "alt_he": "הפוסטר של THE NEW OCEAN מאת BubaPix: דמויות על חוף ועל סירות, ושונית מתחת למים.",
       "title_en": "",
@@ -185,11 +264,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
-      "project": "the-new-ocean"
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/plastic-bag-whale.jpg",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "A whale made of plastic bags, swimming underwater.",
       "alt_he": "לווייתן עשוי שקיות פלסטיק, שוחה מתחת למים.",
       "title_en": "",
@@ -197,10 +280,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/plastic-turtle.jpg",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "A turtle made of disposable plastic and a foam box, swimming above seagrass.",
       "alt_he": "צב עשוי כלים חד־פעמיים וקופסת קלקר, שוחה מעל עשב ים.",
       "title_en": "",
@@ -208,10 +296,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/pufferfish.jpg",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "A yellow pufferfish with big eyes and pink lips above a coral reef.",
       "alt_he": "דג אבו־נפחא צהוב עם עיניים גדולות ושפתיים ורודות, מעל שונית אלמוגים.",
       "title_en": "",
@@ -219,10 +312,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/green-creature.jpg",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "A small fluffy green creature with two antennae.",
       "alt_he": "יצור קטן ופרוותי בצבע ירוק עם שתי אנטנות.",
       "title_en": "",
@@ -230,10 +328,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/white-creature.jpg",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "A small fluffy white creature with big brown eyes.",
       "alt_he": "יצור קטן ופרוותי בצבע לבן עם עיניים חומות גדולות.",
       "title_en": "",
@@ -241,10 +344,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/gray-family.jpg",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "A family of gray characters: two adults, a child and a dog.",
       "alt_he": "משפחה של דמויות אפורות: שני מבוגרים, ילד וכלב.",
       "title_en": "",
@@ -252,10 +360,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/sea-owl-boat.jpg",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "An orange character in a sailboat surrounded by white furry creatures in the sea, with a winged creature above and an island behind.",
       "alt_he": "דמות כתומה בסירת מפרש מוקפת ביצורים לבנים ופרוותיים בים, יצור מכונף מעליה ואי ברקע.",
       "title_en": "",
@@ -263,10 +376,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/pop-life-city.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "A city built of red POP LIFE cans, with can-shaped characters, cars, birds and a river.",
       "alt_he": "עיר שבנויה מפחיות POP LIFE אדומות, עם דמויות־פחית, מכוניות, ציפורים ונהר.",
       "title_en": "",
@@ -274,10 +392,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/smiling-shark.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "A smiling cartoon shark swimming over a coral reef.",
       "alt_he": "כריש מצויר ומחייך שוחה מעל שונית אלמוגים.",
       "title_en": "",
@@ -285,10 +408,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/turtle-island.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "A giant blue sea turtle carrying an island with dome houses and trees on its back.",
       "alt_he": "צב ים כחול ענק שנושא על גבו אי עם בתי כיפה ועצים.",
       "title_en": "",
@@ -296,10 +424,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/character-lineup.png",
+      "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "A lineup of six colorful characters in casual clothes.",
       "alt_he": "שורה של שש דמויות צבעוניות בבגדים יומיומיים.",
       "title_en": "",
@@ -307,65 +440,95 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/shark-towel-boat.png",
       "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "A grinning shark tugs a striped towel from a small sailboat while an orange character shouts.",
       "alt_he": "כריש מחייך מושך מגבת מפוספסת מסירת מפרש קטנה, ודמות כתומה צועקת.",
       "title_en": "",
       "title_he": "",
       "note_en": "",
       "note_he": "",
-      "caption": "hidden"
+      "caption": "hidden",
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/yacht-trash.png",
       "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "Bottles, cans and plastic bags fall from a luxury yacht into clear turquoise water.",
       "alt_he": "בקבוקים, פחיות ושקיות ניילון נופלים מיאכטה מפוארת למים טורקיז צלולים.",
       "title_en": "",
       "title_he": "",
       "note_en": "",
       "note_he": "",
-      "caption": "hidden"
+      "caption": "hidden",
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/furry-characters-lineup.png",
       "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "Six furry characters of different shapes and colours stand in a row.",
       "alt_he": "שש דמויות פרוותיות בצורות ובצבעים שונים עומדות בשורה.",
       "title_en": "",
       "title_he": "",
       "note_en": "",
       "note_he": "",
-      "caption": "hidden"
+      "caption": "hidden",
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/white-fluffy-turnaround.png",
       "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "A white fluffy character with heavy eyebrows, seen from the front, side and back.",
       "alt_he": "דמות לבנה ופרוותית עם גבות עבות, מלפנים, מהצד ומאחור.",
       "title_en": "",
       "title_he": "",
       "note_en": "",
       "note_he": "",
-      "caption": "hidden"
+      "caption": "hidden",
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/can-octopus.png",
       "visible": true,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "An octopus made from a crushed drink can rests on old tyres on the sea floor.",
       "alt_he": "תמנון עשוי מפחית משקה מעוכה נח על צמיגים ישנים בקרקעית הים.",
       "title_en": "",
       "title_he": "",
       "note_en": "",
       "note_he": "",
-      "caption": "hidden"
+      "caption": "hidden",
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/orange-character-boat.jpg",
+      "visible": false,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "An orange character in a small sailboat pointing toward an island.",
       "alt_he": "דמות כתומה בסירת מפרש קטנה מצביעה לעבר אי.",
       "title_en": "",
@@ -373,10 +536,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": false
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/boat-towed-to-island.jpg",
+      "visible": false,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "White furry creatures on a beach pull a boat with an orange character toward the island.",
       "alt_he": "יצורים לבנים ופרוותיים על החוף מושכים סירה עם דמות כתומה אל האי.",
       "title_en": "",
@@ -384,10 +552,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": false
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/white-creatures-towing-boat.jpg",
+      "visible": false,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "White furry creatures in the sea tow a sailboat with a rope.",
       "alt_he": "יצורים לבנים ופרוותיים בים גוררים סירת מפרש בחבל.",
       "title_en": "",
@@ -395,10 +568,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": false
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/white-creatures-swimming.jpg",
+      "visible": false,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "White furry creatures swimming and pulling a rope, with a sailboat and an island behind.",
       "alt_he": "יצורים לבנים ופרוותיים שוחים ומושכים חבל, עם סירת מפרש ואי ברקע.",
       "title_en": "",
@@ -406,10 +584,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": false
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/white-creatures-rope.jpg",
+      "visible": false,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "White furry creatures pulling a rope in the sea beside a sailboat.",
       "alt_he": "יצורים לבנים ופרוותיים מושכים חבל בים ליד סירת מפרש.",
       "title_en": "",
@@ -417,10 +600,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": false
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/grumpy-gray-trio.png",
+      "visible": false,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "Three grumpy gray furry characters: one with a wooden crown, one with a chef's hat and spoon, one in a red GUARD vest.",
       "alt_he": "שלוש דמויות אפורות ופרוותיות ממורמרות: אחת עם כתר עץ, אחת עם כובע שף וכף, ואחת עם גופיית GUARD אדומה.",
       "title_en": "",
@@ -428,10 +616,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": false
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/pop-life-street.png",
+      "visible": false,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "Can-shaped POP LIFE characters and a robot dog walking in a red city at sunset.",
       "alt_he": "דמויות־פחית של POP LIFE וכלב רובוט הולכים בעיר אדומה בשקיעה.",
       "title_en": "",
@@ -439,10 +632,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": false
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/surfer-characters-sheet.png",
+      "visible": false,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "A character sheet of white furry surfer characters with surfboards, labeled in Hebrew.",
       "alt_he": "דף דמויות של גולשים לבנים ופרוותיים עם גלשנים, עם כיתוב בעברית.",
       "title_en": "",
@@ -450,10 +648,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": false
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/winged-white-creature.png",
+      "visible": false,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "A round white furry creature with wings and thick eyebrows.",
       "alt_he": "יצור לבן, עגול ופרוותי עם כנפיים וגבות עבות.",
       "title_en": "",
@@ -461,10 +664,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": false
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/orange-character-kitchen.png",
+      "visible": false,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "An orange character eating breakfast in a sunny city kitchen.",
       "alt_he": "דמות כתומה אוכלת ארוחת בוקר במטבח מואר בעיר.",
       "title_en": "",
@@ -472,10 +680,15 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": false
+      "frame": "natural",
+      "focus": "center"
     },
     {
       "image": "/assets/work/boat-towed-cliffs.png",
+      "visible": false,
+      "size": "auto",
+      "link": "",
+      "project": "",
       "alt_en": "White furry creatures tow a sailboat with an orange character past rocky cliffs.",
       "alt_he": "יצורים לבנים ופרוותיים גוררים סירת מפרש עם דמות כתומה ליד צוקים.",
       "title_en": "",
@@ -483,11 +696,14 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": false
+      "frame": "natural",
+      "focus": "center"
     }
   ],
-  "feature_image": "/assets/work/winged-white-creature.png",
-  "feature_alt_en": "A round white furry creature with wings and thick eyebrows.",
-  "feature_alt_he": "יצור לבן, עגול ופרוותי עם כנפיים וגבות עבות.",
-  "feature_project": ""
+  "tagline_en": "From Imagination to Cinema",
+  "tagline_he": "מדמיון למציאות קולנועית",
+  "intro_en": "",
+  "intro_he": "",
+  "seo_description_en": "BubaPix is an AI-powered film and animation studio. We create films, characters and original worlds.",
+  "seo_description_he": "BubaPix הוא סטודיו לקולנוע ולאנימציה מבוסס AI. אנחנו יוצרים סרטים, דמויות ועולמות מקוריים."
 }
