@@ -73,6 +73,11 @@
     errAuth: "הכניסה פגה או שאין הרשאה. היכנסו מחדש לכלי הניהול ונסו שוב.",
     leave: "יש שינויים שלא נשמרו. לצאת בכל זאת?",
     newBadge: "חדשה",
+    project: "פרויקט",
+    noProject: "ללא פרויקט",
+    projectHint: "לחיצה על התמונה תפתח את דף הפרויקט שתבחרו",
+    toPage: "להוסיף את התמונה גם לגלריה בדף הפרויקט",
+    pickProject: "שיוך לפרויקט (רשות, לפי בחירתכם)",
   } : {
     title: "Edit on the page",
     loading: "Loading the page settings…",
@@ -117,6 +122,11 @@
     errAuth: "The sign-in expired or has no permission. Sign in to the admin panel again and retry.",
     leave: "There are unsaved changes. Leave anyway?",
     newBadge: "new",
+    project: "Project",
+    noProject: "No project",
+    projectHint: "Clicking the picture opens the project page you choose",
+    toPage: "Also add the picture to the gallery on the project page",
+    pickProject: "Project (optional, your choice)",
   };
 
   // ---------- small helpers ----------
@@ -227,7 +237,40 @@
 
   // ---------- state ----------
   var data = null, sha = "", original = "";
-  var dirty = function () { return data && JSON.stringify(data) !== original; };
+  var projects = []; // { slug, name } from content/projects, for the owner's own choice
+  var pageAdds = {}; // project slug -> pictures to add to that project's page gallery
+  var hasPageAdds = function () { return Object.keys(pageAdds).some(function (k) { return pageAdds[k].length; }); };
+  var dirty = function () { return data && (JSON.stringify(data) !== original || hasPageAdds()); };
+  var projectName = function (slug) { var p = projects.filter(function (x) { return x.slug === slug; })[0]; return p ? p.name : slug; };
+  function loadProjects() {
+    return api("/contents/content/projects?ref=" + encodeURIComponent(BRANCH))
+      .then(function (items) {
+        var files = (Array.isArray(items) ? items : []).filter(function (f) { return f.type === "file" && /\.json$/.test(f.name); });
+        return Promise.all(files.map(function (f) {
+          return api("/contents/" + encPath(f.path) + "?ref=" + encodeURIComponent(BRANCH)).then(function (res) {
+            var d = {};
+            try { d = JSON.parse(b64ToUtf8(res.content)); } catch (e) { d = {}; }
+            var slug = f.name.replace(/\.json$/, "");
+            return { slug: slug, name: (he ? d.title_he || d.title_en : d.title_en || d.title_he) || slug, order: Number(d.order) || 99 };
+          });
+        }));
+      })
+      .then(function (list) { projects = list.sort(function (a, b) { return a.order - b.order; }); })
+      .catch(function () { projects = []; });
+  }
+  function projectSelect(value, onChange) {
+    var opts = [["", T.project + ": " + T.noProject]].concat(projects.map(function (p) { return [p.slug, T.project + ": " + p.name]; }));
+    // Keep an existing link even if that project is not in the list.
+    if (value && !projects.some(function (p) { return p.slug === value; })) opts.push([value, T.project + ": " + value]);
+    var s = select(T.project, value || "", opts, onChange);
+    s.title = T.projectHint;
+    return s;
+  }
+  // Remembers a picture to add to a project's page gallery when saving.
+  function addToPage(slug, path, alts) {
+    if (!slug) return;
+    (pageAdds[slug] = pageAdds[slug] || []).push({ image: "/" + path, alt_he: alts.he, alt_en: alts.en });
+  }
 
   // ---------- toolbar ----------
   var status = el("span", { "class": "pe-status", role: "status", "aria-live": "polite" });
@@ -268,6 +311,9 @@
       data = JSON.parse(b64ToUtf8(res.content));
       if (!Array.isArray(data.gallery)) data.gallery = [];
       original = JSON.stringify(data);
+      return loadProjects();
+    })
+    .then(function () {
       start();
       refreshStatus();
     })
@@ -322,7 +368,8 @@
       heroBox.classList.add("pe-holder");
       heroBox.appendChild(el("div", { "class": "pe-tools pe-tools-top" }, [
         button(T.replaceHero, function () {
-          pick(function (path, alts) {
+          pick(function (path, alts, choice) {
+            addToPage(choice.toPage && choice.project, path, alts);
             data.hero_image = "/" + path;
             data.hero_alt_he = alts.he; data.hero_alt_en = alts.en;
             swapImg(heroBox, path); changed();
@@ -334,7 +381,9 @@
     function drawFeatureTools() {
       featureTools.textContent = "";
       featureTools.appendChild(button(data.feature_image ? T.replaceFeature : T.addFeature, function () {
-        pick(function (path, alts) {
+        pick(function (path, alts, choice) {
+          addToPage(choice.toPage && choice.project, path, alts);
+          data.feature_project = choice.project || "";
           data.feature_image = "/" + path;
           data.feature_alt_he = alts.he; data.feature_alt_en = alts.en;
           if (featureBox) { featureBox.hidden = false; swapImg(featureBox, path); }
@@ -430,8 +479,9 @@
     });
     editArea.appendChild(box);
     editArea.appendChild(el("div", { "class": "pe-add" }, [button("+ " + T.add, function () {
-      pick(function (path, alts) {
-        data.gallery.push({ image: "/" + path, visible: true, size: "auto", link: "", project: "", alt_en: alts.en, alt_he: alts.he, title_en: "", title_he: "", note_en: "", note_he: "", caption: "hidden", frame: "natural", focus: "center" });
+      pick(function (path, alts, choice) {
+        addToPage(choice.toPage && choice.project, path, alts);
+        data.gallery.push({ image: "/" + path, visible: true, size: "auto", link: "", project: choice.project || "", alt_en: alts.en, alt_he: alts.he, title_en: "", title_he: "", note_en: "", note_he: "", caption: "hidden", frame: "natural", focus: "center" });
         changed();
       });
     }, "pe-btn pe-primary")]));
@@ -454,8 +504,14 @@
         function (v) { g.size = v; changed(); }),
       select(T.frame, g.frame || "natural", [["natural", T.frame + ": " + T.frameNatural], ["wide", T.frame + ": " + T.frameWide], ["landscape", T.frame + ": " + T.frameLandscape], ["square", T.frame + ": " + T.frameSquare], ["portrait", T.frame + ": " + T.framePortrait]],
         function (v) { g.frame = v; changed(); }),
+      projectSelect(g.project || "", function (v) { g.project = v; changed(); }),
       button(T.replace, function () {
-        pick(function (path, alts) { g.image = "/" + path; g.alt_he = alts.he; g.alt_en = alts.en; changed(); });
+        pick(function (path, alts, choice) {
+          addToPage(choice.toPage && choice.project, path, alts);
+          g.image = "/" + path; g.alt_he = alts.he; g.alt_en = alts.en;
+          if (choice.project !== undefined) g.project = choice.project;
+          changed();
+        }, g.project || "");
       }),
       button(T.hide, function () { g.visible = false; changed(); }),
       button(fwd, function () { move(idx, 1); }, "pe-icon", T.later),
@@ -513,7 +569,7 @@
   var imageList = null;
   function listImages() {
     if (imageList) return Promise.resolve(imageList);
-    var dirs = ["assets/work", "assets/uploads"];
+    var dirs = ["assets/work", "assets/uploads"].concat(projects.map(function (p) { return "assets/uploads/" + p.slug; }));
     return Promise.all(dirs.map(function (d) {
       return api("/contents/" + encPath(d) + "?ref=" + encodeURIComponent(BRANCH)).catch(function () { return []; });
     })).then(function (res) {
@@ -528,15 +584,26 @@
       return out;
     });
   }
-  function pick(done) {
+  function pick(done, currentProject) {
     var chosen = "";
+    var proj = projectSelect(currentProject || "", function () { toPage.disabled = !proj.value; if (!proj.value) toPage.checked = false; });
+    proj.classList.add("pe-input");
+    var toPage = el("input", { type: "checkbox" });
+    toPage.disabled = !proj.value;
     var grid = el("div", { "class": "pe-pick-grid" }, [el("p", { text: T.pickLoading })]);
     var altHe = el("input", { type: "text", dir: "rtl", "class": "pe-input" });
     var altEn = el("input", { type: "text", dir: "ltr", "class": "pe-input" });
     var chooseBtn = button(T.choose, function () {
       if (!chosen) return;
       close();
-      done(chosen, { he: altHe.value.trim(), en: altEn.value.trim() });
+      // A picture uploaded now is stored in the chosen project's folder.
+      if (uploads[chosen] && !uploads[chosen].done && proj.value && chosen.indexOf("assets/uploads/" + proj.value + "/") !== 0) {
+        var moved = chosen.replace(/^assets\/uploads\//, "assets/uploads/" + proj.value + "/");
+        uploads[moved] = uploads[chosen]; delete uploads[chosen];
+        if (imageList) imageList = imageList.map(function (p) { return p === chosen ? moved : p; });
+        chosen = moved;
+      }
+      done(chosen, { he: altHe.value.trim(), en: altEn.value.trim() }, { project: proj.value, toPage: toPage.checked });
     }, "pe-btn pe-primary");
     chooseBtn.disabled = true;
     var file = el("input", { type: "file", accept: "image/jpeg,image/png,image/webp", "class": "pe-file" });
@@ -560,6 +627,8 @@
           el("p", { "class": "pe-note", text: T.altNote }),
           el("label", {}, [document.createTextNode(T.altHe), altHe]),
           el("label", {}, [document.createTextNode(T.altEn), altEn]),
+          el("label", {}, [document.createTextNode(T.pickProject), proj]),
+          el("label", { "class": "pe-check" }, [toPage, document.createTextNode(" " + T.toPage)]),
           chooseBtn,
         ]),
       ]),
@@ -603,11 +672,15 @@
       .then(function () { return api("/contents/" + encPath(FILE) + "?ref=" + encodeURIComponent(BRANCH)); })
       .then(function (cur) {
         if (cur.sha !== sha) { var err = new Error("changed"); err.changed = true; throw err; }
+        if (JSON.stringify(data) === original) return { content: { sha: sha } };
         return api("/contents/" + encPath(FILE), { method: "PUT", body: { message: "Homepage: edited on the page", content: utf8ToB64(JSON.stringify(data, null, 2) + "\n"), sha: sha, branch: BRANCH } });
       })
       .then(function (res) {
         sha = res.content.sha;
         original = JSON.stringify(data);
+        return savePageAdds();
+      })
+      .then(function () {
         saveBtn.disabled = true;
         setStatus(T.saved, "ok");
         render();
@@ -616,6 +689,32 @@
         saveBtn.disabled = false;
         setStatus(err.changed || err.status === 409 ? T.errChanged : err.status === 401 || err.status === 403 ? T.errAuth : T.errSave, "error");
       });
+  }
+  // Adds the chosen pictures to each project's page gallery (its first
+  // gallery section, or a new one), keeping everything else in the file.
+  function savePageAdds() {
+    var chain = Promise.resolve();
+    Object.keys(pageAdds).forEach(function (slug) {
+      var adds = pageAdds[slug];
+      if (!adds.length) return;
+      var path = "content/projects/" + slug + ".json";
+      chain = chain
+        .then(function () { return api("/contents/" + encPath(path) + "?ref=" + encodeURIComponent(BRANCH)); })
+        .then(function (res) {
+          var d = JSON.parse(b64ToUtf8(res.content));
+          if (!Array.isArray(d.sections)) d.sections = [];
+          var sec = d.sections.filter(function (x) { return x && x.type === "gallery"; })[0];
+          if (!sec) { sec = { type: "gallery", hidden: false, heading_en: "", heading_he: "", images: [] }; d.sections.push(sec); }
+          if (!Array.isArray(sec.images)) sec.images = [];
+          adds.forEach(function (a) {
+            if (sec.images.some(function (x) { return x && x.image === a.image; })) return;
+            sec.images.push({ image: a.image, link: "", alt_en: a.alt_en, alt_he: a.alt_he, title_en: "", title_he: "", note_en: "", note_he: "", caption: "hidden", on_home: false, frame: "natural", focus: "center" });
+          });
+          return api("/contents/" + encPath(path), { method: "PUT", body: { message: "Project " + slug + ": picture added (edited on the homepage)", content: utf8ToB64(JSON.stringify(d, null, 2) + "\n"), sha: res.sha, branch: BRANCH } });
+        })
+        .then(function () { pageAdds[slug] = []; });
+    });
+    return chain;
   }
   function readB64(file) {
     return new Promise(function (resolve, reject) {

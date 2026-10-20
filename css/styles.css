@@ -955,7 +955,8 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .pe-holder { position: relative; }
 .pe-tools { display: flex; flex-wrap: wrap; gap: 0.3rem; padding: 0.35rem; background: rgba(22, 22, 29, 0.82); color: var(--paper); border-radius: 10px; }
 .pe-item { position: relative; cursor: grab; outline: 2px dashed transparent; outline-offset: -2px; }
-.pe-item .pe-tools { position: absolute; inset-block-start: 0.4rem; inset-inline: 0.4rem; opacity: 0; transition: opacity 0.15s; }
+.pe-item .pe-tools { position: absolute; inset-block-start: 0.4rem; inset-inline: 0.4rem; display: grid; grid-template-columns: 1fr 1fr; opacity: 0; transition: opacity 0.15s; }
+.pe-item .pe-tools .pe-icon { order: -1; }
 .pe-item:hover .pe-tools, .pe-item:focus-within .pe-tools { opacity: 1; }
 @media (hover: none) { .pe-item .pe-tools { opacity: 1; position: static; border-radius: 0 0 6px 6px; } }
 @media (max-width: 700px) {
@@ -1005,3 +1006,5 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
   .pe-item .pe-tools .pe-icon { order: -1; }
   .pe-item .pe-tools .pe-select { grid-column: 1 / -1; width: 100%; }
 }
+.pe-check { display: flex !important; align-items: center; gap: 0.4rem; grid-template-columns: none; }
+.pe-check input { width: 1.1rem; height: 1.1rem; }
