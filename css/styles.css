@@ -1017,3 +1017,13 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .pe-proj-meta a { color: var(--ink); }
 .pe-proj-new { display: grid; gap: 0.6rem; padding: 0.9rem; border: 2px dashed var(--line); border-radius: 12px; }
 @media (max-width: 700px) { .pe-proj-row { grid-template-columns: 1fr; } }
+.pe-hist-list { display: grid; gap: 0.5rem; }
+.pe-hist-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; padding: 0.6rem 0.75rem; border: 1px solid var(--line); border-radius: 10px; }
+.pe-tip { position: relative; z-index: 70; margin: 0.75rem auto; width: min(44rem, calc(100% - 2rem)); padding: 1rem 1.2rem; border-radius: 14px; background: #fff; color: var(--ink); box-shadow: 0 12px 40px rgba(22, 22, 29, 0.15); font-size: 0.9375rem; }
+.pe-tip ol { margin: 0.5rem 0 0.75rem; padding-inline-start: 1.25rem; display: grid; gap: 0.3rem; }
+.pe-tip .pe-primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.pe-status .pe-btn { margin-inline-start: 0.4rem; }
+.pe-strip .pe-danger { margin-inline-start: auto; }
+.manage-signin { margin: 0 0 1rem; padding: 0.7rem 1rem; border-radius: 10px; background: #fff3d6; font-size: 0.9375rem; }
+.manage-signin.is-ok { background: #e3f3e6; }
+.manage-main { margin-bottom: 1.25rem; border-width: 2px; border-color: var(--ink); }

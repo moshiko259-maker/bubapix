@@ -278,9 +278,9 @@
     "texts": "Interface texts",
     "manageTitle": "Site management",
     "manageIntro": "Everything on the site is edited from here. Sign-in is protected: only your own accounts have permission.",
-    "contentTitle": "Edit content",
-    "contentText": "Pictures, texts, projects, products, prices, shipping and payment.",
-    "contentButton": "Open content editing",
+    "contentTitle": "Advanced editing (English only)",
+    "contentText": "For everything not yet in on-page editing: products, shop, pages, interface texts. This tool has no Hebrew. Each save there is a draft, shown on the site only after Publish.",
+    "contentButton": "Open advanced editing",
     "commentsTitle": "Comments and messages",
     "commentsText": "Approve comments before they are published, reply to visitors and customers.",
     "commentsButton": "Open comments and messages",
@@ -294,7 +294,7 @@
     "firstContentSteps": [
       "On github.com, open Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.",
       "Repository access: only the bubapix repository. Permissions: Contents — Read and write; Pull requests — Read and write.",
-      "Copy the token. In content editing choose “Sign In Using Access Token” and paste it. Do this only on your own site, never on a shared preview address."
+      "Copy the token. In “Advanced editing” choose “Sign In Using Access Token” and paste it. From then on this browser is also signed in for on-page editing."
     ],
     "firstComments": "Comments and messages: sign in with email and password.",
     "firstCommentsSteps": [
@@ -302,7 +302,12 @@
       "Email: moshiko259@gmail.com. Choose a password and keep it to yourself. Tick “Auto Confirm User”.",
       "Open “Comments and messages” and sign in with that email and password."
     ],
-    "previewNote": "On the preview address the buttons open the editing screens, but signing in works only on your own site after it is published."
+    "previewNote": "This is the test site. Every edit here is saved to the work branch and shows only on the test site. The live site does not change.",
+    "onPageTitle": "Edit on the page (the easy way)",
+    "onPageText": "Open the homepage and edit right on it: pictures, order, size, layout, the opening sentence, projects and names. Every change shows at once, with Undo and earlier versions.",
+    "onPageButton": "Open the homepage for editing",
+    "signedIn": "Signed in for editing in this browser.",
+    "notSignedIn": "Not signed in for editing in this browser yet. Sign in once through “Advanced editing” with a GitHub token; then all editing tools work."
   },
   "app": {
     "install": "Install the app",

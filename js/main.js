@@ -263,6 +263,22 @@
     b.addEventListener("click", function () { setEdit(false); });
   });
   applyEdit();
+  // Manage page: is this browser signed in for editing? (The admin panel
+  // keeps the owner's sign-in in this browser; nothing is sent anywhere.)
+  each(document.querySelectorAll("[data-signin]"), function (box) {
+    var ok = false;
+    try { var u = JSON.parse(localStorage.getItem("sveltia-cms.user") || "null"); ok = !!(u && u.token); } catch (e) { ok = false; }
+    box.hidden = false;
+    box.classList.toggle("is-ok", ok);
+    box.querySelector("[data-signin-ok]").hidden = !ok;
+    box.querySelector("[data-signin-no]").hidden = ok;
+  });
+  // "Open the homepage for editing" (Manage page) arrives with #edit.
+  if (location.hash === "#edit" && document.querySelector("[data-page-editor]")) {
+    setEdit(true);
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { /* old browser */ }
+    setTimeout(function () { var b = document.querySelector("[data-page-editor]"); if (b) b.click(); }, 0);
+  }
   // "Edit on the page" (owner only): loads the page editor when pressed.
   each(document.querySelectorAll("[data-page-editor]"), function (b) {
     b.addEventListener("click", function () {

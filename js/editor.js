@@ -95,6 +95,32 @@
     created: "נוסף. הוא יישמר כשתלחצו ״שמירה״.",
     open: "פתיחת הדף",
     newMark: "חדש, לא נשמר עדיין",
+    undo: "ביטול פעולה",
+    undoTip: "ביטול הפעולה האחרונה (Ctrl+Z)",
+    nothingToUndo: "אין מה לבטל",
+    undone: "הפעולה בוטלה",
+    history: "גרסאות קודמות",
+    historyTitle: "גרסאות קודמות של דף הבית",
+    historyNote: "בחירה בגרסה טוענת אותה לדף כשינוי שלא נשמר. רק ״שמירה״ קובעת. אפשר לבטל עם ״ביטול פעולה״.",
+    historyLoading: "טוען גרסאות…",
+    historyEmpty: "לא נמצאו גרסאות קודמות.",
+    historyUse: "טעינת הגרסה הזו",
+    historyLoaded: "גרסה קודמת נטענה לדף. בדקו ולחצו ״שמירה״ כדי לקבוע אותה.",
+    msgPage: "עריכה על הדף",
+    msgAdmin: "כלי הניהול",
+    msgBuild: "עדכון אוטומטי",
+    msgOther: "שינוי",
+    publishing: "נשמר ✓ אתר הבדיקה מתעדכן עכשיו (בדרך כלל עד כמה דקות). אפשר להמשיך לעבוד.",
+    published: "האתר עודכן ✓",
+    reload: "רענון לראות",
+    slow: "העדכון לוקח יותר מהרגיל. השינוי שמור; אפשר לבדוק שוב בעוד כמה דקות.",
+    tipTitle: "איך עורכים",
+    tip1: "מעבירים את העכבר על תמונה (בטלפון: הכלים מתחת לכל תמונה) כדי לשנות גודל, צורה, פרויקט, להחליף או להסתיר.",
+    tip2: "גוררים תמונה כדי לשנות את הסדר, או משתמשים בחצים.",
+    tip3: "לוחצים על משפט הפתיחה כדי לכתוב.",
+    tip4: "שום דבר לא נשמר עד ״שמירה״. טעיתם? ״ביטול פעולה״.",
+    tipClose: "הבנתי",
+    help: "עזרה",
   } : {
     title: "Edit on the page",
     loading: "Loading the page settings…",
@@ -161,6 +187,32 @@
     created: "Added. It is saved when you press \"Save\".",
     open: "Open the page",
     newMark: "new, not saved yet",
+    undo: "Undo",
+    undoTip: "Undo the last action (Ctrl+Z)",
+    nothingToUndo: "Nothing to undo",
+    undone: "Undone",
+    history: "Earlier versions",
+    historyTitle: "Earlier versions of the homepage",
+    historyNote: "Choosing a version loads it onto the page as an unsaved change. Only \"Save\" makes it final. You can undo it.",
+    historyLoading: "Loading versions…",
+    historyEmpty: "No earlier versions found.",
+    historyUse: "Load this version",
+    historyLoaded: "An earlier version is loaded on the page. Check it and press \"Save\" to keep it.",
+    msgPage: "Edited on the page",
+    msgAdmin: "Admin panel",
+    msgBuild: "Automatic update",
+    msgOther: "Change",
+    publishing: "Saved ✓ The test site is updating now (usually a few minutes). You can keep working.",
+    published: "The site is updated ✓",
+    reload: "Reload to see it",
+    slow: "The update is taking longer than usual. The change is saved; check again in a few minutes.",
+    tipTitle: "How to edit",
+    tip1: "Point at a picture (on phones the tools are under each picture) to change size, shape, project, replace or hide it.",
+    tip2: "Drag a picture to change the order, or use the arrows.",
+    tip3: "Click the opening sentence to write.",
+    tip4: "Nothing is saved until \"Save\". Made a mistake? \"Undo\".",
+    tipClose: "Got it",
+    help: "Help",
   };
 
   // ---------- small helpers ----------
@@ -214,6 +266,8 @@
           var data = null;
           try { data = txt ? JSON.parse(txt) : null; } catch (e) { data = null; }
           if (!res.ok) { var err = new Error("GitHub " + res.status); err.status = res.status; err.data = data; throw err; }
+          // Remember the newest saved version, to tell when the site shows it.
+          if (opts.method === "PUT" && data && data.commit && data.commit.sha) lastCommit = data.commit.sha;
           return data;
         });
       });
@@ -312,11 +366,13 @@
   // ---------- toolbar ----------
   var status = el("span", { "class": "pe-status", role: "status", "aria-live": "polite" });
   var saveBtn = button(T.save, save, "pe-btn pe-primary");
+  var undoBtn = button("↶ " + T.undo, undo, "pe-btn", T.undoTip);
+  undoBtn.disabled = true;
   var bar = el("div", { "class": "pe-bar", role: "region", "aria-label": T.title }, [
     el("strong", { "class": "pe-bar-title", text: T.title }),
     el("span", { "class": "pe-bar-layout" }),
     status,
-    el("span", { "class": "pe-bar-actions" }, [saveBtn, button(T.cancel, quit, "pe-btn pe-ghost")]),
+    el("span", { "class": "pe-bar-actions" }, [undoBtn, saveBtn, button(T.cancel, quit, "pe-btn pe-ghost")]),
   ]);
   document.body.insertBefore(bar, document.body.firstChild);
   document.documentElement.classList.add("page-editing");
@@ -330,7 +386,34 @@
     setStatus(dirty() ? T.unsaved : T.noChanges, dirty() ? "warn" : "");
     saveBtn.disabled = !dirty();
   }
-  function changed() { render(); refreshStatus(); }
+  // ---------- undo ----------
+  // Every change keeps a copy of the state before it, in this tab only.
+  var past = [], last = "";
+  function snapshot() {
+    return JSON.stringify({ data: data, projects: projects.map(function (p) { return { slug: p.slug, isNew: !!p.isNew, title_he: p.title_he, title_en: p.title_en, orig_he: p.orig_he, orig_en: p.orig_en, order: p.order, name: p.name, cover: p.cover || null }; }), pageAdds: pageAdds });
+  }
+  function commit() {
+    if (!data) return;
+    var now = snapshot();
+    if (last && now !== last) { past.push(last); if (past.length > 100) past.shift(); }
+    last = now;
+    undoBtn.disabled = !past.length;
+  }
+  function undo() {
+    if (!past.length) { setStatus(T.nothingToUndo); return; }
+    var prev = JSON.parse(past.pop());
+    data = prev.data; projects = prev.projects; pageAdds = prev.pageAdds;
+    last = snapshot();
+    undoBtn.disabled = !past.length;
+    syncPage(); render(); refreshStatus();
+    if (dirty()) setStatus(T.undone + " · " + T.unsaved, "warn");
+  }
+  document.addEventListener("keydown", function (e) {
+    var k = (e.key || "").toLowerCase();
+    var typing = e.target && (e.target.isContentEditable || /^(input|textarea|select)$/i.test(e.target.tagName));
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && k === "z" && !typing) { e.preventDefault(); undo(); }
+  });
+  function changed() { commit(); render(); refreshStatus(); }
 
   if (!token()) {
     setStatus("");
@@ -352,7 +435,9 @@
     })
     .then(function () {
       start();
+      last = snapshot();
       refreshStatus();
+      watchSite();
     })
     .catch(function (err) {
       setStatus(err.status === 401 || err.status === 403 ? T.errAuth : T.errLoad, "error");
@@ -369,19 +454,23 @@
   var editArea = el("div", { "class": "pe-area" });
   var opening = document.querySelector(".opening");
 
+  var layoutSelects = {}, heroBox = null, featureBox = null, taglineEl = null, drawFeatureTools = function () {}, featureTools = null, shownHero = "", shownFeature = "";
   function start() {
     // Layout choices in the toolbar.
     var lay = bar.querySelector(".pe-bar-layout");
-    lay.appendChild(select(T.perRow, data.gallery_columns || "mixed",
+    lay.appendChild(layoutSelects.cols = select(T.perRow, data.gallery_columns || "mixed",
       [["mixed", T.mixed], ["2", "2"], ["3", "3"], ["4", "4"]].map(function (o, i) { return i ? [o[0], o[1] + " " + T.perRow] : [o[0], T.mixed + " " + T.perRow]; }),
       function (v) { data.gallery_columns = v; changed(); }));
-    lay.appendChild(select(T.perRowPhone, data.gallery_phone || "mixed",
+    lay.appendChild(layoutSelects.phone = select(T.perRowPhone, data.gallery_phone || "mixed",
       [["mixed", T.mixed + " " + T.perRowPhone], ["1", "1 " + T.perRowPhone], ["2", "2 " + T.perRowPhone]],
       function (v) { data.gallery_phone = v; changed(); }));
-    lay.appendChild(select(T.gap, data.gallery_gap || "minimal",
+    lay.appendChild(layoutSelects.gap = select(T.gap, data.gallery_gap || "minimal",
       [["none", T.gap + ": " + T.gapNone], ["minimal", T.gap + ": " + T.gapMin], ["small", T.gap + ": " + T.gapSmall], ["medium", T.gap + ": " + T.gapMedium]],
       function (v) { data.gallery_gap = v; changed(); }));
     lay.appendChild(button(T.projectsBtn, projectsPanel));
+    lay.appendChild(button(T.history, historyPanel));
+    lay.appendChild(button("? " + T.help, function () { showTip(true); }, "pe-btn pe-ghost"));
+    showTip(false);
 
     // Gallery: the editable version takes the place of the gallery.
     if (!workSection) {
@@ -400,8 +489,9 @@
   // ---------- opening: two pictures and the sentence ----------
   function setupOpening() {
     if (!opening) return;
-    var heroBox = opening.querySelector(".opening-hero");
-    var featureBox = opening.querySelector(".opening-feature");
+    heroBox = opening.querySelector(".opening-hero");
+    featureBox = opening.querySelector(".opening-feature");
+    shownHero = norm(data.hero_image); shownFeature = norm(data.feature_image);
     if (heroBox) {
       heroBox.classList.add("pe-holder");
       heroBox.appendChild(el("div", { "class": "pe-tools pe-tools-top" }, [
@@ -410,13 +500,13 @@
             addToPage(choice.toPage && choice.project, path, alts);
             data.hero_image = "/" + path;
             data.hero_alt_he = alts.he; data.hero_alt_en = alts.en;
-            swapImg(heroBox, path); changed();
+            changed(); syncPage();
           });
         }),
       ]));
     }
-    var featureTools = el("div", { "class": "pe-tools pe-tools-top" });
-    function drawFeatureTools() {
+    featureTools = el("div", { "class": "pe-tools pe-tools-top" });
+    drawFeatureTools = function () {
       featureTools.textContent = "";
       featureTools.appendChild(button(data.feature_image ? T.replaceFeature : T.addFeature, function () {
         pick(function (path, alts, choice) {
@@ -424,16 +514,14 @@
           data.feature_project = choice.project || "";
           data.feature_image = "/" + path;
           data.feature_alt_he = alts.he; data.feature_alt_en = alts.en;
-          if (featureBox) { featureBox.hidden = false; swapImg(featureBox, path); }
-          drawFeatureTools(); changed();
+          changed(); syncPage();
         });
       }));
       if (data.feature_image) featureTools.appendChild(button(T.removeFeature, function () {
         data.feature_image = ""; data.feature_alt_he = ""; data.feature_alt_en = "";
-        if (featureBox) featureBox.hidden = true;
-        drawFeatureTools(); changed();
+        changed(); syncPage();
       }, "pe-btn pe-danger"));
-    }
+    };
     if (!featureBox) {
       featureBox = el("div", { "class": "opening-feature", hidden: "" }, [el("figure", { "class": "jg-item" }, [el("span", { "class": "jg-media" })])]);
       opening.insertBefore(featureBox, opening.querySelector(".opening-tagline"));
@@ -442,7 +530,7 @@
     (data.feature_image ? featureBox : opening).appendChild(featureTools);
     drawFeatureTools();
 
-    var tagline = opening.querySelector(".opening-tagline") || document.querySelector(".tagline");
+    var tagline = taglineEl = opening.querySelector(".opening-tagline") || document.querySelector(".tagline");
     if (tagline) {
       tagline.setAttribute("contenteditable", "plaintext-only");
       if (tagline.contentEditable !== "plaintext-only") tagline.setAttribute("contenteditable", "true");
@@ -453,11 +541,31 @@
         refreshStatus();
       });
       tagline.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); tagline.blur(); } });
+      tagline.addEventListener("blur", commit);
     }
     // In editing, clicking a picture must not leave the page.
     opening.addEventListener("click", function (e) {
       if (e.target.closest && e.target.closest("a.jg-item") && !e.target.closest(".pe-tools")) e.preventDefault();
     }, true);
+  }
+  // Brings the opening and the toolbar in line with the state (after undo
+  // or after loading an earlier version).
+  function syncPage() {
+    if (layoutSelects.cols) layoutSelects.cols.value = data.gallery_columns || "mixed";
+    if (layoutSelects.phone) layoutSelects.phone.value = data.gallery_phone || "mixed";
+    if (layoutSelects.gap) layoutSelects.gap.value = data.gallery_gap || "minimal";
+    if (heroBox && norm(data.hero_image) && norm(data.hero_image) !== shownHero) { swapImg(heroBox, data.hero_image); shownHero = norm(data.hero_image); }
+    if (featureBox) {
+      featureBox.hidden = !data.feature_image;
+      if (data.feature_image && norm(data.feature_image) !== shownFeature) { swapImg(featureBox, data.feature_image); }
+      shownFeature = norm(data.feature_image);
+      if (featureTools) (data.feature_image ? featureBox : opening).appendChild(featureTools);
+      drawFeatureTools();
+    }
+    if (taglineEl && document.activeElement !== taglineEl) {
+      var tl = data["tagline_" + lang];
+      if (tl) taglineEl.textContent = tl;
+    }
   }
   function swapImg(box, path) {
     var media = box.querySelector(".jg-media");
@@ -742,7 +850,7 @@
         projects.push({ slug: slug, isNew: true, title_he: nHe.value.trim(), title_en: nEn.value.trim(), orig_he: "", orig_en: "", order: maxOrder + 1, cover: cover });
         nHe.value = ""; nEn.value = ""; nSlug.value = ""; slugTouched = false; cover = null; coverInfo.textContent = "";
         msg.textContent = T.created;
-        drawList(); refreshStatus(); render();
+        drawList(); commit(); refreshStatus(); render();
       }, "pe-btn pe-primary"),
     ]);
     var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": T.projectsTitle }, [
@@ -751,7 +859,7 @@
         el("div", { "class": "pe-proj-scroll" }, [list, form]),
       ]),
     ]);
-    function close() { dialog.remove(); document.removeEventListener("keydown", onKey); render(); }
+    function close() { dialog.remove(); document.removeEventListener("keydown", onKey); commit(); render(); }
     function onKey(e) { if (e.key === "Escape") close(); }
     document.addEventListener("keydown", onKey);
     drawList();
@@ -790,8 +898,108 @@
     return chain;
   }
 
+  // ---------- earlier versions (like "site history" in website builders) ----------
+  function historyPanel() {
+    var listBox = el("div", { "class": "pe-hist-list" }, [el("p", { "class": "pe-note", text: T.historyLoading })]);
+    var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": T.historyTitle }, [
+      el("div", { "class": "pe-modal-box pe-proj-box" }, [
+        el("div", { "class": "pe-modal-head" }, [el("strong", { text: T.historyTitle }), button(T.close, function () { close(); }, "pe-btn pe-ghost")]),
+        el("div", { "class": "pe-proj-scroll" }, [el("p", { "class": "pe-note", text: T.historyNote }), listBox]),
+      ]),
+    ]);
+    function close() { dialog.remove(); document.removeEventListener("keydown", onKey); }
+    function onKey(e) { if (e.key === "Escape") close(); }
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(dialog);
+    var fmt;
+    try { fmt = new Intl.DateTimeFormat(he ? "he-IL" : "en-GB", { dateStyle: "medium", timeStyle: "short" }); } catch (e) { fmt = null; }
+    api("/commits?path=" + encodeURIComponent(FILE) + "&sha=" + encodeURIComponent(BRANCH) + "&per_page=20")
+      .then(function (list) {
+        listBox.textContent = "";
+        if (!Array.isArray(list) || !list.length) { listBox.appendChild(el("p", { "class": "pe-note", text: T.historyEmpty })); return; }
+        list.forEach(function (c, i) {
+          var msg = (c.commit && c.commit.message || "").split("\n")[0];
+          var kind = /edited on the page/i.test(msg) ? T.msgPage : /^Update |^Create |^Delete |admin/i.test(msg) ? T.msgAdmin : /^Rebuild/i.test(msg) ? T.msgBuild : T.msgOther;
+          var when = c.commit && c.commit.author && c.commit.author.date ? new Date(c.commit.author.date) : null;
+          var row = el("div", { "class": "pe-hist-row" }, [
+            el("div", {}, [
+              el("strong", { text: when ? (fmt ? fmt.format(when) : when.toLocaleString()) : "" }),
+              el("span", { "class": "pe-note", text: " · " + kind + (i === 0 ? (he ? " (הנוכחית)" : " (current)") : "") }),
+            ]),
+            i === 0 ? null : button(T.historyUse, function () {
+              api("/contents/" + encPath(FILE) + "?ref=" + encodeURIComponent(c.sha)).then(function (res) {
+                var old = JSON.parse(b64ToUtf8(res.content));
+                if (!Array.isArray(old.gallery)) old.gallery = [];
+                data = old;
+                close();
+                changed(); syncPage();
+                setStatus(T.historyLoaded, "warn");
+              }).catch(function () { setStatus(T.errLoad, "error"); });
+            }),
+          ]);
+          listBox.appendChild(row);
+        });
+      })
+      .catch(function () { listBox.textContent = ""; listBox.appendChild(el("p", { "class": "pe-note", text: T.errLoad })); });
+  }
+
+  // ---------- first-time tips ----------
+  var TIP = "bubapix-editor-tip";
+  function showTip(force) {
+    var seen = false;
+    try { seen = localStorage.getItem(TIP) === "1"; } catch (e) { seen = false; }
+    if (seen && !force) return;
+    var old = document.querySelector(".pe-tip");
+    if (old) old.remove();
+    var box = el("div", { "class": "pe-tip", role: "note" }, [
+      el("strong", { text: T.tipTitle }),
+      el("ol", {}, [T.tip1, T.tip2, T.tip3, T.tip4].map(function (t) { return el("li", { text: t }); })),
+      button(T.tipClose, function () { try { localStorage.setItem(TIP, "1"); } catch (e) { /* storage blocked */ } box.remove(); }, "pe-btn pe-primary"),
+    ]);
+    bar.parentNode.insertBefore(box, bar.nextSibling);
+  }
+
+  // ---------- after saving: is the test site updated yet? ----------
+  // The test site writes the work-branch version it shows into version.txt.
+  // After a save we check it every 20 seconds and say when the change is live.
+  var siteWatch = { available: false, savedCommit: "", timer: 0, started: 0 };
+  function versionUrl() { return BASE + "version.txt"; }
+  function readVersion() {
+    return fetch(versionUrl() + "?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) { return /^[0-9a-f]{40}$/.test(t.trim()) ? t.trim() : ""; }).catch(function () { return ""; });
+  }
+  function watchSite() { readVersion().then(function (v) { siteWatch.available = !!v; }); }
+  function followSave(commitSha) {
+    if (!siteWatch.available || !commitSha) { setStatus(T.saved, "ok"); return; }
+    siteWatch.savedCommit = commitSha; siteWatch.started = Date.now();
+    setStatus(T.publishing, "ok");
+    clearTimeout(siteWatch.timer);
+    var check = function () {
+      if (siteWatch.savedCommit !== commitSha) return;
+      readVersion().then(function (live) {
+        if (!live) return false;
+        if (live === commitSha) return true;
+        return api("/compare/" + commitSha + "..." + live).then(function (c) { return c && (c.status === "ahead" || c.status === "identical"); }).catch(function () { return false; });
+      }).then(function (done) {
+        if (siteWatch.savedCommit !== commitSha) return;
+        if (done) {
+          if (dirty()) { setStatus(T.published + " · " + T.unsaved, "warn"); return; }
+          status.textContent = "";
+          status.className = "pe-status is-ok";
+          status.appendChild(document.createTextNode(T.published + " "));
+          status.appendChild(button(T.reload, function () { original = JSON.stringify(data); location.reload(); }, "pe-btn"));
+          return;
+        }
+        if (Date.now() - siteWatch.started > 15 * 60 * 1000) { setStatus(T.slow, "warn"); return; }
+        siteWatch.timer = setTimeout(check, 20000);
+      });
+    };
+    siteWatch.timer = setTimeout(check, 20000);
+  }
+
   // ---------- save ----------
+  var lastCommit = "";
   function save() {
+    lastCommit = "";
     if (!dirty()) return;
     saveBtn.disabled = true;
     setStatus(T.saving);
@@ -823,7 +1031,7 @@
       .then(saveRenames)
       .then(function () {
         saveBtn.disabled = true;
-        setStatus(T.saved, "ok");
+        followSave(lastCommit);
         render();
       })
       .catch(function (err) {
