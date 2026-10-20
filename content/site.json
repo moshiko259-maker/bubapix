@@ -197,7 +197,8 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": true,
+      "project": "the-new-ocean"
     },
     {
       "image": "/assets/work/plastic-turtle.jpg",
@@ -208,7 +209,8 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": true,
+      "project": "the-new-ocean"
     },
     {
       "image": "/assets/work/pufferfish.jpg",
@@ -219,7 +221,8 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": true,
+      "project": "the-new-ocean"
     },
     {
       "image": "/assets/work/green-creature.jpg",
@@ -230,7 +233,8 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": true,
+      "project": "the-whites"
     },
     {
       "image": "/assets/work/white-creature.jpg",
@@ -241,7 +245,8 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": true,
+      "project": "the-whites"
     },
     {
       "image": "/assets/work/gray-family.jpg",
@@ -252,7 +257,8 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": true,
+      "project": "the-whites"
     },
     {
       "image": "/assets/work/sea-owl-boat.jpg",
@@ -263,7 +269,8 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": true,
+      "project": "bradley-and-the-grumples"
     },
     {
       "image": "/assets/work/pop-life-city.png",
@@ -274,7 +281,8 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": true,
+      "project": "pop-life"
     },
     {
       "image": "/assets/work/smiling-shark.png",
@@ -489,5 +497,6 @@
   "feature_image": "/assets/work/winged-white-creature.png",
   "feature_alt_en": "A round white furry creature with wings and thick eyebrows.",
   "feature_alt_he": "יצור לבן, עגול ופרוותי עם כנפיים וגבות עבות.",
-  "feature_project": ""
+  "feature_project": "",
+  "feature_size": "full"
 }
