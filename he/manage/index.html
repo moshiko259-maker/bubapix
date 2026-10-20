@@ -31,9 +31,9 @@
   <link rel="preload" href="../../assets/fonts/heebo-hebrew-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../../css/fonts.css?v=9db4e44dc6">
   <script>document.documentElement.classList.add("js");</script>
-  <link rel="stylesheet" href="../../css/styles.css?v=9a0efe9ed1">
+  <link rel="stylesheet" href="../../css/styles.css?v=157f677020">
   <link rel="stylesheet" href="../../css/gallery.css?v=5e15055962">
-  <script src="../../js/main.js?v=0f486ffd0e" defer></script>
+  <script src="../../js/main.js?v=9b93ea3c99" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">דלגו לתוכן</a>
@@ -58,12 +58,18 @@
     <div class="page manage-page">
       <header class="page-head"><h1 class="page-title">ניהול האתר</h1>
         <p class="lede">מכאן עורכים את כל מה שבאתר. הכניסה מוגנת: רק לחשבונות שלכם יש הרשאה.</p></header>
-      <p class="manage-note">בכתובת התצוגה המקדימה הכפתורים פותחים את מסכי העריכה, אבל הכניסה עובדת רק באתר שלכם אחרי הפרסום.</p>
+      <p class="manage-note">זה אתר הבדיקה. כל עריכה כאן נשמרת בענף העבודה ומופיעה רק באתר הבדיקה. האתר החי לא משתנה.</p>
+      <p class="manage-signin" data-signin hidden><span data-signin-ok hidden>✓ מחוברים לעריכה בדפדפן הזה.</span><span data-signin-no hidden>עוד לא מחוברים לעריכה בדפדפן הזה. נכנסים פעם אחת דרך ״עריכה מתקדמת״ עם מפתח GitHub, ואז כל כלי העריכה עובדים.</span></p>
+      <section class="manage-box manage-main">
+        <h2>עריכה על הדף (הדרך הקלה)</h2>
+        <p>פותחים את דף הבית ועורכים ישירות עליו: תמונות, סדר, גודל, פריסה, משפט הפתיחה, פרויקטים ושמות. רואים כל שינוי מיד, ויש ״ביטול פעולה״ וגרסאות קודמות.</p>
+        <a class="button button-large" href="../index.html#edit">פתיחת דף הבית לעריכה</a>
+      </section>
       <div class="manage-grid">
         <section class="manage-box">
-          <h2>עריכת תוכן</h2>
-          <p>תמונות, טקסטים, פרויקטים, מוצרים, מחירים, משלוח ותשלום.</p>
-          <a class="button button-large" href="../../admin/index.html" target="_blank" rel="noopener">כניסה לעריכת תוכן</a>
+          <h2>עריכה מתקדמת (באנגלית)</h2>
+          <p>לכל מה שעוד אין בעריכה על הדף: מוצרים, חנות, עמודים, טקסטים בממשק. לכלי הזה אין עברית. כל שמירה בו היא טיוטה, ורואים אותה באתר רק אחרי Publish.</p>
+          <a class="button button-large" href="../../admin/index.html" target="_blank" rel="noopener">פתיחת העריכה המתקדמת</a>
         </section>
         <section class="manage-box">
           <h2>תגובות והודעות</h2>
@@ -98,7 +104,7 @@
       <section class="manage-section" aria-labelledby="first-title">
         <h2 id="first-title" class="section-label">כניסה ראשונה (פעם אחת)</h2>
         <h3>עריכת תוכן: כניסה עם מפתח גישה של GitHub.</h3>
-        <ol class="manage-steps"><li>ב־github.com פותחים Settings ← Developer settings ← Personal access tokens ← Fine-grained tokens ← Generate new token.</li><li>בגישה למאגרים בוחרים רק את המאגר bubapix. בהרשאות: Contents — Read and write; Pull requests — Read and write.</li><li>מעתיקים את המפתח. בעריכת התוכן בוחרים ״Sign In Using Access Token״ ומדביקים. עושים את זה רק באתר שלכם, לעולם לא בכתובת תצוגה משותפת.</li></ol>
+        <ol class="manage-steps"><li>ב־github.com פותחים Settings ← Developer settings ← Personal access tokens ← Fine-grained tokens ← Generate new token.</li><li>בגישה למאגרים בוחרים רק את המאגר bubapix. בהרשאות: Contents — Read and write; Pull requests — Read and write.</li><li>מעתיקים את המפתח. ב״עריכה מתקדמת״ בוחרים ״Sign In Using Access Token״ ומדביקים. מעכשיו הדפדפן הזה מחובר גם לעריכה על הדף.</li></ol>
         <h3>תגובות והודעות: כניסה עם מייל וסיסמה.</h3>
         <ol class="manage-steps"><li>ב־supabase.com פותחים את הפרויקט של BubaPix ← Authentication ← Users ← Add user ← Create new user.</li><li>מייל: moshiko259@gmail.com. בוחרים סיסמה ושומרים אותה לעצמכם. מסמנים ״Auto Confirm User״.</li><li>פותחים ״תגובות והודעות״ ונכנסים עם המייל והסיסמה.</li></ol>
       </section>

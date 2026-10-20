@@ -31,9 +31,9 @@
   <link rel="preload" href="../assets/fonts/heebo-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../css/fonts.css?v=9db4e44dc6">
   <script>document.documentElement.classList.add("js");</script>
-  <link rel="stylesheet" href="../css/styles.css?v=9a0efe9ed1">
+  <link rel="stylesheet" href="../css/styles.css?v=157f677020">
   <link rel="stylesheet" href="../css/gallery.css?v=5e15055962">
-  <script src="../js/main.js?v=0f486ffd0e" defer></script>
+  <script src="../js/main.js?v=9b93ea3c99" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -58,12 +58,18 @@
     <div class="page manage-page">
       <header class="page-head"><h1 class="page-title">Site management</h1>
         <p class="lede">Everything on the site is edited from here. Sign-in is protected: only your own accounts have permission.</p></header>
-      <p class="manage-note">On the preview address the buttons open the editing screens, but signing in works only on your own site after it is published.</p>
+      <p class="manage-note">This is the test site. Every edit here is saved to the work branch and shows only on the test site. The live site does not change.</p>
+      <p class="manage-signin" data-signin hidden><span data-signin-ok hidden>✓ Signed in for editing in this browser.</span><span data-signin-no hidden>Not signed in for editing in this browser yet. Sign in once through “Advanced editing” with a GitHub token; then all editing tools work.</span></p>
+      <section class="manage-box manage-main">
+        <h2>Edit on the page (the easy way)</h2>
+        <p>Open the homepage and edit right on it: pictures, order, size, layout, the opening sentence, projects and names. Every change shows at once, with Undo and earlier versions.</p>
+        <a class="button button-large" href="../index.html#edit">Open the homepage for editing</a>
+      </section>
       <div class="manage-grid">
         <section class="manage-box">
-          <h2>Edit content</h2>
-          <p>Pictures, texts, projects, products, prices, shipping and payment.</p>
-          <a class="button button-large" href="../admin/index.html" target="_blank" rel="noopener">Open content editing</a>
+          <h2>Advanced editing (English only)</h2>
+          <p>For everything not yet in on-page editing: products, shop, pages, interface texts. This tool has no Hebrew. Each save there is a draft, shown on the site only after Publish.</p>
+          <a class="button button-large" href="../admin/index.html" target="_blank" rel="noopener">Open advanced editing</a>
         </section>
         <section class="manage-box">
           <h2>Comments and messages</h2>
@@ -98,7 +104,7 @@
       <section class="manage-section" aria-labelledby="first-title">
         <h2 id="first-title" class="section-label">First sign-in (once)</h2>
         <h3>Content editing: sign in with a GitHub access token.</h3>
-        <ol class="manage-steps"><li>On github.com, open Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.</li><li>Repository access: only the bubapix repository. Permissions: Contents — Read and write; Pull requests — Read and write.</li><li>Copy the token. In content editing choose “Sign In Using Access Token” and paste it. Do this only on your own site, never on a shared preview address.</li></ol>
+        <ol class="manage-steps"><li>On github.com, open Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.</li><li>Repository access: only the bubapix repository. Permissions: Contents — Read and write; Pull requests — Read and write.</li><li>Copy the token. In “Advanced editing” choose “Sign In Using Access Token” and paste it. From then on this browser is also signed in for on-page editing.</li></ol>
         <h3>Comments and messages: sign in with email and password.</h3>
         <ol class="manage-steps"><li>On supabase.com open the BubaPix project → Authentication → Users → Add user → Create new user.</li><li>Email: moshiko259@gmail.com. Choose a password and keep it to yourself. Tick “Auto Confirm User”.</li><li>Open “Comments and messages” and sign in with that email and password.</li></ol>
       </section>
