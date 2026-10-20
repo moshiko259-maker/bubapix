@@ -469,7 +469,7 @@
 
   // ---------- page parts ----------
   var workSection = document.querySelector(".section-work");
-  var mosaic = document.querySelector("[data-mosaic]");
+  var mosaic = document.querySelector(".section-work [data-mosaic]");
   var editArea = el("div", { "class": "pe-area" });
   var opening = document.querySelector(".opening");
 
