@@ -293,7 +293,8 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": true,
+      "project": "bradley-and-the-grumples"
     },
     {
       "image": "/assets/work/turtle-island.png",
@@ -304,7 +305,8 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": true,
+      "project": "bradley-and-the-grumples"
     },
     {
       "image": "/assets/work/character-lineup.png",
@@ -315,7 +317,8 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": true,
+      "project": "bradley-and-the-grumples"
     },
     {
       "image": "/assets/work/shark-towel-boat.png",
@@ -326,7 +329,8 @@
       "title_he": "",
       "note_en": "",
       "note_he": "",
-      "caption": "hidden"
+      "caption": "hidden",
+      "project": "bradley-and-the-grumples"
     },
     {
       "image": "/assets/work/yacht-trash.png",
@@ -337,7 +341,8 @@
       "title_he": "",
       "note_en": "",
       "note_he": "",
-      "caption": "hidden"
+      "caption": "hidden",
+      "project": "the-new-ocean"
     },
     {
       "image": "/assets/work/furry-characters-lineup.png",
@@ -348,7 +353,8 @@
       "title_he": "",
       "note_en": "",
       "note_he": "",
-      "caption": "hidden"
+      "caption": "hidden",
+      "project": "bradley-and-the-grumples"
     },
     {
       "image": "/assets/work/white-fluffy-turnaround.png",
@@ -359,7 +365,8 @@
       "title_he": "",
       "note_en": "",
       "note_he": "",
-      "caption": "hidden"
+      "caption": "hidden",
+      "project": "bradley-and-the-grumples"
     },
     {
       "image": "/assets/work/can-octopus.png",
@@ -370,7 +377,8 @@
       "title_he": "",
       "note_en": "",
       "note_he": "",
-      "caption": "hidden"
+      "caption": "hidden",
+      "project": "the-new-ocean"
     },
     {
       "image": "/assets/work/orange-character-boat.jpg",
