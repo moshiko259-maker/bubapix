@@ -430,13 +430,21 @@ function home(ctx) {
     while (i < data.homeGallery.length) {
       const size = data.homeGallery[i].image.size;
       let count = sized && size === "large" ? 1 : sized && size === "medium" ? 2 : sized && size === "small" ? 4 : counts[k++ % counts.length];
-      if (count === 1 && ratioOf(data.homeGallery[i]) < 1.3) count = 2; // only wide pictures fill a row alone
+      // In the automatic rhythm only wide pictures fill a row alone; a picture
+      // the owner marked "large" always gets its own row (narrow ones are
+      // centred, at most about one screen high).
+      if (count === 1 && ratioOf(data.homeGallery[i]) < 1.3 && !(sized && size === "large")) count = 2;
       count = Math.min(count, maxPer);
       const row = [];
       let sum = 0;
       // Rows of portraits would become very tall: add pictures until the
       // row is wide enough (minSum = width compared with height).
-      while (i < data.homeGallery.length && (row.length < count || (count > 1 && sum < minSum && row.length < maxPer))) {
+      // A size chosen by the owner is kept exactly; only the automatic
+      // rhythm adds pictures to rows of tall pictures.
+      const chosen = sized && ["large", "medium", "small"].includes(size);
+      // A picture with its own chosen size starts its own row.
+      const ownSize = (n) => sized && ["large", "medium", "small"].includes(data.homeGallery[n].image.size);
+      while (i < data.homeGallery.length && (row.length < count || (!chosen && count > 1 && sum < minSum && row.length < maxPer)) && !(row.length && ownSize(i) && (!chosen || data.homeGallery[i].image.size !== size))) {
         row.push(i);
         sum += ratioOf(data.homeGallery[i]);
         i++;

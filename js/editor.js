@@ -115,12 +115,13 @@
     reload: "רענון לראות",
     slow: "העדכון לוקח יותר מהרגיל. השינוי שמור; אפשר לבדוק שוב בעוד כמה דקות.",
     tipTitle: "איך עורכים",
-    tip1: "מעבירים את העכבר על תמונה (בטלפון: הכלים מתחת לכל תמונה) כדי לשנות גודל, צורה, פרויקט, להחליף או להסתיר.",
+    tip1: "גודל: גוררים את הפינה ⤡ של התמונה, או לוחצים קטנה / בינונית / גדולה. מעבירים את העכבר על תמונה (בטלפון: הכלים מתחת לכל תמונה) גם לצורה, פרויקט, החלפה והסתרה.",
     tip2: "גוררים תמונה כדי לשנות את הסדר, או משתמשים בחצים.",
     tip3: "לוחצים על משפט הפתיחה כדי לכתוב.",
     tip4: "שום דבר לא נשמר עד ״שמירה״. טעיתם? ״ביטול פעולה״.",
     tipClose: "הבנתי",
     help: "עזרה",
+    resizeTip: "גררו את הפינה כדי לשנות גודל",
   } : {
     title: "Edit on the page",
     loading: "Loading the page settings…",
@@ -207,12 +208,13 @@
     reload: "Reload to see it",
     slow: "The update is taking longer than usual. The change is saved; check again in a few minutes.",
     tipTitle: "How to edit",
-    tip1: "Point at a picture (on phones the tools are under each picture) to change size, shape, project, replace or hide it.",
+    tip1: "Size: drag the picture's corner ⤡, or press Small / Medium / Large. Point at a picture (on phones the tools are under each picture) for shape, project, replace and hide.",
     tip2: "Drag a picture to change the order, or use the arrows.",
     tip3: "Click the opening sentence to write.",
     tip4: "Nothing is saved until \"Save\". Made a mistake? \"Undo\".",
     tipClose: "Got it",
     help: "Help",
+    resizeTip: "Drag the corner to change the size",
   };
 
   // ---------- small helpers ----------
@@ -583,10 +585,13 @@
     while (i < list.length) {
       var size = list[i].g.size;
       var count = sized && size === "large" ? 1 : sized && size === "medium" ? 2 : sized && size === "small" ? 4 : counts[k++ % counts.length];
-      if (count === 1 && list[i].r < 1.3) count = 2;
+      if (count === 1 && list[i].r < 1.3 && !(sized && size === "large")) count = 2;
       count = Math.min(count, maxPer);
       var row = [], sum = 0;
-      while (i < list.length && (row.length < count || (count > 1 && sum < minSum && row.length < maxPer))) {
+      var chosen = sized && ["large", "medium", "small"].indexOf(size) >= 0;
+      // A picture with its own chosen size starts its own row.
+      var ownSize = function (n) { return sized && ["large", "medium", "small"].indexOf(list[n].g.size) >= 0; };
+      while (i < list.length && (row.length < count || (!chosen && count > 1 && sum < minSum && row.length < maxPer)) && !(row.length && ownSize(i) && (!chosen || list[i].g.size !== size))) {
         row.push(i); sum += list[i].r; i++;
       }
       out.push(row);
@@ -620,7 +625,7 @@
     var box = el("div", { "class": "mosaic pe-mosaic" + gapCls });
     rows.forEach(function (row) {
       var r = el("div", { "class": "mrow n" + row.length });
-      row.forEach(function (n) { r.appendChild(cell(shown[n])); });
+      row.forEach(function (n) { shown[n].alone = row.length === 1; r.appendChild(cell(shown[n])); });
       box.appendChild(r);
     });
     editArea.appendChild(box);
@@ -641,13 +646,14 @@
     media.style.aspectRatio = String(item.r);
     var fig = el("figure", { "class": "jg-item pe-item" + (FRAMES[g.frame] ? " fit-cover focus-" + (g.focus || "center") : ""), draggable: "true", "data-idx": String(idx), title: T.drag }, [media]);
     fig.style.flexGrow = String(Math.round(item.r * 100));
+    if (item.alone && item.r < 1.3) { fig.classList.add("pe-alone"); fig.style.width = "min(100%, calc(80vh * " + item.r + "))"; }
     if (uploads[norm(g.image)]) fig.appendChild(el("span", { "class": "pe-badge", text: T.newBadge }));
+    fig.appendChild(resizeHandle(fig, g));
     // Arrow shapes follow the reading direction: "earlier" points right in Hebrew.
     var back = he ? "›" : "‹", fwd = he ? "‹" : "›";
     fig.appendChild(el("div", { "class": "pe-tools" }, [
       button(back, function () { move(idx, -1); }, "pe-icon", T.earlier),
-      select(T.size, g.size || "auto", [["auto", T.size + ": " + T.sizeAuto], ["large", T.size + ": " + T.sizeLarge], ["medium", T.size + ": " + T.sizeMedium], ["small", T.size + ": " + T.sizeSmall]],
-        function (v) { g.size = v; changed(); }),
+      sizeButtons(g),
       select(T.frame, g.frame || "natural", [["natural", T.frame + ": " + T.frameNatural], ["wide", T.frame + ": " + T.frameWide], ["landscape", T.frame + ": " + T.frameLandscape], ["square", T.frame + ": " + T.frameSquare], ["portrait", T.frame + ": " + T.framePortrait]],
         function (v) { g.frame = v; changed(); }),
       projectSelect(g.project || "", function (v) { g.project = v; changed(); }),
@@ -662,7 +668,7 @@
       button(T.hide, function () { g.visible = false; changed(); }),
       button(fwd, function () { move(idx, 1); }, "pe-icon", T.later),
     ]));
-    fig.addEventListener("dragstart", function (e) { dragFrom = idx; fig.classList.add("is-dragging"); try { e.dataTransfer.setData("text/plain", String(idx)); e.dataTransfer.effectAllowed = "move"; } catch (x) { /* old browser */ } });
+    fig.addEventListener("dragstart", function (e) { if (e.target && e.target.closest && e.target.closest(".pe-resize, .pe-tools")) { e.preventDefault(); return; } dragFrom = idx; fig.classList.add("is-dragging"); try { e.dataTransfer.setData("text/plain", String(idx)); e.dataTransfer.effectAllowed = "move"; } catch (x) { /* old browser */ } });
     fig.addEventListener("dragend", function () { fig.classList.remove("is-dragging"); dragFrom = -1; });
     fig.addEventListener("dragover", function (e) { if (dragFrom >= 0 && dragFrom !== idx) { e.preventDefault(); fig.classList.add("is-target"); } });
     fig.addEventListener("dragleave", function () { fig.classList.remove("is-target"); });
@@ -694,6 +700,53 @@
     data.gallery[idx] = data.gallery[other];
     data.gallery[other] = tmp;
     changed();
+  }
+  // Size: three clear buttons (and "automatic"), plus a handle to drag.
+  function sizeButtons(g) {
+    var box = el("div", { "class": "pe-sizes", role: "group", "aria-label": T.size });
+    [["small", T.sizeSmall], ["medium", T.sizeMedium], ["large", T.sizeLarge], ["auto", T.sizeAuto]].forEach(function (o) {
+      var b = button(o[1], function () { g.size = o[0]; changed(); }, "pe-btn pe-size", T.size + ": " + o[1]);
+      b.setAttribute("aria-pressed", String((g.size || "auto") === o[0]));
+      box.appendChild(b);
+    });
+    return box;
+  }
+  // Dragging the corner handle: further from the picture = bigger.
+  // Steps: small → medium → large (the layout keeps rows tidy).
+  function resizeHandle(fig, g) {
+    var h = el("span", { "class": "pe-resize", title: T.resizeTip, "aria-hidden": "true", text: "⤡" });
+    // Stop the picture's own drag-to-move from starting on the handle.
+    h.addEventListener("mousedown", function (e) { e.preventDefault(); e.stopPropagation(); });
+    h.addEventListener("dragstart", function (e) { e.preventDefault(); e.stopPropagation(); });
+    h.addEventListener("pointerdown", function (e) {
+      e.preventDefault(); e.stopPropagation();
+      fig.setAttribute("draggable", "false");
+      var rect = fig.getBoundingClientRect(), startX = e.clientX, startY = e.clientY, startW = rect.width;
+      var order = ["small", "medium", "large"];
+      var cur = order.indexOf(g.size) >= 0 ? g.size : (startW > editArea.clientWidth * 0.7 ? "large" : startW > editArea.clientWidth * 0.4 ? "medium" : "small");
+      var label = el("span", { "class": "pe-resize-label", text: T.size + ": " + T["size" + cur.charAt(0).toUpperCase() + cur.slice(1)] });
+      fig.appendChild(label); fig.classList.add("is-resizing");
+      try { h.setPointerCapture(e.pointerId); } catch (x) { /* old browser */ }
+      var next = cur;
+      function move(ev) {
+        // Outward (sideways) or downward = bigger; inward or upward = smaller.
+        // Downward also works for pictures at the edge of the screen.
+        var dx = (ev.clientX - startX) * (he ? -1 : 1), dy = (ev.clientY - startY) * 1.5;
+        var d = Math.abs(dx) > Math.abs(dy) ? dx : dy;
+        // Every 90 pixels is one step: small → medium → large.
+        var at = order.indexOf(cur) + Math.round(d / 90);
+        next = order[Math.max(0, Math.min(order.length - 1, at))];
+        label.textContent = T.size + ": " + T["size" + next.charAt(0).toUpperCase() + next.slice(1)];
+        fig.style.outline = "2px solid currentColor";
+      }
+      function up() {
+        h.removeEventListener("pointermove", move); h.removeEventListener("pointerup", up); h.removeEventListener("pointercancel", up);
+        fig.classList.remove("is-resizing"); label.remove(); fig.style.outline = ""; fig.setAttribute("draggable", "true");
+        if (next !== g.size) { g.size = next; changed(); }
+      }
+      h.addEventListener("pointermove", move); h.addEventListener("pointerup", up); h.addEventListener("pointercancel", up);
+    });
+    return h;
   }
   function strip(title, list, canShow) {
     var wrap = el("div", { "class": "pe-strip" }, [el("p", { "class": "pe-strip-title", text: title })]);
