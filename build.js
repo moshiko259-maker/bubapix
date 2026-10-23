@@ -401,6 +401,8 @@ function contentFor(lang) {
         cover,
         // Width of the cover on computers (% of the page), set by dragging in the page editor.
         // Width of its picture on the projects page (computers), set in the page editor.
+        // Width of its poster on the homepage (computers), set in the page editor.
+        posterW: Number(p.poster_w) >= 10 && Number(p.poster_w) <= 100 ? Math.round(Number(p.poster_w)) : 0,
         listW: Number(p.list_w) >= 10 && Number(p.list_w) <= 100 ? Math.round(Number(p.list_w)) : 0,
         coverW: Number(p.cover_w) >= 20 && Number(p.cover_w) < 100 ? Math.round(Number(p.cover_w)) : 0,
         // The picture that represents the project in galleries.

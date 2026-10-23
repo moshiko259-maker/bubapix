@@ -577,12 +577,20 @@ function home(ctx) {
   // Projects: one poster per project; each opens its own project page.
   // Shown from two projects up (with one, it would repeat the opening image).
   const posterProjects = data.posters;
+  // Free poster sizes from the page editor (computers): same rows rule as the
+  // galleries; phones keep two by two.
+  const posterLayout = { rows: [], cls: new Map() };
+  if (posterProjects.some((p) => p.posterW)) {
+    const fr = freeClasses(posterProjects.map((p) => ({ ...p.thumb, fw: p.posterW })));
+    posterLayout.rows = fr.rows.map((r) => r.map((i) => posterProjects[i]));
+    posterProjects.forEach((p, i) => posterLayout.cls.set(p, fr.classes[i]));
+  } else posterLayout.rows = posterRows(posterProjects);
   const posters = posterProjects.length
     ? `
     <section class="section home-posters" aria-labelledby="posters-title">
       <h2 id="posters-title" class="visually-hidden">${e(t.nav.work)}</h2>
-      <div class="mosaic poster-rows${lay.gap ? ` gap-${lay.gap}` : ""}" data-mosaic>${posterRows(posterProjects).map((row) => `
-        <div class="mrow n${row.length}">${row.map((p) => galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${p.name} — ${t.home.openProject}`, sizes: `(max-width: 700px) 50vw, ${Math.round(100 / row.length) + 5}vw`, extraClass: "poster" }).replace(/^<(a|figure) /, `<$1 data-project="${e(p.slug)}" data-srow="${posterPhoneRow(posterProjects, p)}" `)).join("")}</div>`).join("")}
+      <div class="mosaic poster-rows${lay.gap ? ` gap-${lay.gap}` : ""}" data-mosaic>${posterLayout.rows.map((row) => `
+        <div class="mrow n${row.length}">${row.map((p) => galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${p.name} — ${t.home.openProject}`, sizes: `(max-width: 700px) 50vw, ${Math.round(100 / row.length) + 5}vw`, extraClass: `poster${posterLayout.cls.get(p) ? " " + posterLayout.cls.get(p) : ""}` }).replace(/^<(a|figure) /, `<$1 data-project="${e(p.slug)}" data-srow="${posterPhoneRow(posterProjects, p)}" `)).join("")}</div>`).join("")}
       </div>
     </section>`
     : "";

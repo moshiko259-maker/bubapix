@@ -58,6 +58,12 @@
     removeFeature: "הסרת התמונה השנייה",
     addFeature: "הוספת תמונה שנייה",
     taglineHint: "לחצו על המשפט כדי לערוך אותו",
+    textHint: "לחצו כדי לשנות את הטקסט",
+    textEmptyBack: "הטקסט ריק, ולכן יוצג הטקסט הרגיל.",
+    textNoEmpty: "השם לא יכול להיות ריק. השם הקודם הוחזר.",
+    servicesNote: "שמות השירותים והכותרת ״שירותים״ משתנים גם בדף השירותים ובתפריט. בשפת הדף בלבד.",
+    posterSizeNote: "פוסטרים: גודל — לוחצים על פוסטר וגוררים נקודה כחולה (במחשב). סדר — גוררים פוסטר או חצים. הסדר הוא גם סדר הפרויקטים בעמוד הפרויקטים.",
+    posterAuto: "גודל אוטומטי לכל הפוסטרים",
     pickTitle: "בחירת תמונה",
     pickUpload: "העלאה מהמחשב",
     pickLoading: "טוען תמונות…",
@@ -117,7 +123,7 @@
     tipTitle: "איך עורכים",
     tip1: "גודל: לוחצים על תמונה (גם תמונות הפתיחה), ומופיעה מסגרת עם נקודות. גוררים נקודה — התמונה גדלה או קטנה, והשורה מסתדרת לבד בלי רווחים. הכלים (צורה, פרויקט, החלפה, הסתרה) מופיעים כשמעבירים עכבר על תמונה.",
     tip2: "גוררים תמונה כדי לשנות את הסדר, או משתמשים בחצים.",
-    tip3: "לוחצים על משפט הפתיחה כדי לכתוב.",
+    tip3: "כל טקסט בדף ניתן לעריכה: לוחצים עליו וכותבים (משפט הפתיחה, שירותים, ״לכל השירותים״, ״התחילו פרויקט״, השורה בתחתית). פוסטרים: גוררים נקודה לגודל, גוררים את הפוסטר או חצים לסדר.",
     tip4: "שום דבר לא נשמר עד ״שמירה״. טעיתם? ״ביטול פעולה״.",
     tipClose: "הבנתי",
     help: "עזרה",
@@ -162,6 +168,12 @@
     removeFeature: "Remove the second picture",
     addFeature: "Add a second picture",
     taglineHint: "Click the sentence to edit it",
+    textHint: "Click to change the text",
+    textEmptyBack: "The text is empty, so the usual text will show.",
+    textNoEmpty: "The name cannot be empty. The previous name is back.",
+    servicesNote: "Service names and the \"Services\" heading also change on the services page and in the menu, in this language only.",
+    posterSizeNote: "Posters: size — click a poster and drag a blue dot (on computers). Order — drag a poster or use the arrows. This is also the order of projects on the projects page.",
+    posterAuto: "Automatic size for all posters",
     pickTitle: "Choose a picture",
     pickUpload: "Upload from this computer",
     pickLoading: "Loading pictures…",
@@ -221,7 +233,7 @@
     tipTitle: "How to edit",
     tip1: "Size: click a picture (the opening ones too) and a frame with dots appears. Drag a dot: the picture grows or shrinks and its row rearranges itself without gaps. Tools (shape, project, replace, hide) appear when you point at a picture.",
     tip2: "Drag a picture to change the order, or use the arrows.",
-    tip3: "Click the opening sentence to write.",
+    tip3: "Every text on the page can be edited: click it and write (opening sentence, services, \"All services\", \"Start a project\", the line at the bottom). Posters: drag a dot to resize, drag the poster or use the arrows to reorder.",
     tip4: "Nothing is saved until \"Save\". Made a mistake? \"Undo\".",
     tipClose: "Got it",
     help: "Help",
@@ -353,9 +365,13 @@
   var pageAdds = {}; // project slug -> pictures to add to that project's page gallery
   var hasPageAdds = function () { return Object.keys(pageAdds).some(function (k) { return pageAdds[k].length; }); };
   // Existing projects changed here: names, cover (poster) or the posters row.
-  var renamed = function () { return projects.filter(function (p) { return !p.isNew && (p.title_he !== p.orig_he || p.title_en !== p.orig_en || !!p.cover || p.in_posters !== p.orig_in_posters); }); };
+  var renamed = function () { return projects.filter(function (p) { return !p.isNew && (p.title_he !== p.orig_he || p.title_en !== p.orig_en || !!p.cover || p.in_posters !== p.orig_in_posters || p.order !== p.orig_order || p.poster_w !== p.orig_poster_w); }); };
   var created = function () { return projects.filter(function (p) { return p.isNew; }); };
-  var dirty = function () { return data && (JSON.stringify(data) !== original || hasPageAdds() || renamed().length > 0 || created().length > 0); };
+  // Texts kept in other files: interface texts (content/labels.json) and the
+  // services list (content/services.json). Changed here in the page's language.
+  var texts = { labels: {}, services: null }, textsOrig = "", labelsSha = "", servicesSha = "";
+  var textsDirty = function () { return !!textsOrig && JSON.stringify(texts) !== textsOrig; };
+  var dirty = function () { return data && (JSON.stringify(data) !== original || hasPageAdds() || renamed().length > 0 || created().length > 0 || textsDirty()); };
   function displayName(p) { return (he ? p.title_he || p.title_en : p.title_en || p.title_he) || p.slug; }
   var projectName = function (slug) { var p = projects.filter(function (x) { return x.slug === slug; })[0]; return p ? p.name : slug; };
   function loadProjects() {
@@ -367,12 +383,24 @@
             var d = {};
             try { d = JSON.parse(b64ToUtf8(res.content)); } catch (e) { d = {}; }
             var slug = f.name.replace(/\.json$/, "");
-            return { slug: slug, title_he: d.title_he || "", title_en: d.title_en || "", orig_he: d.title_he || "", orig_en: d.title_en || "", name: (he ? d.title_he || d.title_en : d.title_en || d.title_he) || slug, order: Number(d.order) || 99, in_posters: d.in_posters !== false, orig_in_posters: d.in_posters !== false, origCover: d.cover || "", cover: null };
+            return { slug: slug, title_he: d.title_he || "", title_en: d.title_en || "", orig_he: d.title_he || "", orig_en: d.title_en || "", name: (he ? d.title_he || d.title_en : d.title_en || d.title_he) || slug, order: Number(d.order) || 99, orig_order: Number(d.order) || 99, poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, orig_poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, in_posters: d.in_posters !== false, orig_in_posters: d.in_posters !== false, origCover: d.cover || "", cover: null };
           });
         }));
       })
       .then(function (list) { projects = list.sort(function (a, b) { return a.order - b.order; }); })
       .catch(function () { projects = []; });
+  }
+  function loadTexts() {
+    var get = function (path) {
+      return api("/contents/" + encPath(path) + "?ref=" + encodeURIComponent(BRANCH))
+        .then(function (res) { return { sha: res.sha, data: JSON.parse(b64ToUtf8(res.content) || "{}") }; })
+        .catch(function (err) { if (err.status === 404) return { sha: "", data: null }; throw err; });
+    };
+    return Promise.all([get("content/labels.json"), get("content/services.json")]).then(function (r) {
+      labelsSha = r[0].sha; servicesSha = r[1].sha;
+      texts = { labels: r[0].data || {}, services: r[1].data };
+      textsOrig = JSON.stringify(texts);
+    });
   }
   function projectSelect(value, onChange) {
     var opts = [["", T.project + ": " + T.noProject]].concat(projects.map(function (p) { return [p.slug, T.project + ": " + displayName(p)]; }));
@@ -415,7 +443,7 @@
   // Every change keeps a copy of the state before it, in this tab only.
   var past = [], last = "";
   function snapshot() {
-    return JSON.stringify({ data: data, projects: projects.map(function (p) { return { slug: p.slug, isNew: !!p.isNew, title_he: p.title_he, title_en: p.title_en, orig_he: p.orig_he, orig_en: p.orig_en, order: p.order, name: p.name, cover: p.cover || null, in_posters: p.in_posters !== false, orig_in_posters: p.orig_in_posters !== false, origCover: p.origCover || "" }; }), pageAdds: pageAdds });
+    return JSON.stringify({ data: data, projects: projects.map(function (p) { return { slug: p.slug, isNew: !!p.isNew, title_he: p.title_he, title_en: p.title_en, orig_he: p.orig_he, orig_en: p.orig_en, order: p.order, orig_order: p.orig_order, poster_w: p.poster_w || 0, orig_poster_w: p.orig_poster_w || 0, name: p.name, cover: p.cover || null, in_posters: p.in_posters !== false, orig_in_posters: p.orig_in_posters !== false, origCover: p.origCover || "" }; }), pageAdds: pageAdds, texts: texts });
   }
   function commit() {
     if (!data) return;
@@ -427,10 +455,10 @@
   function undo() {
     if (!past.length) { setStatus(T.nothingToUndo); return; }
     var prev = JSON.parse(past.pop());
-    data = prev.data; projects = prev.projects; pageAdds = prev.pageAdds;
+    data = prev.data; projects = prev.projects; pageAdds = prev.pageAdds; texts = prev.texts || texts;
     last = snapshot();
     undoBtn.disabled = !past.length;
-    syncPage(); render(); refreshStatus();
+    syncPage(); render(); fillTexts(); refreshStatus();
     if (dirty()) setStatus(T.undone + " · " + T.unsaved, "warn");
   }
   document.addEventListener("keydown", function (e) {
@@ -456,7 +484,7 @@
       data = JSON.parse(b64ToUtf8(res.content));
       if (!Array.isArray(data.gallery)) data.gallery = [];
       original = JSON.stringify(data);
-      return loadProjects();
+      return Promise.all([loadProjects(), loadTexts()]);
     })
     .then(function () {
       start();
@@ -469,8 +497,9 @@
       saveBtn.disabled = true;
     });
 
+  var leaving = false;
   window.addEventListener("beforeunload", function (e) {
-    if (dirty()) { e.preventDefault(); e.returnValue = ""; }
+    if (!leaving && dirty()) { e.preventDefault(); e.returnValue = ""; }
   });
 
   // ---------- page parts ----------
@@ -513,7 +542,63 @@
 
     setupOpening();
     setupPosters();
+    setupTexts();
     render();
+  }
+
+  // ---------- texts on the page ----------
+  // Each editable text: where it is on the page and where it is kept.
+  var textParts = [];
+  function plain(node, hint, onText, onBlur) {
+    try { node.contentEditable = "plaintext-only"; } catch (e) { node.contentEditable = "true"; }
+    if (node.contentEditable !== "plaintext-only") node.contentEditable = "true";
+    node.classList.add("pe-editable");
+    node.setAttribute("title", hint);
+    node.addEventListener("input", function () { onText(node.textContent.replace(/\s+/g, " ").trim()); refreshStatus(); });
+    node.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); node.blur(); } });
+    node.addEventListener("blur", function () { if (onBlur) onBlur(); commit(); });
+    // A text inside a link or a button: clicking it edits, never leaves the page.
+    node.addEventListener("click", function (e) { e.preventDefault(); }, true);
+  }
+  function labelPart(node, field) {
+    if (!node) return;
+    var key = field + "_" + lang, usual = node.textContent;
+    textParts.push({ node: node, get: function () { return texts.labels[key] || usual; } });
+    plain(node, T.textHint, function (v) { if (v) texts.labels[key] = v; else delete texts.labels[key]; }, function () {
+      if (!texts.labels[key]) { node.textContent = usual; setStatus(T.textEmptyBack, "warn"); }
+    });
+  }
+  function setupTexts() {
+    labelPart(document.querySelector("#home-services-title"), "nav_services");
+    labelPart(document.querySelector(".home-services .section-head a"), "all_services");
+    labelPart(document.querySelector(".start-project a.button"), "start_project");
+    labelPart(document.querySelector("main > .bottom-hint"), "home_hint");
+    labelPart(document.querySelector("#showreel-title"), "showreel");
+    var intro = document.querySelector(".intro-text");
+    if (intro) {
+      textParts.push({ node: intro, get: function () { return data["intro_" + lang] || ""; } });
+      plain(intro, T.textHint, function (v) { data["intro_" + lang] = v; });
+    }
+    // Service names: matched to the services file by their shown name.
+    var list = texts.services && Array.isArray(texts.services.services) ? texts.services.services : [];
+    var other = he ? "en" : "he", used = {};
+    Array.prototype.forEach.call(document.querySelectorAll(".home-service-list li"), function (li) {
+      var shown = li.textContent.trim(), at = -1;
+      list.forEach(function (sv, i) { if (at < 0 && !used[i] && ((sv["name_" + lang] || sv["name_" + other] || "").trim() === shown)) at = i; });
+      if (at < 0) return;
+      used[at] = true;
+      var sv = list[at], key = "name_" + lang;
+      textParts.push({ node: li, get: function () { var s2 = texts.services.services[at]; return s2[key] || s2["name_" + other] || ""; } });
+      plain(li, T.textHint, function (v) { texts.services.services[at][key] = v; }, function () {
+        if (!texts.services.services[at][key]) { var o = JSON.parse(textsOrig).services.services[at][key]; texts.services.services[at][key] = o; li.textContent = o || shown; setStatus(T.textNoEmpty, "warn"); }
+      });
+      void sv;
+    });
+    var head = document.querySelector(".home-services .section-head");
+    if (head) head.parentNode.insertBefore(el("p", { "class": "pe-note", text: T.servicesNote }), head.nextSibling);
+  }
+  function fillTexts() {
+    textParts.forEach(function (t) { if (document.activeElement !== t.node) t.node.textContent = t.get(); });
   }
 
   // ---------- opening: two pictures and the sentence ----------
@@ -596,7 +681,15 @@
   }
   // ---------- posters row: each poster is a project's cover ----------
   var posterEls = {}; // slug -> { el, media, original }
+  var posterBox = null, posterOrig = null, posterDrag = "";
   function setupPosters() {
+    posterOrig = document.querySelector(".home-posters [data-mosaic]");
+    if (posterOrig) {
+      // The editing copy of the row: the same posters, arranged by the editor.
+      posterBox = el("div", { "class": posterOrig.className.replace(/\s*is-small/, "") + " pe-poster-box" });
+      posterOrig.parentNode.insertBefore(posterBox, posterOrig.nextSibling);
+      posterOrig.parentNode.insertBefore(el("p", { "class": "pe-note pe-poster-note", text: T.posterSizeNote }), posterBox);
+    }
     Array.prototype.forEach.call(document.querySelectorAll(".home-posters [data-project]"), function (item) {
       var slug = item.getAttribute("data-project");
       var p = projects.filter(function (x) { return x.slug === slug; })[0];
@@ -609,8 +702,96 @@
       var tools = el("div", { "class": "pe-tools pe-tools-top" });
       item.appendChild(tools);
       posterEls[slug].tools = tools;
+      var img = item.querySelector("img");
+      posterEls[slug].r = img && Number(img.getAttribute("width")) && Number(img.getAttribute("height")) ? Number(img.getAttribute("width")) / Number(img.getAttribute("height")) : 1.5;
+      item.setAttribute("draggable", "true");
+      if (!phone.matches) frame(item, {
+        start: function () { return item.getBoundingClientRect().width / (posterBox.getBoundingClientRect().width || 1) * 100; },
+        area: function () { return posterBox.getBoundingClientRect().width; },
+        live: function (pct) { item.style.flex = "none"; item.style.width = pct + "%"; },
+        done: function (pct) {
+          // The first resize keeps every other poster at its current size.
+          if (!postersFree()) {
+            var bw = posterBox.getBoundingClientRect().width || 1;
+            shownPosters().forEach(function (q) { var n = posterEls[q.slug].el; if (q !== p) q.poster_w = Math.max(10, Math.min(100, Math.round(n.getBoundingClientRect().width / bw * 100))); });
+          }
+          p.poster_w = pct; changed(); syncPage();
+        },
+        min: 10, max: 100,
+      });
+      item.addEventListener("dragstart", function (e) {
+        if (e.target && e.target.closest && e.target.closest(".pe-tools, .pe-dot")) { e.preventDefault(); return; }
+        posterDrag = slug; item.classList.add("is-dragging");
+        try { e.dataTransfer.setData("text/plain", slug); e.dataTransfer.effectAllowed = "move"; } catch (x) { /* old browser */ }
+      });
+      item.addEventListener("dragend", function () { item.classList.remove("is-dragging"); posterDrag = ""; });
+      item.addEventListener("dragover", function (e) { if (posterDrag && posterDrag !== slug) { e.preventDefault(); item.classList.add("is-target"); } });
+      item.addEventListener("dragleave", function () { item.classList.remove("is-target"); });
+      item.addEventListener("drop", function (e) {
+        e.preventDefault(); item.classList.remove("is-target");
+        if (!posterDrag || posterDrag === slug) return;
+        var list = shownPosters().map(function (q) { return q.slug; });
+        var from = list.indexOf(posterDrag);
+        list.splice(from, 1);
+        var rect = item.getBoundingClientRect();
+        var afterTarget = he ? e.clientX < rect.left + rect.width / 2 : e.clientX > rect.left + rect.width / 2;
+        list.splice(list.indexOf(slug) + (afterTarget ? 1 : 0), 0, posterDrag);
+        posterDrag = ""; reorderPosters(list); changed(); syncPage();
+      });
     });
+    if (posterOrig) { posterOrig.hidden = true; posterOrig.style.display = "none"; }
     drawPosters();
+  }
+  // Posters in the order of the projects (their "order" field).
+  function shownPosters() {
+    return Object.keys(posterEls).map(function (slug) { return projects.filter(function (x) { return x.slug === slug; })[0]; }).filter(Boolean)
+      .sort(function (a, b) { return a.order - b.order; });
+  }
+  function postersFree() { return shownPosters().some(function (q) { return q.poster_w >= 10; }); }
+  // A new order for the posters: the projects get 1, 2, 3… in that order
+  // (the other projects keep their places after them).
+  function reorderPosters(slugs) {
+    var rest = projects.filter(function (q) { return slugs.indexOf(q.slug) < 0; }).sort(function (a, b) { return a.order - b.order; });
+    var all = slugs.map(function (sl) { return projects.filter(function (q) { return q.slug === sl; })[0]; }).concat(rest);
+    all.forEach(function (q, i) { q.order = i + 1; });
+  }
+  function movePoster(slug, dir) {
+    var list = shownPosters().map(function (q) { return q.slug; }), i = list.indexOf(slug), j = i + dir;
+    if (i < 0 || j < 0 || j >= list.length) return;
+    list[i] = list[j]; list[j] = slug;
+    reorderPosters(list); changed(); syncPage();
+  }
+  // Same rows as the built page (src/render.js home()): automatic rows of
+  // three (4 → 2+2), or free sizes: rows filled in order, one common height.
+  function layoutPosters() {
+    if (!posterBox) return;
+    var list = shownPosters(), rows = [];
+    var free = postersFree() && !phone.matches;
+    if (free) {
+      var row = [], sum = 0;
+      list.forEach(function (q) { var f = q.poster_w || 33; if (row.length && sum + f > 106) { rows.push(row); row = []; sum = 0; } row.push(q); sum += f; });
+      if (row.length) rows.push(row);
+    } else {
+      var i = 0, per = phone.matches ? 2 : 3;
+      while (i < list.length) { var left = list.length - i, n = phone.matches ? Math.min(2, left) : left === 4 ? 2 : left <= 3 ? left : 3; rows.push(list.slice(i, i + n)); i += n; }
+      void per;
+    }
+    posterBox.textContent = "";
+    rows.forEach(function (rw) {
+      var r = el("div", { "class": "mrow n" + rw.length });
+      var f = rw.map(function (q) { return q.poster_w || 33; }), total = f.reduce(function (a, b) { return a + b; }, 0);
+      var share = f.map(function (x) { return x / total; });
+      var h = share.reduce(function (acc, sh, k) { return acc + sh * (sh * 100 / posterEls[rw[k].slug].r); }, 0);
+      rw.forEach(function (q, k) {
+        var pe = posterEls[q.slug], it = pe.el;
+        it.style.flex = ""; it.style.width = ""; it.style.minWidth = ""; it.style.marginInline = "";
+        if (pe.media) pe.media.style.aspectRatio = "";
+        if (free && rw.length === 1) { it.style.flex = "none"; it.style.width = Math.min(100, f[0]) + "%"; it.style.marginInline = "auto"; }
+        else if (free) { it.style.flex = Math.round(share[k] * 1000) + " 1 0"; it.style.minWidth = "0"; if (pe.media) pe.media.style.aspectRatio = String((share[k] * 100) / h); }
+        r.appendChild(it);
+      });
+      posterBox.appendChild(r);
+    });
   }
   function drawPosters() {
     Object.keys(posterEls).forEach(function (slug) {
@@ -624,6 +805,8 @@
       }
       pe.el.classList.toggle("pe-off", p.in_posters === false);
       pe.tools.textContent = "";
+      var back = he ? "›" : "‹", fwd = he ? "‹" : "›";
+      pe.tools.appendChild(button(back, function () { movePoster(slug, -1); }, "pe-icon", T.earlier));
       pe.tools.appendChild(el("span", { "class": "pe-tools-label", text: displayName(p) }));
       pe.tools.appendChild(button(T.posterReplace, function () {
         pick(function (path, alts) { p.cover = { path: path, alts: alts }; changed(); syncPage(); }, "", { noProject: true, note: T.posterNote });
@@ -632,7 +815,10 @@
         ? button(T.posterShow, function () { p.in_posters = true; changed(); syncPage(); })
         : button(T.posterHide, function () { p.in_posters = false; changed(); syncPage(); }, "pe-btn pe-danger"));
       if (p.in_posters === false) pe.tools.appendChild(el("span", { "class": "pe-tools-label", text: T.posterHiddenNote }));
+      if (p.poster_w) pe.tools.appendChild(button(T.posterAuto, function () { projects.forEach(function (q) { q.poster_w = 0; }); changed(); syncPage(); }));
+      pe.tools.appendChild(button(fwd, function () { movePoster(slug, 1); }, "pe-icon", T.later));
     });
+    layoutPosters();
   }
 
   // Brings the opening and the toolbar in line with the state (after undo
@@ -688,7 +874,7 @@
     return out;
   }
   var phone = window.matchMedia("(max-width: 700px)");
-  if (phone.addEventListener) phone.addEventListener("change", function () { if (data) render(); });
+  if (phone.addEventListener) phone.addEventListener("change", function () { if (data) { render(); layoutPosters(); } });
 
   // ---------- free sizes (computers): width in % of the page ----------
   function isFree() { return data.gallery.some(function (g) { return g && g.visible !== false && Number(g.fw) >= 10; }); }
@@ -798,7 +984,6 @@
     var back = he ? "›" : "‹", fwd = he ? "‹" : "›";
     fig.appendChild(el("div", { "class": "pe-tools" }, [
       button(back, function () { move(idx, -1); }, "pe-icon", T.earlier),
-      sizeButtons(g),
       select(T.frame, g.frame || "natural", [["natural", T.frame + ": " + T.frameNatural], ["wide", T.frame + ": " + T.frameWide], ["landscape", T.frame + ": " + T.frameLandscape], ["square", T.frame + ": " + T.frameSquare], ["portrait", T.frame + ": " + T.framePortrait]],
         function (v) { g.frame = v; changed(); }),
       projectSelect(g.project || "", function (v) { g.project = v; changed(); }),
@@ -1115,9 +1300,11 @@
           d.title_he = p.title_he; d.title_en = p.title_en;
           if (p.cover) { d.cover = "/" + p.cover.path; d.cover_alt_he = p.cover.alts.he; d.cover_alt_en = p.cover.alts.en; }
           if (p.in_posters === false) d.in_posters = false; else delete d.in_posters;
-          return api("/contents/" + encPath(path), { method: "PUT", body: { message: "Project " + p.slug + ": changed on the homepage (name, poster or posters row)", content: utf8ToB64(JSON.stringify(d, null, 2) + "\n"), sha: res.sha, branch: BRANCH } });
+          if (p.order !== p.orig_order) d.order = p.order;
+          if (p.poster_w) d.poster_w = p.poster_w; else delete d.poster_w;
+          return api("/contents/" + encPath(path), { method: "PUT", body: { message: "Project " + p.slug + ": changed on the homepage (name, poster, order or poster size)", content: utf8ToB64(JSON.stringify(d, null, 2) + "\n"), sha: res.sha, branch: BRANCH } });
         })
-        .then(function () { p.orig_he = p.title_he; p.orig_en = p.title_en; if (p.cover) p.origCover = "/" + p.cover.path; p.cover = null; p.orig_in_posters = p.in_posters; });
+        .then(function () { p.orig_he = p.title_he; p.orig_en = p.title_en; if (p.cover) p.origCover = "/" + p.cover.path; p.cover = null; p.orig_in_posters = p.in_posters; p.orig_order = p.order; p.orig_poster_w = p.poster_w; });
     });
     return chain;
   }
@@ -1252,6 +1439,7 @@
         original = JSON.stringify(data);
         return savePageAdds();
       })
+      .then(saveTexts)
       .then(saveRenames)
       .then(function () {
         saveBtn.disabled = true;
@@ -1262,6 +1450,28 @@
         saveBtn.disabled = false;
         setStatus(err.changed || err.status === 409 ? T.errChanged : err.status === 401 || err.status === 403 ? T.errAuth : T.errSave, "error");
       });
+  }
+  // Interface texts and services: written only if changed here, and only if
+  // the file did not change elsewhere since it was loaded.
+  function saveTexts() {
+    if (!textsDirty()) return Promise.resolve();
+    var orig = JSON.parse(textsOrig);
+    var jobs = [];
+    if (JSON.stringify(texts.labels) !== JSON.stringify(orig.labels)) jobs.push({ path: "content/labels.json", data: texts.labels, sha: function () { return labelsSha; }, set: function (v) { labelsSha = v; }, message: "Homepage: texts edited on the page" });
+    if (texts.services && JSON.stringify(texts.services) !== JSON.stringify(orig.services)) jobs.push({ path: "content/services.json", data: texts.services, sha: function () { return servicesSha; }, set: function (v) { servicesSha = v; }, message: "Services: names edited on the homepage" });
+    var chain = Promise.resolve();
+    jobs.forEach(function (j) {
+      chain = chain
+        .then(function () { return api("/contents/" + encPath(j.path) + "?ref=" + encodeURIComponent(BRANCH)).then(function (r) { return r.sha; }).catch(function (err) { if (err.status === 404) return ""; throw err; }); })
+        .then(function (cur) {
+          if (cur !== j.sha()) { var err = new Error("changed"); err.changed = true; throw err; }
+          var body = { message: j.message, content: utf8ToB64(JSON.stringify(j.data, null, 2) + "\n"), branch: BRANCH };
+          if (j.sha()) body.sha = j.sha();
+          return api("/contents/" + encPath(j.path), { method: "PUT", body: body });
+        })
+        .then(function (res) { j.set(res.content.sha); });
+    });
+    return chain.then(function () { textsOrig = JSON.stringify(texts); });
   }
   // Adds the chosen pictures to each project's page gallery (its first
   // gallery section, or a new one), keeping everything else in the file.
@@ -1300,6 +1510,7 @@
 
   function quit() {
     if (dirty() && !window.confirm(T.leave)) return;
+    leaving = true;
     original = JSON.stringify(data); // allow leaving without the browser's own warning
     location.reload();
   }
