@@ -50,6 +50,16 @@
     undoTip: "ביטול הפעולה האחרונה (Ctrl+Z)",
     nothingToUndo: "אין מה לבטל",
     undone: "הפעולה בוטלה",
+    titleHint: "שם הפרויקט (לחצו כדי לשנות)",
+    titleShared: "לפרויקט אין שם נפרד בעברית, ולכן השם הזה מופיע גם בדף באנגלית.",
+    titleEmpty: "שם הפרויקט לא יכול להיות ריק. השם הקודם הוחזר.",
+    sizeAll: "גודל כל התמונות במחשב",
+    sizeAuto: "אוטומטי",
+    perRow: "בשורה",
+    freeNote: "גודל חופשי: לוחצים על תמונה, ואז גוררים את הנקודות הכחולות שבמסגרת.",
+    phoneNote: "בטלפון התמונות מוצגות אחת מתחת לשנייה. שינוי גודל — במחשב.",
+    frameTip: "לחצו על התמונה כדי לבחור אותה, גררו את הנקודות כדי לשנות גודל, או גררו את התמונה כדי להזיז",
+    widthLabel: "רוחב",
     lede: "משפט קצר על הפרויקט (לחצו כדי לכתוב)",
     synopsisTitle: "תקציר",
     synopsis: "טקסט על הפרויקט (לחצו כדי לכתוב). שורה ריקה מתחילה פסקה חדשה.",
@@ -92,8 +102,8 @@
     reload: "רענון לראות",
     slow: "העדכון לוקח יותר מהרגיל. השינוי שמור; אפשר לבדוק שוב מאוחר יותר.",
     tipTitle: "איך עורכים את דף הפרויקט",
-    tip1: "לוחצים על המשפט הקצר או על הטקסט וכותבים.",
-    tip2: "מעבירים עכבר על תמונה (בטלפון: הכלים מתחת לכל תמונה): מופיעים חצים להזזה, החלפה, הסתרה, הסרה ותיאור לעיוורים. אפשר גם לגרור תמונה למקום אחר.",
+    tip1: "לוחצים על שם הפרויקט, על המשפט הקצר או על הטקסט וכותבים.",
+    tip2: "גודל: לוחצים על תמונה ומופיעה מסגרת עם נקודות. גוררים נקודה — התמונה גדלה או קטנה, והשורה מסתדרת לבד. לכל התמונות יחד: ״גודל כל התמונות במחשב״ מעל הגלריה. הזזה: גוררים את התמונה עצמה, או חצים. הכלים (החלפה, הסתרה, הסרה, תיאור לעיוורים) מופיעים כשמעבירים עכבר על תמונה.",
     tip3: "״הוספת תמונה״ — מהתמונות שבאתר או מהמחשב.",
     tip4: "שום דבר לא נשמר עד ״שמירה״. טעיתם? ״ביטול פעולה״.",
     tipClose: "הבנתי",
@@ -112,6 +122,16 @@
     undoTip: "Undo the last action (Ctrl+Z)",
     nothingToUndo: "Nothing to undo",
     undone: "Undone",
+    titleHint: "Project name (click to change)",
+    titleShared: "The project has no separate Hebrew name, so this name also shows on the Hebrew page.",
+    titleEmpty: "The project name cannot be empty. The previous name is back.",
+    sizeAll: "Size of all pictures on computers",
+    sizeAuto: "Automatic",
+    perRow: "per row",
+    freeNote: "Free size: click a picture, then drag the blue dots on its frame.",
+    phoneNote: "On phones the pictures show one under another. Resize on a computer.",
+    frameTip: "Click the picture to select it, drag the dots to resize, or drag the picture to move it",
+    widthLabel: "Width",
     lede: "A short sentence about the project (click to write)",
     synopsisTitle: "Synopsis",
     synopsis: "Text about the project (click to write). An empty line starts a new paragraph.",
@@ -154,8 +174,8 @@
     reload: "Reload to see it",
     slow: "The update is taking longer than usual. The change is saved; check again later.",
     tipTitle: "How to edit the project page",
-    tip1: "Click the short sentence or the text and write.",
-    tip2: "Point at a picture (on phones: the tools are under each picture): arrows to move it, replace, hide, remove and a description for blind visitors appear. You can also drag a picture to another place.",
+    tip1: "Click the project name, the short sentence or the text and write.",
+    tip2: "Size: click a picture and a frame with dots appears. Drag a dot: the picture grows or shrinks and its row rearranges itself. For all pictures at once: \"Size of all pictures on computers\" above the gallery. Move: drag the picture itself, or use the arrows. Tools (replace, hide, remove, description) appear when you point at a picture.",
     tip3: "\"Add a picture\": from the pictures on the site or from this computer.",
     tip4: "Nothing is saved until \"Save\". Made a mistake? \"Undo\".",
     tipClose: "Got it",
@@ -334,7 +354,7 @@
 
   // ---------- page parts ----------
   var area = el("div", { "class": "pe-proj-area" });
-  var ledeEl = null;
+  var ledeEl = null, titleEl = null, titleField = "title_" + lang;
 
   // Plain-text editing (no hidden formatting is pasted in).
   function editable(node, placeholder, onText) {
@@ -364,6 +384,24 @@
     Array.prototype.forEach.call(article.querySelectorAll(".project-section"), function (s) {
       if (s.querySelector(".jg-project")) { if (!firstGallery) firstGallery = s; s.hidden = true; }
     });
+    // The project name: the field the page shows (a name without a Hebrew
+    // version is shared by both languages, as on the site).
+    var h1 = article.querySelector("[data-project-title]");
+    if (h1) {
+      h1.classList.remove("visually-hidden");
+      h1.classList.add("page-title");
+      var shared = !data["title_" + lang];
+      titleField = shared ? (lang === "he" ? "title_en" : "title_he") : "title_" + lang;
+      if (!data[titleField]) titleField = "title_" + lang;
+      h1.textContent = data[titleField] || h1.textContent;
+      editable(h1, T.titleHint, function (txt) { data[titleField] = clean(txt).replace(/\n+/g, " "); });
+      h1.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); h1.blur(); } });
+      h1.addEventListener("blur", function () {
+        if (!clean(data[titleField])) { data[titleField] = JSON.parse(original)[titleField]; h1.textContent = data[titleField]; setStatus(T.titleEmpty, "warn"); }
+      });
+      titleEl = h1;
+      if (titleField !== "title_" + lang) head.insertBefore(el("p", { "class": "pe-note pe-title-note", text: T.titleShared }), h1.nextSibling);
+    }
     ledeEl = head ? head.querySelector(".lede") : null;
     if (!ledeEl && head) { ledeEl = el("p", { "class": "lede" }); head.appendChild(ledeEl); }
     if (ledeEl) {
@@ -374,7 +412,10 @@
     else article.insertBefore(area, article.firstChild);
     render();
   }
-  function fillLede() { if (ledeEl) ledeEl.textContent = data["text_" + lang] || ""; }
+  function fillLede() {
+    if (ledeEl) ledeEl.textContent = data["text_" + lang] || "";
+    if (titleEl) titleEl.textContent = data[titleField] || "";
+  }
 
   // ---------- drawing the editing view ----------
   var dragFrom = null; // { s: section index, g: the picture being dragged }
@@ -453,13 +494,38 @@
   function galleryBlock(sec, s) {
     var heading = sec["heading_" + lang] || (sec.type === "behind" ? T.behind : T.gallery);
     var box = el("section", { "class": "project-section pe-gal-sec" }, [el("h2", { "class": "section-label", text: heading })]);
-    var grid = el("div", { "class": "jg jg-project pe-gal" });
-    var hiddenIdx = [];
+    var hiddenIdx = [], shownList = [];
     sec.images.forEach(function (g, i) {
       if (!g || !g.image) return;
       if (g.visible === false) { hiddenIdx.push(i); return; }
-      grid.appendChild(cell(sec, s, g, i));
+      shownList.push({ g: g, i: i, r: ratioOf(g) });
     });
+    // Size of all pictures at once: a number per row sets the same width
+    // for every picture; "automatic" goes back to the usual layout.
+    var free = isFree(sec) && !narrow.matches;
+    var per = sameWidth(shownList);
+    box.appendChild(el("div", { "class": "pe-gal-tools" }, [
+      el("label", { "class": "pe-gal-size" }, [
+        document.createTextNode(T.sizeAll + " "),
+        selectBox(T.sizeAll, per, [["auto", T.sizeAuto], ["1", "1 " + T.perRow], ["2", "2 " + T.perRow], ["3", "3 " + T.perRow], ["4", "4 " + T.perRow]].concat(per === "free" ? [["free", T.freeNote.split(":")[0]]] : []), function (v) {
+          sec.images.forEach(function (g) { if (!g) return; if (v === "auto") delete g.fw; else if (v !== "free") g.fw = Math.floor(100 / Number(v)); });
+          changed();
+        }),
+      ]),
+      el("span", { "class": "pe-note", text: narrow.matches ? T.phoneNote : T.freeNote }),
+    ]));
+    var grid;
+    if (free) {
+      grid = el("div", { "class": "jg-project jg-free pe-gal" });
+      freeRows(shownList).forEach(function (row) {
+        var r = el("div", { "class": "mrow n" + row.length });
+        row.forEach(function (it) { r.appendChild(cell(sec, s, it.g, it.i, it, grid)); });
+        grid.appendChild(r);
+      });
+    } else {
+      grid = el("div", { "class": "jg jg-project pe-gal" });
+      shownList.forEach(function (it) { grid.appendChild(cell(sec, s, it.g, it.i, null, grid)); });
+    }
     box.appendChild(grid);
     box.appendChild(el("div", { "class": "pe-add" }, [button("+ " + T.add, function () {
       pick(function (path, alts) {
@@ -489,13 +555,32 @@
     setStatus(T.removed, "warn");
   }
 
-  function cell(sec, s, g, i) {
+  function cell(sec, s, g, i, it, grid) {
     var r = ratioOf(g);
     var media = el("span", { "class": "jg-media" }, [picture(g.image, "(max-width: 560px) 100vw, (max-width: 1100px) 50vw, 40vw", redraw)]);
     media.style.aspectRatio = String(r);
     var fig = el("figure", { "class": "jg-item pe-item" + (FRAMES[g.frame] ? " fit-cover focus-" + (g.focus || "center") : ""), draggable: "true", title: T.drag }, [media]);
-    fig.style.flexGrow = String(Math.round(r * 100));
-    fig.style.flexBasis = "calc(var(--row-h) * " + r + ")";
+    if (it && it.single) { fig.classList.add("pe-alone"); fig.style.width = it.single + "%"; }
+    else if (it && it.grow) { fig.style.flex = it.grow + " 1 0"; fig.style.minWidth = "0"; media.style.aspectRatio = String(it.ar); media.classList.add("pe-crop"); }
+    else { fig.style.flexGrow = String(Math.round(r * 100)); fig.style.flexBasis = "calc(var(--row-h) * " + r + ")"; }
+    if (!narrow.matches) frame(fig, {
+      start: function () { return fig.getBoundingClientRect().width / (grid.getBoundingClientRect().width || 1) * 100; },
+      area: function () { return grid.getBoundingClientRect().width; },
+      live: function (pct) { fig.style.flex = "none"; fig.style.width = pct + "%"; },
+      done: function (pct) {
+        // The first resize keeps every other picture at its current size.
+        if (!isFree(sec)) {
+          var gw = grid.getBoundingClientRect().width || 1;
+          Array.prototype.forEach.call(grid.querySelectorAll(".pe-item"), function (n) {
+            var other = n.__pic;
+            if (other && other !== g) other.fw = Math.max(10, Math.min(100, Math.round(n.getBoundingClientRect().width / gw * 100)));
+          });
+        }
+        g.fw = pct; selected = g; changed();
+      },
+      selectedNow: selected === g,
+    });
+    fig.__pic = g;
     if (uploads[norm(g.image)]) fig.appendChild(el("span", { "class": "pe-badge", text: T.newBadge }));
     if (!g["alt_" + lang]) fig.appendChild(el("span", { "class": "pe-missing", text: T.noAlt }));
     // Arrow shapes follow the reading direction: "earlier" points right in Hebrew.
@@ -513,7 +598,7 @@
       button(T.remove, function () { removeAt(sec, g); }, "pe-btn pe-danger"),
     ]));
     fig.addEventListener("dragstart", function (e) {
-      if (e.target && e.target.closest && e.target.closest(".pe-tools")) { e.preventDefault(); return; }
+      if (e.target && e.target.closest && e.target.closest(".pe-tools, .pe-dot")) { e.preventDefault(); return; }
       dragFrom = { s: s, g: g }; fig.classList.add("is-dragging");
       try { e.dataTransfer.setData("text/plain", String(i)); e.dataTransfer.effectAllowed = "move"; } catch (x) { /* old browser */ }
     });
@@ -532,6 +617,96 @@
     fig.setAttribute("aria-label", g["alt_" + lang] || g.image);
     return fig;
   }
+  // ---------- free sizes (computers) ----------
+  var narrow = window.matchMedia ? window.matchMedia("(max-width: 700px)") : { matches: false };
+  if (narrow.addEventListener) narrow.addEventListener("change", function () { if (data) render(); });
+  var selected = null; // the picture whose frame stays selected after a resize
+  function isFree(sec) { return sec.images.some(function (g) { return g && g.visible !== false && Number(g.fw) >= 10; }); }
+  // Which choice of "size of all pictures" matches the pictures now.
+  function sameWidth(list) {
+    if (!list.some(function (it) { return Number(it.g.fw) >= 10; })) return "auto";
+    var w = list.map(function (it) { return Number(it.g.fw) || 0; });
+    for (var n = 1; n <= 4; n++) if (w.every(function (x) { return x === Math.floor(100 / n); })) return String(n);
+    return "free";
+  }
+  // Same rule as the site (src/render.js freeClasses): rows filled in order,
+  // pictures sharing a row fill it with one common height.
+  function freeRows(list) {
+    var rows = [], row = [], sum = 0;
+    list.forEach(function (it) {
+      var f = Number(it.g.fw) || 33;
+      if (row.length && sum + f > 106) { rows.push(row); row = []; sum = 0; }
+      row.push(it); sum += f;
+    });
+    if (row.length) rows.push(row);
+    rows.forEach(function (rw) {
+      var f = rw.map(function (it) { return Number(it.g.fw) || 33; });
+      if (rw.length === 1) { rw[0].single = Math.min(100, f[0]); return; }
+      var total = f.reduce(function (a, b) { return a + b; }, 0);
+      var share = f.map(function (x) { return x / total; });
+      var h = share.reduce(function (acc, sh, k) { return acc + sh * (sh * 100 / rw[k].r); }, 0);
+      rw.forEach(function (it, k) { it.grow = Math.round(share[k] * 1000); it.ar = (share[k] * 100) / h; });
+    });
+    return rows;
+  }
+  function selectBox(label, value, options, onChange) {
+    var sel = el("select", { "aria-label": label, title: label, "class": "pe-select" });
+    options.forEach(function (o) { var opt = el("option", { value: o[0], text: o[1] }); if (String(value) === o[0]) opt.selected = true; sel.appendChild(opt); });
+    sel.addEventListener("change", function () { onChange(sel.value); });
+    return sel;
+  }
+  // Selection frame: click a picture, drag a dot to resize (width in %).
+  function deselectAll() {
+    Array.prototype.forEach.call(document.querySelectorAll(".pe-selected"), function (n) { n.classList.remove("pe-selected"); });
+  }
+  document.addEventListener("click", function (e) { if (!e.target.closest || !e.target.closest(".pe-framed, .pe-modal")) { deselectAll(); selected = null; } });
+  function frame(box, o) {
+    box.classList.add("pe-framed");
+    if (o.selectedNow) box.classList.add("pe-selected");
+    box.setAttribute("title", T.frameTip);
+    box.addEventListener("click", function (e) {
+      if (e.target.closest(".pe-tools, .pe-dot")) return;
+      e.preventDefault();
+      var was = box.classList.contains("pe-selected");
+      deselectAll();
+      if (!was) box.classList.add("pe-selected");
+    });
+    var label = el("span", { "class": "pe-frame-label" });
+    box.appendChild(label);
+    ["nw", "ne", "sw", "se", "w", "e"].forEach(function (pos) {
+      var dot = el("span", { "class": "pe-dot pe-dot-" + pos, "aria-hidden": "true" });
+      dot.addEventListener("mousedown", function (e) { e.preventDefault(); e.stopPropagation(); });
+      dot.addEventListener("dragstart", function (e) { e.preventDefault(); e.stopPropagation(); });
+      dot.addEventListener("pointerdown", function (e) {
+        e.preventDefault(); e.stopPropagation();
+        box.setAttribute("draggable", "false");
+        var startPct = o.start(), startX = e.clientX, startY = e.clientY;
+        var area = o.area() || 1;
+        var rd = dot.getBoundingClientRect(), b = box.getBoundingClientRect();
+        var right = rd.left + rd.width / 2 > b.left + b.width / 2, bottom = pos.charAt(0) === "s";
+        var pct = Math.round(startPct);
+        box.classList.add("is-resizing", "pe-selected");
+        try { dot.setPointerCapture(e.pointerId); } catch (x) { /* old browser */ }
+        function mv(ev) {
+          var dx = (ev.clientX - startX) * (right ? 1 : -1);
+          var dy = pos.length === 2 ? (ev.clientY - startY) * (bottom ? 1 : -1) * (b.width / Math.max(1, b.height)) : 0;
+          var d = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
+          pct = Math.max(10, Math.min(100, Math.round(startPct + d / area * 100)));
+          label.textContent = T.widthLabel + " " + pct + "%";
+          o.live(pct);
+        }
+        function up() {
+          dot.removeEventListener("pointermove", mv); dot.removeEventListener("pointerup", up); dot.removeEventListener("pointercancel", up);
+          box.classList.remove("is-resizing"); box.setAttribute("draggable", "true");
+          if (pct !== Math.round(startPct)) o.done(pct);
+          setTimeout(function () { label.textContent = ""; }, 900);
+        }
+        dot.addEventListener("pointermove", mv); dot.addEventListener("pointerup", up); dot.addEventListener("pointercancel", up);
+      });
+      box.appendChild(dot);
+    });
+  }
+
   // Moves a picture one place among the pictures shown (hidden ones keep their places).
   function move(sec, g, dir) {
     var shownIdx = [];

@@ -381,6 +381,9 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .project-cover a { display: block; cursor: zoom-in; }
 .project-cover a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .jg-project a.jg-item { cursor: zoom-in; }
+/* Project gallery with free sizes from the page editor (computers); phones: one per row. */
+.jg-free { display: grid; --mgap: clamp(0.75rem, 1.6vw, 1.25rem); gap: var(--mgap); }
+@media (max-width: 700px) { .jg-free .mrow { flex-wrap: wrap; } .jg-free .mrow .jg-item { flex: 1 1 100% !important; } }
 .project-section > .section-label { margin-bottom: clamp(1rem, 2vw, 1.5rem); }
 .project-section > .prose + .jg { margin-top: clamp(1.5rem, 3vw, 2.25rem); }
 
@@ -1037,6 +1040,12 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .pe-gal .pe-tools { grid-template-columns: 1fr 1fr; }
 .pe-small-box { width: min(34rem, 100%); grid-template-rows: auto auto; }
 .pe-proj-note { margin: 1rem 0; }
+.pe-gal-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin: 0 0 0.9rem; }
+.pe-gal-size { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 600; }
+.pe-gal-size .pe-select { color: var(--ink); background: #fff; border-color: var(--line); }
+.pe-gal .pe-crop img { object-fit: cover; }
+.pe-title-note { margin: 0.4rem 0 0; }
+h1.pe-editable { min-width: 4ch; }
 .manage-projects-title { margin: 1rem 0 0.4rem; font-weight: 600; }
 .manage-projects { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0; padding: 0; list-style: none; }
 .manage-projects a { color: var(--ink); }

@@ -691,20 +691,61 @@ function videoBlock(ctx, v, projectTitle, poster) {
   return `<figure class="video-item"><div class="video">${player}</div>${v.title ? `<figcaption class="video-title">${e(v.title)}</figcaption>` : ""}</figure>`;
 }
 
+// Free sizes (set by dragging in the page editor): each picture has a width in
+// % of the page. Rows are filled in order; pictures sharing a row are
+// stretched to fill it exactly with one common height (cropped to it), so no
+// empty space is left. A picture alone in its row keeps its width, centred.
+// Returns one CSS class per picture (computers only; see build.js).
+function freeClasses(list) {
+  const rows = [];
+  let row = [], sum = 0;
+  list.forEach((im, i) => {
+    const f = im.fw || 33;
+    if (row.length && sum + f > 106) { rows.push(row); row = []; sum = 0; }
+    row.push(i); sum += f;
+  });
+  if (row.length) rows.push(row);
+  const classes = [];
+  for (const r of rows) {
+    const f = r.map((i) => list[i].fw || 33);
+    if (r.length === 1) {
+      const w = Math.min(100, f[0]);
+      const cls = `fs-${w}`;
+      freeRules.set(cls, `.mrow>.${cls}{flex:none!important;width:${w}%;margin-inline:auto}`);
+      classes[r[0]] = cls;
+      continue;
+    }
+    const total = f.reduce((a, b) => a + b, 0);
+    const share = f.map((x) => x / total);
+    const h = share.reduce((acc, s, k) => acc + s * (s * 100 / ratioClass(list[r[k]]).ratio), 0);
+    r.forEach((i, k) => {
+      const grow = Math.round(share[k] * 1000), ar = Math.round((share[k] * 100 / h) * 100) / 100;
+      const cls = `fr-${grow}-${String(ar).replace(".", "_")}`;
+      freeRules.set(cls, `.mrow>.${cls}{flex:${grow} 1 0!important;min-width:0}.mrow>.${cls} .jg-media{aspect-ratio:${ar}}.mrow>.${cls} .jg-media img{object-fit:cover}`);
+      classes[i] = cls;
+    });
+  }
+  return { rows, classes };
+}
+
 // Pictures inside a project page: open in the image viewer.
 function projectPictures(ctx, list) {
-  return gallery(
-    list.map((im) =>
-      galleryItem(ctx, im, {
-        href: im.link ? linkOf(ctx, im.link) : ctx.assetBase + e(im.full || im.src),
-        label: im.link ? im.alt : `${ctx.t.work.openImage}: ${im.alt}`,
-        caption: im.caption !== "hidden" ? { title: im.title, note: im.note } : null,
-        viewer: !im.link,
-        external: !!(im.link && im.link.external),
-      })
-    ),
-    "jg-project"
-  );
+  const item = (im, extraClass = "") =>
+    galleryItem(ctx, im, {
+      href: im.link ? linkOf(ctx, im.link) : ctx.assetBase + e(im.full || im.src),
+      label: im.link ? im.alt : `${ctx.t.work.openImage}: ${im.alt}`,
+      caption: im.caption !== "hidden" ? { title: im.title, note: im.note } : null,
+      viewer: !im.link,
+      external: !!(im.link && im.link.external),
+      extraClass,
+    });
+  if (list.some((im) => im.fw)) {
+    const { rows, classes } = freeClasses(list);
+    return `<div class="jg-project jg-free">
+        ${rows.map((r) => `<div class="mrow n${r.length}">${r.map((i) => item(list[i], classes[i])).join("")}</div>`).join("\n        ")}
+      </div>`;
+  }
+  return gallery(list.map((im) => item(im)), "jg-project");
 }
 
 function projectSection(ctx, p, sec, i) {
@@ -852,7 +893,7 @@ function project(ctx, p, prev, next) {
     <article class="page project" data-slug="${e(p.slug)}">
       <header class="page-head">
         <p class="crumb"><a href="${link("work/")}">${e(t.work.back)}</a></p>
-        <h1 class="${p.showTitle ? "page-title" : "visually-hidden"}">${e(p.title)}</h1>${cats ? `
+        <h1 class="${p.showTitle ? "page-title" : "visually-hidden"}" data-project-title>${e(p.title)}</h1>${cats ? `
         <p class="project-meta">${e(cats)}</p>` : ""}${p.text ? `
         <p class="lede">${e(p.text)}</p>` : ""}
       </header>${cover}${synopsis}${p.sections.map((sec, i) => projectSection(ctx, p, sec, i)).join("")}${p.products && p.products.length ? `
