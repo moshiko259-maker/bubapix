@@ -1046,6 +1046,8 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .pe-gal .pe-crop img { object-fit: cover; }
 .pe-title-note { margin: 0.4rem 0 0; }
 h1.pe-editable { min-width: 4ch; }
+.pe-work-name { position: absolute; inset-block-end: 0.4rem; inset-inline-start: 0.4rem; padding: 0.15rem 0.5rem; border-radius: 6px; background: rgba(22, 22, 29, 0.78); color: var(--paper); font-size: 0.8rem; font-weight: 600; pointer-events: none; }
+.bottom-hint.pe-editable { display: block; }
 .manage-projects-title { margin: 1rem 0 0.4rem; font-weight: 600; }
 .manage-projects { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0; padding: 0; list-style: none; }
 .manage-projects a { color: var(--ink); }

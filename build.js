@@ -400,6 +400,8 @@ function contentFor(lang) {
         categories: (Array.isArray(p.categories) ? p.categories : []).map((c) => catBySlug.get(c)).filter(Boolean),
         cover,
         // Width of the cover on computers (% of the page), set by dragging in the page editor.
+        // Width of its picture on the projects page (computers), set in the page editor.
+        listW: Number(p.list_w) >= 10 && Number(p.list_w) <= 100 ? Math.round(Number(p.list_w)) : 0,
         coverW: Number(p.cover_w) >= 20 && Number(p.cover_w) < 100 ? Math.round(Number(p.cover_w)) : 0,
         // The picture that represents the project in galleries.
         thumb: cover || pictures[0] || null,
@@ -662,6 +664,7 @@ const assetVersion = {
   community: fileVersion(["js/community.js"]),
   editor: fileVersion(["js/editor.js"]),
   projectEditor: fileVersion(["js/project-editor.js"]),
+  workEditor: fileVersion(["js/work-editor.js"]),
 };
 
 function contextFor(lang, pagePath, data) {

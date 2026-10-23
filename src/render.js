@@ -330,7 +330,7 @@ function editBar(ctx, edits, pageEditor = false) {
   const { t } = ctx;
   // "Edit on the page": loads js/editor.js only when pressed (owner only).
   // Project pages have their own editor (js/project-editor.js).
-  const src = pageEditor === "project" ? `js/project-editor.js?v=${ctx.v.projectEditor}` : `js/editor.js?v=${ctx.v.editor}`;
+  const src = pageEditor === "project" ? `js/project-editor.js?v=${ctx.v.projectEditor}` : pageEditor === "work" ? `js/work-editor.js?v=${ctx.v.workEditor}` : `js/editor.js?v=${ctx.v.editor}`;
   const onPage = pageEditor && ctx.site.repo
     ? `<button type="button" class="edit-bar-page" data-page-editor data-src="${ctx.assetBase}${src}" data-repo="${e(ctx.site.repo)}" data-branch="${e(ctx.site.branch)}" data-manage="${makeLink(ctx)("manage/")}">${icon("edit")}<span>${e(t.edit.onPage)}</span></button>`
     : "";
@@ -372,7 +372,8 @@ function manage(ctx) {
         <p>${e(t.edit.onPageText)}</p>
         <a class="button button-large" href="${makeLink(ctx)("")}#edit">${e(t.edit.onPageButton)}</a>${data.projects.length ? `
         <p class="manage-projects-title">${e(t.edit.onPageProjects)}</p>
-        <ul class="manage-projects">${data.projects.map((p) => `
+        <ul class="manage-projects">
+          <li><a href="${makeLink(ctx)("work/")}#edit"><strong>${e(t.edit.onPageWorkPage)}</strong></a></li>${data.projects.map((p) => `
           <li><a href="${makeLink(ctx)(`work/${p.slug}/`)}#edit">${e(p.title)}</a></li>`).join("")}
         </ul>` : ""}
       </section>
@@ -655,24 +656,34 @@ function work(ctx) {
         <button type="button" class="filter" data-filter="${e(c.slug)}" aria-pressed="false">${e(c.name)}</button>`).join("")}
       </div>`
     : "";
-  const items = data.projects.map((p) =>
+  // Free sizes from the page editor (computers): same rows rule as project galleries.
+  const free = data.projects.some((p) => p.listW) ? freeClasses(data.projects.map((p) => ({ ...p.thumb, fw: p.listW }))) : null;
+  const items = data.projects.map((p, i) =>
     galleryItem(ctx, p.thumb, {
       href: link(`work/${p.slug}/`),
       label: p.title,
       caption: p.titleInGallery ? { title: p.name, note: p.categories.map((c) => c.name).join(", ") } : null,
-    }).replace('<a class="jg-item', `<a data-categories="${e(p.categories.map((c) => c.slug).join(" "))}" class="jg-item`)
+      extraClass: free ? free.classes[i] : "",
+    }).replace(/<a class="jg-item/, `<a data-categories="${e(p.categories.map((c) => c.slug).join(" "))}" class="jg-item`)
   );
-  const grid = items.length ? gallery(items, "jg-work") : `<p class="muted">${e(t.work.empty)}</p>`;
+  const grid = !items.length
+    ? `<p class="muted">${e(t.work.empty)}</p>`
+    : free
+      ? `<div class="jg-work jg-free">
+        ${free.rows.map((r) => `<div class="mrow n${r.length}">${r.map((i) => items[i]).join("")}</div>`).join("\n        ")}
+      </div>`
+      : gallery(items, "jg-work");
   return layout(ctx, {
     edits: [...data.projects.map((p) => [t.edit.project.replace("{name}", p.title), ed.project(p.slug)]), [t.edit.newProject, ed.newProject]],
     title: pageTitle(ctx, t.work.title),
     description: data.seoDescription,
     current: "work",
+    pageEditor: "work",
     main: `
-    <div class="page">
-      <header class="page-head"><h1 class="page-title">${e(t.work.title)}</h1></header>${filters}
+    <div class="page" data-work-page>
+      <header class="page-head"><h1 class="page-title" data-work-title>${e(t.work.title)}</h1></header>${filters}
       ${grid}${items.length && t.work.hint ? `
-      <p class="page-hint bottom-hint">${e(t.work.hint)}</p>` : ""}
+      <p class="page-hint bottom-hint" data-work-hint>${e(t.work.hint)}</p>` : ""}
     </div>`,
   });
 }
