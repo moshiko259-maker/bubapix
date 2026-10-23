@@ -249,10 +249,17 @@
     try { if (on) localStorage.setItem(EDIT, "1"); else localStorage.removeItem(EDIT); } catch (e) { /* storage blocked */ }
     applyEdit();
   }
+  // The edit tools show only where the switch is on AND this browser is
+  // signed in with the owner's GitHub key (saved by the admin panel), so a
+  // visitor who finds the Manage page and flips the switch still sees nothing.
+  function signedIn() {
+    try { var u = JSON.parse(localStorage.getItem("sveltia-cms.user") || "null"); return !!(u && u.token); } catch (e) { return false; }
+  }
   function applyEdit() {
     var on = editOn();
-    each(document.querySelectorAll("[data-edit-bar]"), function (bar) { bar.hidden = !on; });
-    root.classList.toggle("edit-mode", on);
+    var show = on && signedIn();
+    each(document.querySelectorAll("[data-edit-bar]"), function (bar) { bar.hidden = !show; });
+    root.classList.toggle("edit-mode", show);
     each(document.querySelectorAll("[data-edit-toggle]"), function (b) {
       b.textContent = b.getAttribute(on ? "data-off" : "data-on");
       b.setAttribute("aria-pressed", String(on));
