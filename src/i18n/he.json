@@ -280,7 +280,7 @@
     "manageTitle": "ניהול האתר",
     "manageIntro": "מכאן עורכים את כל מה שבאתר. הכניסה מוגנת: רק לחשבונות שלכם יש הרשאה.",
     "contentTitle": "עריכה מתקדמת (באנגלית)",
-    "contentText": "לכל מה שעוד אין בעריכה על הדף: מוצרים, חנות, עמודים, טקסטים בממשק. לכלי הזה אין עברית. כל שמירה בו היא טיוטה, ורואים אותה באתר רק אחרי Publish.",
+    "contentText": "לכל מה שעוד אין בעריכה על הדף: מוצרים, חנות, עמודים, טקסטים בממשק. ממשק הכלי באנגלית, ושמות השדות בו כתובים גם בעברית. כל שמירה בו היא טיוטה, ורואים אותה באתר רק אחרי Publish.",
     "contentButton": "פתיחת העריכה המתקדמת",
     "commentsTitle": "תגובות והודעות",
     "commentsText": "אישור תגובות לפני פרסום, ותשובה לגולשים וללקוחות.",
@@ -293,14 +293,14 @@
     "firstTitle": "כניסה ראשונה (פעם אחת)",
     "firstContent": "עריכת תוכן: כניסה עם מפתח גישה של GitHub.",
     "firstContentSteps": [
-      "ב־github.com פותחים Settings ← Developer settings ← Personal access tokens ← Fine-grained tokens ← Generate new token.",
+      "ב־github.com פותחים, לפי הסדר: ⁦Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token⁩. בתפוגה (Expiration) בוחרים 90 יום.",
       "בגישה למאגרים בוחרים רק את המאגר bubapix. בהרשאות: Contents — Read and write; Pull requests — Read and write.",
       "מעתיקים את המפתח. ב״עריכה מתקדמת״ בוחרים ״Sign In Using Access Token״ ומדביקים. מעכשיו הדפדפן הזה מחובר גם לעריכה על הדף."
     ],
     "firstComments": "תגובות והודעות: כניסה עם מייל וסיסמה.",
     "firstCommentsSteps": [
-      "ב־supabase.com פותחים את הפרויקט של BubaPix ← Authentication ← Users ← Add user ← Create new user.",
-      "מייל: moshiko259@gmail.com. בוחרים סיסמה ושומרים אותה לעצמכם. מסמנים ״Auto Confirm User״.",
+      "ב־supabase.com פותחים את הפרויקט של BubaPix, ואז לפי הסדר: ⁦Authentication → Users → Add user → Create new user⁩.",
+      "מייל: המייל הפרטי שלכם שמוגדר כמנהל. בוחרים סיסמה ושומרים אותה לעצמכם. מסמנים ״Auto Confirm User״.",
       "פותחים ״תגובות והודעות״ ונכנסים עם המייל והסיסמה."
     ],
     "previewNote": "זה אתר הבדיקה. כל עריכה כאן נשמרת בענף העבודה ומופיעה רק באתר הבדיקה. האתר החי לא משתנה.",
@@ -311,7 +311,9 @@
     "onPageWorkPage": "עמוד הפרויקטים",
     "onPageServicesPage": "עמוד השירותים",
     "signedIn": "מחוברים לעריכה בדפדפן הזה.",
-    "notSignedIn": "עוד לא מחוברים לעריכה בדפדפן הזה. נכנסים פעם אחת דרך ״עריכה מתקדמת״ עם מפתח GitHub, ואז כל כלי העריכה עובדים."
+    "notSignedIn": "עוד לא מחוברים לעריכה בדפדפן הזה. נכנסים פעם אחת דרך ״עריכה מתקדמת״ עם מפתח GitHub, ואז כל כלי העריכה עובדים.",
+    "tokenExpired": "המפתח ל־GitHub פג או בוטל, ולכן העריכה לא תעבוד. צרו מפתח חדש (״כניסה ראשונה״ למטה) והיכנסו שוב דרך ״פתיחת העריכה המתקדמת״.",
+    "tokenChecking": "בודק את החיבור…"
   },
   "app": {
     "install": "התקנת האפליקציה",

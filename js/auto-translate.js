@@ -27,6 +27,7 @@
     if (cur) out.push(cur);
     return out;
   }
+  var ADDED = [/https?:\/\//i, /www\./i, /\]\(/, /\*\*/, /[<>]/, /@[\w-]+\.[a-z]/i];
   function decode(t) { return new DOMParser().parseFromString(t, "text/html").documentElement.textContent; }
   function clean(t) { return String(t || "").replace(/\r/g, "").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim(); }
   var cache = {};
@@ -41,7 +42,11 @@
           .then(function (d) {
             var t = d && d.responseData && d.responseData.translatedText;
             if (!d || Number(d.responseStatus) !== 200 || d.quotaFinished || !t || /MYMEMORY WARNING/i.test(t)) throw new Error("translate");
-            return done.concat(decode(t).trim());
+            t = decode(t).trim();
+            // The shared translation memory must not add links or formatting
+            // that were not in the owner's text (they would be published).
+            if (ADDED.some(function (re) { return re.test(t) && !re.test(part); })) throw new Error("translate");
+            return done.concat(t);
           });
       });
     });

@@ -280,7 +280,7 @@
     "manageTitle": "Site management",
     "manageIntro": "Everything on the site is edited from here. Sign-in is protected: only your own accounts have permission.",
     "contentTitle": "Advanced editing (English only)",
-    "contentText": "For everything not yet in on-page editing: products, shop, pages, interface texts. This tool has no Hebrew. Each save there is a draft, shown on the site only after Publish.",
+    "contentText": "For everything not yet in on-page editing: products, shop, pages, interface texts. The tool's interface is in English; its field names are also in Hebrew. Each save there is a draft, shown on the site only after Publish.",
     "contentButton": "Open advanced editing",
     "commentsTitle": "Comments and messages",
     "commentsText": "Approve comments before they are published, reply to visitors and customers.",
@@ -293,14 +293,14 @@
     "firstTitle": "First sign-in (once)",
     "firstContent": "Content editing: sign in with a GitHub access token.",
     "firstContentSteps": [
-      "On github.com, open Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.",
+      "On github.com, open Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token. Set Expiration to 90 days.",
       "Repository access: only the bubapix repository. Permissions: Contents — Read and write; Pull requests — Read and write.",
       "Copy the token. In “Advanced editing” choose “Sign In Using Access Token” and paste it. From then on this browser is also signed in for on-page editing."
     ],
     "firstComments": "Comments and messages: sign in with email and password.",
     "firstCommentsSteps": [
       "On supabase.com open the BubaPix project → Authentication → Users → Add user → Create new user.",
-      "Email: moshiko259@gmail.com. Choose a password and keep it to yourself. Tick “Auto Confirm User”.",
+      "Email: your own private email that is set as an admin. Choose a password and keep it to yourself. Tick “Auto Confirm User”.",
       "Open “Comments and messages” and sign in with that email and password."
     ],
     "previewNote": "This is the test site. Every edit here is saved to the work branch and shows only on the test site. The live site does not change.",
@@ -311,7 +311,9 @@
     "onPageWorkPage": "The projects page",
     "onPageServicesPage": "The services page",
     "signedIn": "Signed in for editing in this browser.",
-    "notSignedIn": "Not signed in for editing in this browser yet. Sign in once through “Advanced editing” with a GitHub token; then all editing tools work."
+    "notSignedIn": "Not signed in for editing in this browser yet. Sign in once through “Advanced editing” with a GitHub token; then all editing tools work.",
+    "tokenExpired": "The GitHub key has expired or was revoked, so editing will not work. Create a new key (“First sign-in” below) and sign in again through “Open advanced editing”.",
+    "tokenChecking": "Checking the sign-in…"
   },
   "app": {
     "install": "Install the app",

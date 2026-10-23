@@ -1060,6 +1060,7 @@ h1.pe-editable { min-width: 4ch; }
 .manage-projects a { color: var(--ink); }
 .manage-signin { margin: 0 0 1rem; padding: 0.7rem 1rem; border-radius: 10px; background: #fff3d6; font-size: 0.9375rem; }
 .manage-signin.is-ok { background: #e3f3e6; }
+.manage-signin.is-warn { background: #fde2e1; }
 .manage-main { margin-bottom: 1.25rem; border-width: 2px; border-color: var(--ink); }
 .pe-sizes { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.2rem; }
 .pe-size { padding: 0 0.3rem; }

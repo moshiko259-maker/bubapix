@@ -47,7 +47,7 @@
     notShown: "לא מוצג בדף בשפה הזו — חסר שם",
     add: "הוספה", remove: "מחיקה", earlier: "הזזה אחורה", later: "הזזה קדימה", drag: "גררו כדי לשנות את הסדר",
     removed: "נמחק. אפשר לבטל עם ״ביטול פעולה״.",
-    signIn: "כדי לערוך צריך להיכנס פעם אחת לכלי הניהול בדפדפן הזה (״כל הניהול״ ← ״כניסה לעריכת תוכן״), ואז לחזור לכאן.",
+    signIn: "כדי לערוך צריך להיכנס פעם אחת לכלי הניהול בדפדפן הזה (״כל הניהול״ ← ״פתיחת העריכה המתקדמת״), ואז לחזור לכאן.",
     openManage: "לכלי הניהול",
     errLoad: "לא הצלחתי לטעון את הדף מ־GitHub.",
     errSave: "השמירה נכשלה. מה שלא נשמר — לא השתנה.",
@@ -55,7 +55,7 @@
     errAuth: "הכניסה פגה או שאין הרשאה. היכנסו מחדש לכלי הניהול ונסו שוב.",
     leave: "יש שינויים שלא נשמרו. לצאת בכל זאת?",
     publishing: "נשמר ✓ אתר הבדיקה מתעדכן. אפשר להמשיך לעבוד.",
-    published: "האתר עודכן ✓", reload: "רענון לראות",
+    published: "האתר עודכן ✓", reload: "רעננו כדי לראות",
     slow: "העדכון לוקח יותר מהרגיל. השינוי שמור; אפשר לבדוק שוב מאוחר יותר.",
     tipTitle: "איך עורכים את הדף",
     tip1: "לוחצים על כל טקסט וכותבים: כותרת, משפט פתיחה, שמות ותיאורים.",
@@ -83,7 +83,7 @@
     notShown: "Not shown in this language — no name",
     add: "Add", remove: "Delete", earlier: "Move earlier", later: "Move later", drag: "Drag to change the order",
     removed: "Deleted. You can undo it.",
-    signIn: "To edit, sign in once to the admin panel in this browser (\"Manage\" → content editing), then come back here.",
+    signIn: "To edit, sign in once to the admin panel in this browser (\"All management\" → \"Open advanced editing\"), then come back here.",
     openManage: "Open the admin panel",
     errLoad: "Could not load the page from GitHub.",
     errSave: "Saving failed. What was not saved did not change.",
@@ -418,6 +418,7 @@
     if (cur) out.push(cur);
     return out;
   }
+  var ADDED = [/https?:\/\//i, /www\./i, /\]\(/, /\*\*/, /[<>]/, /@[\w-]+\.[a-z]/i];
   function decode(t) { return new DOMParser().parseFromString(t, "text/html").documentElement.textContent; }
   var trCache = {};
   function translate(text) {
@@ -430,7 +431,11 @@
           .then(function (d) {
             var t = d && d.responseData && d.responseData.translatedText;
             if (!d || Number(d.responseStatus) !== 200 || d.quotaFinished || !t || /MYMEMORY WARNING/i.test(t)) throw new Error("translate");
-            return done.concat(decode(t).trim());
+            t = decode(t).trim();
+            // The shared translation memory must not add links or formatting
+            // that were not in the owner's text (they would be published).
+            if (ADDED.some(function (re) { return re.test(t) && !re.test(part); })) throw new Error("translate");
+            return done.concat(t);
           });
       });
     });

@@ -15,9 +15,32 @@
     Settings: admin/config.yml. No secret keys are stored in this site:
     you sign in with your own GitHub token, kept only in your browser.
   -->
-  <script
-    src="https://unpkg.com/@sveltia/cms@0.222.1/dist/sveltia-cms.js"
-    integrity="sha384-lV41A8CKF2q4nxFyIDXBzxzEb24krghWRbIIYy+bygUhAwyEFko8o4UK1OAV2k0H"
-    crossorigin="anonymous"></script>
+  <!--
+    Signing in here saves the owner's GitHub key in this browser, for this
+    address only. So the panel opens only on the site's own addresses and
+    never inside a frame of another site (same list as js/main.js). On any
+    other address (for example a draft preview on a shared service) it does
+    not load, and the key is never entered there.
+  -->
+  <p id="not-here" hidden style="font:16px/1.6 system-ui,sans-serif;max-width:40rem;margin:3rem auto;padding:0 1rem">
+    The admin panel opens only on the BubaPix site itself.<br>
+    <span lang="he" dir="rtl">כלי הניהול נפתח רק בכתובת של אתר BubaPix עצמו.</span>
+  </p>
+  <script>
+    (function () {
+      var hosts = ["moshiko259-maker.github.io", "bubapix.com", "www.bubapix.com", "localhost", "127.0.0.1"];
+      var framed = true;
+      try { framed = window.top !== window.self; } catch (e) { framed = true; }
+      if (framed || hosts.indexOf(location.hostname) === -1) {
+        document.getElementById("not-here").hidden = false;
+        return;
+      }
+      var s = document.createElement("script");
+      s.src = "https://unpkg.com/@sveltia/cms@0.222.1/dist/sveltia-cms.js";
+      s.integrity = "sha384-lV41A8CKF2q4nxFyIDXBzxzEb24krghWRbIIYy+bygUhAwyEFko8o4UK1OAV2k0H";
+      s.crossOrigin = "anonymous";
+      document.body.appendChild(s);
+    })();
+  </script>
 </body>
 </html>

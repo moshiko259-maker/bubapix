@@ -92,7 +92,7 @@ function gallery(items, extraClass = "") {
 // two small inline ones, allowed by their exact fingerprint) and talks only to
 // the services listed here. This limits the damage if malicious text ever
 // slipped through.
-function csp(ctx, inlineScripts, pageEditor = false) {
+function csp(ctx, inlineScripts, pageEditor = false, githubCheck = false) {
   const hashes = inlineScripts.map((code) => `'sha256-${crypto.createHash("sha256").update(code).digest("base64")}'`);
   return [
     "default-src 'self'",
@@ -108,7 +108,7 @@ function csp(ctx, inlineScripts, pageEditor = false) {
     `media-src 'self'${ctx.preview ? " https://raw.githubusercontent.com" : ""}`,
     // The owner's page editor reads and saves the page settings in the
     // GitHub repository, with the owner's own sign-in.
-    `connect-src ${[ctx.site.community ? ctx.site.community.url : "", pageEditor ? "'self' https://api.github.com https://api.mymemory.translated.net" : ""].filter(Boolean).join(" ") || "'none'"}`,
+    `connect-src ${[ctx.site.community ? ctx.site.community.url : "", pageEditor ? "'self' https://api.github.com https://api.mymemory.translated.net" : githubCheck ? "https://api.github.com" : ""].filter(Boolean).join(" ") || "'none'"}`,
     "frame-src https://www.youtube-nocookie.com https://player.vimeo.com",
     "object-src 'none'",
     "base-uri 'self'",
@@ -147,7 +147,7 @@ function shopData(ctx) {
   return `<script type="application/json" id="shop-data">${json}</script>`;
 }
 
-function layout(ctx, { title, description, image, main, current = "", community = false, viewer = false, shopScript = false, noindex = false, edits = [], pageEditor = false }) {
+function layout(ctx, { title, description, image, main, current = "", community = false, viewer = false, shopScript = false, noindex = false, edits = [], pageEditor = false, githubCheck = false }) {
   const { t, lang, dir, site, data } = ctx;
   const link = makeLink(ctx);
   const otherHref = ctx.otherBase + ctx.path + (ctx.preview ? "index.html" : "") + (lang === "he" ? "?lang=en" : "");
@@ -180,7 +180,7 @@ function layout(ctx, { title, description, image, main, current = "", community 
   const withCommunity = community && site.community;
   const policy = site.analyticsHead
     ? ""
-    : `\n  <meta http-equiv="Content-Security-Policy" content="${csp(ctx, [redirectCode, jsFlag].filter(Boolean), pageEditor)}">`;
+    : `\n  <meta http-equiv="Content-Security-Policy" content="${csp(ctx, [redirectCode, jsFlag].filter(Boolean), pageEditor, githubCheck)}">`;
 
   return `<!doctype html>
 <html lang="${lang}" dir="${dir}">
@@ -362,12 +362,14 @@ function manage(ctx) {
     description: t.edit.manageIntro,
     current: "manage",
     noindex: true,
+    // The Manage page asks GitHub whether the owner's saved key still works.
+    githubCheck: true,
     main: `
     <div class="page manage-page">
       <header class="page-head"><h1 class="page-title">${e(t.edit.manageTitle)}</h1>
         <p class="lede">${e(t.edit.manageIntro)}</p></header>${ctx.preview ? `
       <p class="manage-note">${e(t.edit.previewNote)}</p>` : ""}
-      <p class="manage-signin" data-signin hidden><span data-signin-ok hidden>✓ ${e(t.edit.signedIn)}</span><span data-signin-no hidden>${e(t.edit.notSignedIn)}</span></p>
+      <p class="manage-signin" data-signin hidden><span data-signin-ok hidden>✓ ${e(t.edit.signedIn)}</span><span data-signin-no hidden>${e(t.edit.notSignedIn)}</span><span data-signin-expired hidden>${e(t.edit.tokenExpired)}</span></p>
       <section class="manage-box manage-main">
         <h2>${e(t.edit.onPageTitle)}</h2>
         <p>${e(t.edit.onPageText)}</p>
@@ -1396,27 +1398,34 @@ function customPage(ctx, p) {
 // advance, so it links with full addresses.
 function notFound(site, en, he, preview) {
   const file = preview ? "index.html" : "";
+  // The live site knows its address. A preview copy (the test site) is
+  // served from another address, so there the page finds the site's root
+  // from where it is opened (github.io project sites live under /<name>/).
+  const root = preview ? "" : site.url;
+  const base = preview
+    ? `\n  <script>(function(){var p=location.pathname.split("/"),b=/\\.github\\.io$/.test(location.hostname)&&p.length>2?"/"+p[1]+"/":"/";document.write('<base href="'+b+'">');})();</script>`
+    : "";
   return `<!doctype html>
 <html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>${e(en.notFound.title)} — BubaPix</title>
-  <link rel="stylesheet" href="${site.url}css/fonts.css">
-  <link rel="stylesheet" href="${site.url}css/styles.css">
+  <title>${e(en.notFound.title)} — BubaPix</title>${base}
+  <link rel="stylesheet" href="${root}css/fonts.css">
+  <link rel="stylesheet" href="${root}css/styles.css">
 </head>
 <body>
   <main class="page not-found">
     <section>
       <h1 class="page-title">${e(en.notFound.title)}</h1>
       <p class="lede">${e(en.notFound.text)}</p>
-      <p><a class="text-link" href="${site.url}${file}">${e(en.notFound.home)}</a></p>
+      <p><a class="text-link" href="${root}${file}">${e(en.notFound.home)}</a></p>
     </section>
     <section lang="he" dir="rtl">
       <h2 class="page-title">${e(he.notFound.title)}</h2>
       <p class="lede">${e(he.notFound.text)}</p>
-      <p><a class="text-link" href="${site.url}he/${file}">${e(he.notFound.home)}</a></p>
+      <p><a class="text-link" href="${root}he/${file}">${e(he.notFound.home)}</a></p>
     </section>
   </main>
 </body>

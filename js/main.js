@@ -255,9 +255,19 @@
   function signedIn() {
     try { var u = JSON.parse(localStorage.getItem("sveltia-cms.user") || "null"); return !!(u && u.token); } catch (e) { return false; }
   }
+  // Editing works only on the site's own addresses and never inside a frame
+  // of another site. A copy of the pages served from anywhere else (for
+  // example a draft preview on a shared service) shows no edit tools, so the
+  // owner's GitHub key is never used there. Same list in admin/index.html.
+  var EDIT_HOSTS = ["moshiko259-maker.github.io", "bubapix.com", "www.bubapix.com", "localhost", "127.0.0.1"];
+  function editPlace() {
+    var framed = true;
+    try { framed = window.top !== window.self; } catch (e) { framed = true; }
+    return !framed && EDIT_HOSTS.indexOf(location.hostname) !== -1;
+  }
   function applyEdit() {
     var on = editOn();
-    var show = on && signedIn();
+    var show = on && signedIn() && editPlace();
     each(document.querySelectorAll("[data-edit-bar]"), function (bar) { bar.hidden = !show; });
     root.classList.toggle("edit-mode", show);
     each(document.querySelectorAll("[data-edit-toggle]"), function (b) {
@@ -275,15 +285,25 @@
   // Manage page: is this browser signed in for editing? (The admin panel
   // keeps the owner's sign-in in this browser; nothing is sent anywhere.)
   each(document.querySelectorAll("[data-signin]"), function (box) {
-    var ok = false;
-    try { var u = JSON.parse(localStorage.getItem("sveltia-cms.user") || "null"); ok = !!(u && u.token); } catch (e) { ok = false; }
+    var token = "";
+    try { var u = JSON.parse(localStorage.getItem("sveltia-cms.user") || "null"); token = u && typeof u.token === "string" ? u.token : ""; } catch (e) { token = ""; }
+    var ok = !!token;
+    var show = function (which) {
+      each(box.querySelectorAll("[data-signin-ok], [data-signin-no], [data-signin-expired]"), function (n) { n.hidden = !n.hasAttribute(which); });
+      box.classList.toggle("is-ok", which === "data-signin-ok");
+      box.classList.toggle("is-warn", which === "data-signin-expired");
+    };
     box.hidden = false;
-    box.classList.toggle("is-ok", ok);
-    box.querySelector("[data-signin-ok]").hidden = !ok;
-    box.querySelector("[data-signin-no]").hidden = ok;
+    show(ok ? "data-signin-ok" : "data-signin-no");
+    // A saved key can expire or be revoked: ask GitHub once whether it still works.
+    if (ok && editPlace() && window.fetch) {
+      fetch("https://api.github.com/user", { headers: { "Accept": "application/vnd.github+json", "Authorization": "token " + token }, cache: "no-store" })
+        .then(function (r) { if (r.status === 401 || r.status === 403) show("data-signin-expired"); })
+        .catch(function () { /* offline: keep what we know */ });
+    }
   });
   // "Open the homepage for editing" (Manage page) arrives with #edit.
-  if (location.hash === "#edit" && document.querySelector("[data-page-editor]")) {
+  if (location.hash === "#edit" && editPlace() && document.querySelector("[data-page-editor]")) {
     setEdit(true);
     try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { /* old browser */ }
     setTimeout(function () { var b = document.querySelector("[data-page-editor]"); if (b) b.click(); }, 0);
