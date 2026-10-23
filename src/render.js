@@ -866,9 +866,14 @@ function project(ctx, p, prev, next) {
   const { t, data } = ctx;
   const link = makeLink(ctx);
   const cats = p.categories.map((c) => c.name).join(", ");
+  let coverCls = "";
+  if (p.cover && p.coverW) {
+    coverCls = ` cw-${p.coverW}`;
+    freeRules.set(`cw-${p.coverW}`, `.cw-${p.coverW}{max-width:${p.coverW}%!important;margin-inline:auto}`);
+  }
   const cover = p.cover
     ? `
-      <figure class="project-cover"><a href="${ctx.assetBase}${e(p.cover.full || p.cover.src)}" data-viewer aria-label="${e(`${t.work.openImage}: ${p.cover.alt}`)}">${img(ctx, p.cover, { sizes: "(max-width: 1440px) 100vw, 1440px", attrs: 'fetchpriority="high" decoding="async"' })}</a></figure>`
+      <figure class="project-cover${coverCls}"><a href="${ctx.assetBase}${e(p.cover.full || p.cover.src)}" data-viewer aria-label="${e(`${t.work.openImage}: ${p.cover.alt}`)}">${img(ctx, p.cover, { sizes: "(max-width: 1440px) 100vw, 1440px", attrs: 'fetchpriority="high" decoding="async"' })}</a></figure>`
     : "";
   const synopsis = p.description
     ? `

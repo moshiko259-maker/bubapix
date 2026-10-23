@@ -399,6 +399,8 @@ function contentFor(lang) {
         comments: p.comments !== false,
         categories: (Array.isArray(p.categories) ? p.categories : []).map((c) => catBySlug.get(c)).filter(Boolean),
         cover,
+        // Width of the cover on computers (% of the page), set by dragging in the page editor.
+        coverW: Number(p.cover_w) >= 20 && Number(p.cover_w) < 100 ? Math.round(Number(p.cover_w)) : 0,
         // The picture that represents the project in galleries.
         thumb: cover || pictures[0] || null,
         pictures,

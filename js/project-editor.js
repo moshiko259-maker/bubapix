@@ -60,6 +60,7 @@
     phoneNote: "בטלפון התמונות מוצגות אחת מתחת לשנייה. שינוי גודל — במחשב.",
     frameTip: "לחצו על התמונה כדי לבחור אותה, גררו את הנקודות כדי לשנות גודל, או גררו את התמונה כדי להזיז",
     widthLabel: "רוחב",
+    coverSize: "גודל: לוחצים על התמונה וגוררים נקודה כחולה (במחשב).",
     lede: "משפט קצר על הפרויקט (לחצו כדי לכתוב)",
     synopsisTitle: "תקציר",
     synopsis: "טקסט על הפרויקט (לחצו כדי לכתוב). שורה ריקה מתחילה פסקה חדשה.",
@@ -132,6 +133,7 @@
     phoneNote: "On phones the pictures show one under another. Resize on a computer.",
     frameTip: "Click the picture to select it, drag the dots to resize, or drag the picture to move it",
     widthLabel: "Width",
+    coverSize: "Size: click the picture and drag a blue dot (on computers).",
     lede: "A short sentence about the project (click to write)",
     synopsisTitle: "Synopsis",
     synopsis: "Text about the project (click to write). An empty line starts a new paragraph.",
@@ -471,13 +473,24 @@
       var media = el("span", { "class": "jg-media" }, [coverImg]);
       media.style.aspectRatio = String(r);
       var fig = el("figure", { "class": "pe-cover pe-item" }, [media, tools]);
+      // Cover size (computers): drag a dot; the width is kept in cover_w.
+      var cw = Number(data.cover_w) >= 20 && Number(data.cover_w) < 100 ? Number(data.cover_w) : 0;
+      if (cw && !narrow.matches) { fig.style.maxWidth = cw + "%"; fig.style.marginInline = "auto"; }
+      if (!narrow.matches) frame(fig, {
+        min: 20,
+        start: function () { return fig.getBoundingClientRect().width / (box.getBoundingClientRect().width || 1) * 100; },
+        area: function () { return box.getBoundingClientRect().width; },
+        live: function (pct) { fig.style.maxWidth = pct + "%"; fig.style.marginInline = "auto"; },
+        done: function (pct) { if (pct >= 100) delete data.cover_w; else data.cover_w = pct; selectedCover = true; changed(); },
+        selectedNow: selectedCover,
+      });
       if (uploads[norm(data.cover)]) fig.appendChild(el("span", { "class": "pe-badge", text: T.newBadge }));
       if (!data["cover_alt_" + lang]) fig.appendChild(el("span", { "class": "pe-missing", text: T.noAlt }));
       box.appendChild(fig);
     } else {
       box.appendChild(tools);
     }
-    box.appendChild(el("p", { "class": "pe-note", text: T.coverNote }));
+    box.appendChild(el("p", { "class": "pe-note", text: T.coverNote + (narrow.matches ? "" : " " + T.coverSize) }));
     return box;
   }
 
@@ -621,6 +634,7 @@
   var narrow = window.matchMedia ? window.matchMedia("(max-width: 700px)") : { matches: false };
   if (narrow.addEventListener) narrow.addEventListener("change", function () { if (data) render(); });
   var selected = null; // the picture whose frame stays selected after a resize
+  var selectedCover = false;
   function isFree(sec) { return sec.images.some(function (g) { return g && g.visible !== false && Number(g.fw) >= 10; }); }
   // Which choice of "size of all pictures" matches the pictures now.
   function sameWidth(list) {
@@ -659,7 +673,7 @@
   function deselectAll() {
     Array.prototype.forEach.call(document.querySelectorAll(".pe-selected"), function (n) { n.classList.remove("pe-selected"); });
   }
-  document.addEventListener("click", function (e) { if (!e.target.closest || !e.target.closest(".pe-framed, .pe-modal")) { deselectAll(); selected = null; } });
+  document.addEventListener("click", function (e) { if (!e.target.closest || !e.target.closest(".pe-framed, .pe-modal")) { deselectAll(); selected = null; selectedCover = false; } });
   function frame(box, o) {
     box.classList.add("pe-framed");
     if (o.selectedNow) box.classList.add("pe-selected");
@@ -691,7 +705,7 @@
           var dx = (ev.clientX - startX) * (right ? 1 : -1);
           var dy = pos.length === 2 ? (ev.clientY - startY) * (bottom ? 1 : -1) * (b.width / Math.max(1, b.height)) : 0;
           var d = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
-          pct = Math.max(10, Math.min(100, Math.round(startPct + d / area * 100)));
+          pct = Math.max(o.min || 10, Math.min(100, Math.round(startPct + d / area * 100)));
           label.textContent = T.widthLabel + " " + pct + "%";
           o.live(pct);
         }
