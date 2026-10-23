@@ -331,7 +331,7 @@ function editBar(ctx, edits, pageEditor = false) {
   const { t } = ctx;
   // "Edit on the page": loads js/editor.js only when pressed (owner only).
   // Project pages have their own editor (js/project-editor.js).
-  const src = pageEditor === "project" ? `js/project-editor.js?v=${ctx.v.projectEditor}` : pageEditor === "work" ? `js/work-editor.js?v=${ctx.v.workEditor}` : `js/editor.js?v=${ctx.v.editor}`;
+  const src = pageEditor === "project" ? `js/project-editor.js?v=${ctx.v.projectEditor}` : pageEditor === "work" ? `js/work-editor.js?v=${ctx.v.workEditor}` : pageEditor === "page" ? `js/page-editor.js?v=${ctx.v.pageEditor}` : `js/editor.js?v=${ctx.v.editor}`;
   const onPage = pageEditor && ctx.site.repo
     ? `<button type="button" class="edit-bar-page" data-page-editor data-src="${ctx.assetBase}${src}" data-repo="${e(ctx.site.repo)}" data-branch="${e(ctx.site.branch)}" data-manage="${makeLink(ctx)("manage/")}">${icon("edit")}<span>${e(t.edit.onPage)}</span></button>`
     : "";
@@ -374,7 +374,8 @@ function manage(ctx) {
         <a class="button button-large" href="${makeLink(ctx)("")}#edit">${e(t.edit.onPageButton)}</a>${data.projects.length ? `
         <p class="manage-projects-title">${e(t.edit.onPageProjects)}</p>
         <ul class="manage-projects">
-          <li><a href="${makeLink(ctx)("work/")}#edit"><strong>${e(t.edit.onPageWorkPage)}</strong></a></li>${data.projects.map((p) => `
+          <li><a href="${makeLink(ctx)("work/")}#edit"><strong>${e(t.edit.onPageWorkPage)}</strong></a></li>
+          <li><a href="${makeLink(ctx)("services/")}#edit"><strong>${e(t.edit.onPageServicesPage)}</strong></a></li>${data.projects.map((p) => `
           <li><a href="${makeLink(ctx)(`work/${p.slug}/`)}#edit">${e(p.title)}</a></li>`).join("")}
         </ul>` : ""}
       </section>
@@ -944,17 +945,18 @@ function services(ctx) {
     title: pageTitle(ctx, t.services.title),
     description: s.intro || data.seoDescription,
     current: "services",
+    pageEditor: "page",
     main: `
-    <div class="page">
-      <header class="page-head"><h1 class="page-title">${e(t.services.title)}</h1>${s.intro ? `
-        <p class="lede">${e(s.intro)}</p>` : ""}</header>
-      <ul class="service-list">${s.items.map((x) => `
-        <li><h2>${e(x.name)}</h2>${x.text ? `<p>${e(x.text)}</p>` : ""}</li>`).join("")}
+    <div class="page" data-ed-file="content/services.json">
+      <header class="page-head"><h1 class="page-title" data-ed-label="nav_services">${e(t.services.title)}</h1>${s.intro ? `
+        <p class="lede" data-ed="intro">${e(s.intro)}</p>` : ""}</header>
+      <ul class="service-list" data-ed-list="services" data-ed-subs="name,text">${s.items.map((x) => `
+        <li data-ed-item="${x.i}"><h2 data-ed-sub="name">${e(x.name)}</h2>${x.text ? `<p data-ed-sub="text">${e(x.text)}</p>` : ""}</li>`).join("")}
       </ul>${s.process.length ? `
       <section class="section-inner" aria-labelledby="process-title">
-        <h2 id="process-title" class="section-label">${e(s.processTitle)}</h2>
-        <ol class="steps">${s.process.map((x, i) => `
-          <li><span class="step-num">${i + 1}</span><h3>${e(x.name)}</h3>${x.text ? `<p>${e(x.text)}</p>` : ""}</li>`).join("")}
+        <h2 id="process-title" class="section-label" data-ed="process_title">${e(s.processTitle)}</h2>
+        <ol class="steps" data-ed-list="process" data-ed-subs="name,text">${s.process.map((x, i) => `
+          <li data-ed-item="${x.i}"><span class="step-num" data-ed-num>${i + 1}</span><h3 data-ed-sub="name">${e(x.name)}</h3>${x.text ? `<p data-ed-sub="text">${e(x.text)}</p>` : ""}</li>`).join("")}
         </ol>
       </section>` : ""}
     </div>`,

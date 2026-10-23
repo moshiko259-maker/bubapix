@@ -1047,6 +1047,11 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .pe-title-note { margin: 0.4rem 0 0; }
 h1.pe-editable { min-width: 4ch; }
 .pe-poster-note { margin: 0 0 0.6rem; }
+.pe-list-item { position: relative; cursor: grab; }
+.pe-list-item .pe-tools.pe-list-tools { position: static; opacity: 1; display: flex; width: max-content; max-width: 100%; margin-top: 0.6rem; grid-template-columns: none; }
+.pe-list-tools .pe-icon { min-width: 34px; flex: 0 0 auto; }
+.pe-list-item [data-ed-sub].pe-editable { display: block; min-height: 1.4em; cursor: text; }
+.pe-list-item .pe-missing { position: static; display: inline-block; margin-top: 0.4rem; }
 .pe-poster-box .poster.pe-framed { cursor: grab; }
 .pe-work-name { position: absolute; inset-block-end: 0.4rem; inset-inline-start: 0.4rem; padding: 0.15rem 0.5rem; border-radius: 6px; background: rgba(22, 22, 29, 0.78); color: var(--paper); font-size: 0.8rem; font-weight: 600; pointer-events: none; }
 .bottom-hint.pe-editable { display: block; }

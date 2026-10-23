@@ -309,6 +309,7 @@
     "onPageButton": "Open the homepage for editing",
     "onPageProjects": "Or another page:",
     "onPageWorkPage": "The projects page",
+    "onPageServicesPage": "The services page",
     "signedIn": "Signed in for editing in this browser.",
     "notSignedIn": "Not signed in for editing in this browser yet. Sign in once through “Advanced editing” with a GitHub token; then all editing tools work."
   },

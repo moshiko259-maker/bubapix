@@ -609,9 +609,9 @@ function contentFor(lang) {
     projects,
     services: {
       intro: pick(raw.services, "intro", lang),
-      items: (raw.services.services || []).map((x) => ({ name: pick(x, "name", lang), text: pick(x, "text", lang) })).filter((x) => x.name),
+      items: (raw.services.services || []).map((x, i) => ({ name: pick(x, "name", lang), text: pick(x, "text", lang), i })).filter((x) => x.name),
       processTitle: pick(raw.services, "process_title", lang),
-      process: (raw.services.process || []).map((x) => ({ name: pick(x, "name", lang), text: pick(x, "text", lang) })).filter((x) => x.name),
+      process: (raw.services.process || []).map((x, i) => ({ name: pick(x, "name", lang), text: pick(x, "text", lang), i })).filter((x) => x.name),
     },
     about: {
       body: pick(raw.about, "body", lang),
@@ -669,6 +669,7 @@ const assetVersion = {
   editor: fileVersion(["js/editor.js"]),
   projectEditor: fileVersion(["js/project-editor.js"]),
   workEditor: fileVersion(["js/work-editor.js"]),
+  pageEditor: fileVersion(["js/page-editor.js"]),
 };
 
 function contextFor(lang, pagePath, data) {
