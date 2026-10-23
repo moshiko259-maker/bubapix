@@ -192,4 +192,16 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://moshiko259-maker.github.io/bubapix/privacy/"/>
     <xhtml:link rel="alternate" hreflang="he" href="https://moshiko259-maker.github.io/bubapix/he/privacy/"/>
   </url>
+  <url>
+    <loc>https://moshiko259-maker.github.io/bubapix/accessibility/</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://moshiko259-maker.github.io/bubapix/accessibility/"/>
+    <xhtml:link rel="alternate" hreflang="he" href="https://moshiko259-maker.github.io/bubapix/he/accessibility/"/>
+  </url>
+  <url>
+    <loc>https://moshiko259-maker.github.io/bubapix/he/accessibility/</loc>
+    <lastmod>2026-10-23</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://moshiko259-maker.github.io/bubapix/accessibility/"/>
+    <xhtml:link rel="alternate" hreflang="he" href="https://moshiko259-maker.github.io/bubapix/he/accessibility/"/>
+  </url>
 </urlset>
