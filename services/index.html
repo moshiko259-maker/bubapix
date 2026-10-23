@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-KqUcM9tjb+TqAaG8L9Mracw93TLS6ICRBtMTMEGRNiA=' 'sha256-WZRJfWvsnNCPcxzZwvyhovnZGqhZaC+8gPGPRbx6wTk='; style-src 'self'; font-src 'self'; img-src 'self' data: https://raw.githubusercontent.com; media-src 'self' https://raw.githubusercontent.com; connect-src https://ouskvcsmcddgdukcofex.supabase.co; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-KqUcM9tjb+TqAaG8L9Mracw93TLS6ICRBtMTMEGRNiA=' 'sha256-WZRJfWvsnNCPcxzZwvyhovnZGqhZaC+8gPGPRbx6wTk='; style-src 'self'; font-src 'self'; img-src 'self' data: blob: https://raw.githubusercontent.com; media-src 'self' https://raw.githubusercontent.com; connect-src https://ouskvcsmcddgdukcofex.supabase.co 'self' https://api.github.com; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; object-src 'none'; base-uri 'self'; form-action 'self'">
   <script>try{if(localStorage.getItem("bubapix-lang")==="he"&&!/[?&]lang=en\b/.test(location.search)){location.replace("../he/services/index.html"+location.hash)}}catch(e){}</script>
   <title>Services — BubaPix</title>
   <meta name="description" content="BubaPix is an AI-powered film and animation studio. We create films, characters and original worlds.">
@@ -30,7 +30,7 @@
   <link rel="preload" href="../assets/fonts/heebo-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../css/fonts.css?v=9db4e44dc6">
   <script>document.documentElement.classList.add("js");</script>
-  <link rel="stylesheet" href="../css/styles.css?v=c62471207f">
+  <link rel="stylesheet" href="../css/styles.css?v=2725837722">
   <link rel="stylesheet" href="../css/gallery.css?v=87a93e92ba">
   <script src="../js/main.js?v=b26f9d103b" defer></script>
 </head>
@@ -54,32 +54,32 @@
 
   <main id="main">
 
-    <div class="page">
-      <header class="page-head"><h1 class="page-title">Services</h1></header>
-      <ul class="service-list">
-        <li><h2>AI films</h2><p>Short and long-form films, written and directed for the screen.</p></li>
-        <li><h2>Animation</h2><p>Stylised animation with a consistent visual language from first frame to last.</p></li>
-        <li><h2>Commercials</h2><p>Brand films built around one clear idea, cut for every channel.</p></li>
-        <li><h2>Trailers</h2><p>Teasers and trailers that sell the story before the release.</p></li>
-        <li><h2>Music videos</h2><p>Visual worlds built around a track.</p></li>
-        <li><h2>Characters</h2><p>Original characters designed to stay consistent from shot to shot.</p></li>
-        <li><h2>Original worlds</h2><p>Places, rules and looks for stories that can grow into a series.</p></li>
+    <div class="page" data-ed-file="content/services.json">
+      <header class="page-head"><h1 class="page-title" data-ed-label="nav_services">Services</h1></header>
+      <ul class="service-list" data-ed-list="services" data-ed-subs="name,text">
+        <li data-ed-item="0"><h2 data-ed-sub="name">AI films</h2><p data-ed-sub="text">Short and long-form films, written and directed for the screen.</p></li>
+        <li data-ed-item="1"><h2 data-ed-sub="name">Animation</h2><p data-ed-sub="text">Stylised animation with a consistent visual language from first frame to last.</p></li>
+        <li data-ed-item="2"><h2 data-ed-sub="name">Commercials</h2><p data-ed-sub="text">Brand films built around one clear idea, cut for every channel.</p></li>
+        <li data-ed-item="3"><h2 data-ed-sub="name">Trailers</h2><p data-ed-sub="text">Teasers and trailers that sell the story before the release.</p></li>
+        <li data-ed-item="4"><h2 data-ed-sub="name">Music videos</h2><p data-ed-sub="text">Visual worlds built around a track.</p></li>
+        <li data-ed-item="5"><h2 data-ed-sub="name">Characters</h2><p data-ed-sub="text">Original characters designed to stay consistent from shot to shot.</p></li>
+        <li data-ed-item="6"><h2 data-ed-sub="name">Original worlds</h2><p data-ed-sub="text">Places, rules and looks for stories that can grow into a series.</p></li>
       </ul>
       <section class="section-inner" aria-labelledby="process-title">
-        <h2 id="process-title" class="section-label">From idea to film</h2>
-        <ol class="steps">
-          <li><span class="step-num">1</span><h3>It Starts with an Idea</h3><p>It can start with your idea, a product or business need, or an idea we develop together.</p></li>
-          <li><span class="step-num">2</span><h3>We Shape the Story</h3><p>We write the script and build the story scene by scene, until the message is clear.</p></li>
-          <li><span class="step-num">3</span><h3>We Build the World</h3><p>We design the characters, places and visual style, and approve them with you before production.</p></li>
-          <li><span class="step-num">4</span><h3>We Create the Film</h3><p>We generate, direct and refine every shot until it meets a cinematic standard.</p></li>
-          <li><span class="step-num">5</span><h3>Ready for the Screen</h3><p>We edit, add sound and music, grade the colour, and deliver in every format you need.</p></li>
+        <h2 id="process-title" class="section-label" data-ed="process_title">From idea to film</h2>
+        <ol class="steps" data-ed-list="process" data-ed-subs="name,text">
+          <li data-ed-item="0"><span class="step-num" data-ed-num>1</span><h3 data-ed-sub="name">It Starts with an Idea</h3><p data-ed-sub="text">It can start with your idea, a product or business need, or an idea we develop together.</p></li>
+          <li data-ed-item="1"><span class="step-num" data-ed-num>2</span><h3 data-ed-sub="name">We Shape the Story</h3><p data-ed-sub="text">We write the script and build the story scene by scene, until the message is clear.</p></li>
+          <li data-ed-item="2"><span class="step-num" data-ed-num>3</span><h3 data-ed-sub="name">We Build the World</h3><p data-ed-sub="text">We design the characters, places and visual style, and approve them with you before production.</p></li>
+          <li data-ed-item="3"><span class="step-num" data-ed-num>4</span><h3 data-ed-sub="name">We Create the Film</h3><p data-ed-sub="text">We generate, direct and refine every shot until it meets a cinematic standard.</p></li>
+          <li data-ed-item="4"><span class="step-num" data-ed-num>5</span><h3 data-ed-sub="name">Ready for the Screen</h3><p data-ed-sub="text">We edit, add sound and music, grade the colour, and deliver in every format you need.</p></li>
         </ol>
       </section>
     </div>
   </main>
   <aside class="edit-bar" data-edit-bar hidden aria-label="Edit this page">
     <details>
-      <summary class="edit-bar-title"><svg class="icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>Edit this page</summary>
+      <summary class="edit-bar-title"><svg class="icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>Edit this page</summary><button type="button" class="edit-bar-page" data-page-editor data-src="../js/page-editor.js?v=3681d156ba" data-repo="moshiko259-maker/bubapix" data-branch="redesign-v2" data-manage="../manage/index.html"><svg class="icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg><span>Edit on the page</span></button>
       <ul><li><a href="../admin/index.html#/collections/settings/entries/services" target="_blank" rel="noopener"><svg class="icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg><span>Services</span></a></li><li><a href="../manage/index.html">All management</a></li></ul>
       <button type="button" class="edit-bar-off" data-edit-off>Turn off</button>
     </details>
