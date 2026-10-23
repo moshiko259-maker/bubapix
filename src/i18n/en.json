@@ -25,7 +25,8 @@
     "switchTitle": "Hebrew version",
     "ideas": "Ideas",
     "privacy": "Privacy",
-    "shop": "Shop"
+    "shop": "Shop",
+    "accessibility": "Accessibility"
   },
   "home": {
     "selectedWork": "Selected work",
@@ -321,5 +322,34 @@
     ],
     "close": "Close",
     "installed": "The app is installed."
+  },
+  "accessibility": {
+    "title": "Accessibility statement",
+    "updated": "Updated: 23 October 2026",
+    "intro": "BubaPix is an AI film and animation studio. We want everyone to be able to use this site, including people with disabilities.",
+    "standardTitle": "What the site follows",
+    "standard": "The Israeli Equal Rights for Persons with Disabilities (Service Accessibility Adjustments) Regulations, 2013, and Israeli Standard SI 5568 Part 1 (September 2023), based on WCAG 2.0 level AA.",
+    "doneTitle": "What we did",
+    "done": [
+      "The whole site works with a keyboard: Tab and Shift+Tab to move, Enter to choose, Esc to close a menu or a picture window, arrows to move between pictures.",
+      "Every page starts with a \"Skip to content\" link.",
+      "Pictures have text descriptions for screen readers.",
+      "The contrast between the main text and the background meets the standard.",
+      "The site adapts to narrow screens and to browser zoom, without sideways scrolling.",
+      "When a device is set to \"reduce motion\", animations are off.",
+      "Each page states its language and writing direction, in Hebrew and in English.",
+      "There is no accessibility toolbar: the site itself is built to be accessible."
+    ],
+    "testedTitle": "How we checked",
+    "tested": "In October 2026 we checked 16 pages with an automatic tool (axe-core), at computer and phone widths, and checked keyboard navigation. A screen-reader check has not been done yet; we will update this page when it is.",
+    "notYetTitle": "What is not accessible yet",
+    "notYet": [
+      "Visitors' comments are published as written.",
+      "The YouTube and Vimeo video players belong to those companies, and their accessibility depends on them."
+    ],
+    "contactTitle": "Found a problem? Need an adjustment?",
+    "contact": "Write to us. We will handle it as soon as possible, and within 60 days at the latest.",
+    "email": "Email:",
+    "contactTip": "Please say which page, what the problem is, and which browser or screen reader you used."
   }
 }

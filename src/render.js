@@ -251,6 +251,7 @@ ${editBar(ctx, edits, pageEditor)}
 ${data.participation.ideas ? `
         <li><a href="${link("ideas/")}"${current === "ideas" ? ' aria-current="page"' : ""}>${e(t.nav.ideas)}</a></li>` : ""}
         <li><a href="${link("privacy/")}"${current === "privacy" ? ' aria-current="page"' : ""}>${e(t.nav.privacy)}</a></li>
+        <li><a href="${link("accessibility/")}"${current === "accessibility" ? ' aria-current="page"' : ""}>${e(t.nav.accessibility)}</a></li>
       </ul>
     </nav>
     ${footerContact(ctx)}
@@ -1080,6 +1081,40 @@ function privacy(ctx) {
   });
 }
 
+// Accessibility statement (Israeli regulation 35 / SI 5568). Texts in src/i18n.
+function accessibility(ctx) {
+  const { t, data } = ctx;
+  const a = t.accessibility;
+  const mails = [data.contact.email].filter(Boolean);
+  const list = (items) => `<ul>${items.map((x) => `
+          <li>${e(x)}</li>`).join("")}
+        </ul>`;
+  return layout(ctx, {
+    title: pageTitle(ctx, a.title),
+    description: a.intro,
+    current: "accessibility",
+    main: `
+    <div class="page">
+      <header class="page-head"><h1 class="page-title">${e(a.title)}</h1><p class="muted">${e(a.updated)}</p></header>
+      <div class="prose prose-large">
+        <p>${e(a.intro)}</p>
+        <h2>${e(a.standardTitle)}</h2>
+        <p>${e(a.standard)}</p>
+        <h2>${e(a.doneTitle)}</h2>
+        ${list(a.done)}
+        <h2>${e(a.testedTitle)}</h2>
+        <p>${e(a.tested)}</p>
+        <h2>${e(a.notYetTitle)}</h2>
+        ${list(a.notYet)}
+        <h2>${e(a.contactTitle)}</h2>
+        <p>${e(a.contact)}</p>${mails.length ? `
+        <p>${e(a.email)} ${mails.map((m) => `<a class="text-link" href="mailto:${e(m)}">${e(m)}</a>`).join(", ")}</p>` : ""}
+        <p>${e(a.contactTip)}</p>
+      </div>
+    </div>`,
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Shop
 // ---------------------------------------------------------------------------
@@ -1379,4 +1414,4 @@ function notFound(site, en, he, preview) {
 `;
 }
 
-module.exports = { usedRatios, freeRules, manage, shop, product, order, home, work, project, services, about, testimonials, contact, ideas, privacy, customPage, notFound };
+module.exports = { usedRatios, freeRules, manage, shop, product, order, home, work, project, services, about, testimonials, contact, ideas, privacy, accessibility, customPage, notFound };

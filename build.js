@@ -510,7 +510,9 @@ function contentFor(lang) {
       const name = lang === "he" ? String(x.title_he || "").trim() || String(x.title_en || "").trim() : String(x.title_en || "").trim() || String(x.title_he || "").trim();
       const title = name || x.slug;
       const where = `product "${x.slug}"`;
-      const pics = (x.images || []).map((g, j) => picture(g, title, `${where} photo ${j + 1}`)).filter(Boolean);
+      // Each picture without its own description still gets a distinct one ("name — photo N"), for screen readers.
+      const nPics = (x.images || []).length;
+      const pics = (x.images || []).map((g, j) => picture(g, nPics > 1 ? `${title} — ${t[lang].shop.photo.replace("{n}", j + 1)}` : title, `${where} photo ${j + 1}`)).filter(Boolean);
       const price = typeof x.price === "number" && isFinite(x.price) && x.price >= 0 ? x.price : null;
       const currency = money.code(x.currency, "ILS");
       const priceAbroad = typeof x.price_abroad === "number" && isFinite(x.price_abroad) && x.price_abroad >= 0 ? x.price_abroad : null;
@@ -716,6 +718,7 @@ for (const lang of ["en", "he"]) {
   if (participation.ideas) add("ideas/", render.ideas(contextFor(lang, "ideas/", data)));
   // Always built: the shop and browser storage are described there too.
   add("privacy/", render.privacy(contextFor(lang, "privacy/", data)));
+  add("accessibility/", render.accessibility(contextFor(lang, "accessibility/", data)));
   data.pages.forEach((p) => {
     const pagePath = `pages/${p.slug}/`;
     add(pagePath, render.customPage(contextFor(lang, pagePath, data), p));
@@ -879,7 +882,7 @@ outputs.set("robots.txt", `User-agent: *\nDisallow: ${sitePath}admin/\n\nSitemap
   // search engines are told not to index. They come back when re-enabled.
   let retired = 0;
   for (const rel of previous) {
-    if (outputs.has(rel) || !/^(he\/)?((work|services|about|testimonials|contact|ideas|privacy|shop|pages)\/.*)?index\.html$/.test(rel)) continue;
+    if (outputs.has(rel) || !/^(he\/)?((work|services|about|testimonials|contact|ideas|privacy|accessibility|shop|pages)\/.*)?index\.html$/.test(rel)) continue;
     const full = path.join(root, rel);
     fs.mkdirSync(path.dirname(full), { recursive: true });
     fs.writeFileSync(full, render.notFound(site, t.en, t.he, preview));
