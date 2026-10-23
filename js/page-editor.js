@@ -65,7 +65,7 @@
     tipClose: "הבנתי", help: "עזרה",
     autoTr: "תרגום אוטומטי לאנגלית", autoTrTip: "בשמירה, כל טקסט ששיניתם כאן מתורגם לאנגלית ומחליף את הטקסט באנגלית. כבו כשאתם מתקנים תרגום.",
     translating: "מתרגם לאנגלית…",
-    trDone: "תורגם לאנגלית: {n}. לתיקון — פתחו את הדף באנגלית.",
+    trDone: "תורגם לאנגלית: {n}. לתיקון — פתחו את הדף באנגלית, וכבו שם את ״תרגום אוטומטי״ לפני השמירה.",
     trFail: "התרגום לאנגלית לא הצליח (אולי נגמרה המכסה היומית החינמית, או שאין אינטרנט). העברית נשמרה; האנגלית לא השתנתה.",
     tip5: "״תרגום אוטומטי״ מתרגם בשמירה כל טקסט ששיניתם לשפה השנייה (חינם). מתקנים תרגום? כבו אותו לפני השמירה.",
   } : {
@@ -101,7 +101,7 @@
     tipClose: "Got it", help: "Help",
     autoTr: "Auto-translate to Hebrew", autoTrTip: "On saving, every text you changed here is translated to Hebrew and replaces the Hebrew text. Turn off when you fix a translation.",
     translating: "Translating to Hebrew…",
-    trDone: "Translated to Hebrew: {n}. To fix it, open the page in Hebrew.",
+    trDone: "Translated to Hebrew: {n}. To fix it, open the page in Hebrew and turn off \"Auto-translate\" there before saving.",
     trFail: "Translating to Hebrew failed (maybe the free daily allowance ran out, or there is no internet). The English is saved; the Hebrew did not change.",
     tip5: "\"Auto-translate\" translates every text you changed into the other language when saving (free). Fixing a translation? Turn it off before saving.",
   };

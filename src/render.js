@@ -108,7 +108,7 @@ function csp(ctx, inlineScripts, pageEditor = false) {
     `media-src 'self'${ctx.preview ? " https://raw.githubusercontent.com" : ""}`,
     // The owner's page editor reads and saves the page settings in the
     // GitHub repository, with the owner's own sign-in.
-    `connect-src ${[ctx.site.community ? ctx.site.community.url : "", pageEditor ? "'self' https://api.github.com" + (pageEditor === "page" ? " https://api.mymemory.translated.net" : "") : ""].filter(Boolean).join(" ") || "'none'"}`,
+    `connect-src ${[ctx.site.community ? ctx.site.community.url : "", pageEditor ? "'self' https://api.github.com https://api.mymemory.translated.net" : ""].filter(Boolean).join(" ") || "'none'"}`,
     "frame-src https://www.youtube-nocookie.com https://player.vimeo.com",
     "object-src 'none'",
     "base-uri 'self'",
@@ -333,7 +333,7 @@ function editBar(ctx, edits, pageEditor = false) {
   // Project pages have their own editor (js/project-editor.js).
   const src = pageEditor === "project" ? `js/project-editor.js?v=${ctx.v.projectEditor}` : pageEditor === "work" ? `js/work-editor.js?v=${ctx.v.workEditor}` : pageEditor === "page" ? `js/page-editor.js?v=${ctx.v.pageEditor}` : `js/editor.js?v=${ctx.v.editor}`;
   const onPage = pageEditor && ctx.site.repo
-    ? `<button type="button" class="edit-bar-page" data-page-editor data-src="${ctx.assetBase}${src}" data-repo="${e(ctx.site.repo)}" data-branch="${e(ctx.site.branch)}" data-manage="${makeLink(ctx)("manage/")}">${icon("edit")}<span>${e(t.edit.onPage)}</span></button>`
+    ? `<button type="button" class="edit-bar-page" data-page-editor data-src="${ctx.assetBase}${src}" data-repo="${e(ctx.site.repo)}" data-branch="${e(ctx.site.branch)}" data-tr-src="${ctx.assetBase}js/auto-translate.js?v=${ctx.v.autoTranslate}" data-manage="${makeLink(ctx)("manage/")}">${icon("edit")}<span>${e(t.edit.onPage)}</span></button>`
     : "";
   const items = edits
     .map(([label, hash, community]) => `<li><a href="${e(community ? communityHref(ctx) : adminHref(ctx, hash))}" target="_blank" rel="noopener">${icon("edit")}<span>${e(label)}</span></a></li>`)

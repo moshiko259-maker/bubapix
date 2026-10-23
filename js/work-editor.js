@@ -649,9 +649,9 @@
   }
   function watchSite() { readVersion().then(function (v) { siteWatch.available = !!v; }); }
   function followSave(commitSha) {
-    if (!siteWatch.available || !commitSha) { setStatus(T.saved, "ok"); return; }
+    if (!siteWatch.available || !commitSha) { setStatus(T.saved + trNote(), trKind()); return; }
     siteWatch.savedCommit = commitSha; siteWatch.started = Date.now();
-    setStatus(T.publishing, "ok");
+    setStatus(T.publishing + trNote(), trKind());
     clearTimeout(siteWatch.timer);
     var check = function () {
       if (siteWatch.savedCommit !== commitSha) return;
@@ -685,7 +685,30 @@
       r.readAsDataURL(file);
     });
   }
+
+  // ---------- automatic translation on saving (js/auto-translate.js, owner only) ----------
+  var trRes = { n: 0 }, translating = false;
+  var trReady = new Promise(function (resolve) {
+    var src = launcher.getAttribute("data-tr-src");
+    if (window.BubaTranslate || !src) { resolve(); return; }
+    var s = document.createElement("script");
+    s.src = src; s.onload = s.onerror = function () { resolve(); };
+    document.head.appendChild(s);
+  });
+  trReady.then(function () { if (window.BubaTranslate) bar.insertBefore(window.BubaTranslate.toggle(), status); });
+  var trPairs = function () { return [{ now: state, before: JSON.parse(original) }]; };
+  function trNote() { var n = window.BubaTranslate ? window.BubaTranslate.note(trRes) : ""; return n ? " " + n : ""; }
+  function trKind() { return trRes.failed ? "warn" : "ok"; }
   function save() {
+    if (!dirty() || translating) return;
+    if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
+    translating = true; saveBtn.disabled = true; trRes = { n: 0 };
+    trReady
+      .then(function () { return window.BubaTranslate ? window.BubaTranslate.run(trPairs(), { onStart: function (m) { setStatus(m); } }) : { n: 0 }; })
+      .then(function (r) { trRes = r; }, function () { trRes = { n: 0, failed: true }; })
+      .then(function () { translating = false; saveNow(); });
+  }
+  function saveNow() {
     lastCommit = "";
     if (!dirty()) return;
     if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
