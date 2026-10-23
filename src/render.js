@@ -108,7 +108,7 @@ function csp(ctx, inlineScripts, pageEditor = false) {
     `media-src 'self'${ctx.preview ? " https://raw.githubusercontent.com" : ""}`,
     // The owner's page editor reads and saves the page settings in the
     // GitHub repository, with the owner's own sign-in.
-    `connect-src ${[ctx.site.community ? ctx.site.community.url : "", pageEditor ? "'self' https://api.github.com" : ""].filter(Boolean).join(" ") || "'none'"}`,
+    `connect-src ${[ctx.site.community ? ctx.site.community.url : "", pageEditor ? "'self' https://api.github.com" + (pageEditor === "page" ? " https://api.mymemory.translated.net" : "") : ""].filter(Boolean).join(" ") || "'none'"}`,
     "frame-src https://www.youtube-nocookie.com https://player.vimeo.com",
     "object-src 'none'",
     "base-uri 'self'",

@@ -41,7 +41,7 @@
     textHint: "לחצו כדי לכתוב", nameHint: "שם (לחצו כדי לכתוב)", bodyHint: "טקסט (לחצו כדי לכתוב)",
     introHint: "משפט פתיחה (לחצו כדי לכתוב, ריק = בלי משפט)",
     titleNote: "הכותרת הזו היא גם שם הכפתור בתפריט, בשפת הדף בלבד.",
-    langNote: "הטקסטים נשמרים בעברית בלבד. לטקסט באנגלית — פתחו את הדף באנגלית.",
+    langNote: "כותבים כאן בעברית. עם ״תרגום אוטומטי לאנגלית״ (למעלה) האנגלית מתעדכנת בשמירה. לתיקון התרגום — פתחו את הדף באנגלית.",
     emptyBack: "הטקסט ריק, ולכן יוצג הטקסט הרגיל.",
     nameEmpty: "פריט בלי שם לא מוצג באתר (בשפה הזו).",
     notShown: "לא מוצג בדף בשפה הזו — חסר שם",
@@ -60,9 +60,14 @@
     tipTitle: "איך עורכים את הדף",
     tip1: "לוחצים על כל טקסט וכותבים: כותרת, משפט פתיחה, שמות ותיאורים.",
     tip2: "ברשימות: ״הוספה״ לפריט חדש, חצים או גרירה לשינוי הסדר, ״מחיקה״ להסרה.",
-    tip3: "הטקסטים נשמרים בשפת הדף בלבד.",
+    tip3: "כל שינוי בסדר, הוספה או מחיקה — חל על שתי השפות.",
     tip4: "שום דבר לא נשמר עד ״שמירה״. טעיתם? ״ביטול פעולה״.",
     tipClose: "הבנתי", help: "עזרה",
+    autoTr: "תרגום אוטומטי לאנגלית", autoTrTip: "בשמירה, כל טקסט ששיניתם כאן מתורגם לאנגלית ומחליף את הטקסט באנגלית. כבו כשאתם מתקנים תרגום.",
+    translating: "מתרגם לאנגלית…",
+    trDone: "תורגם לאנגלית: {n}. לתיקון — פתחו את הדף באנגלית.",
+    trFail: "התרגום לאנגלית לא הצליח (אולי נגמרה המכסה היומית החינמית, או שאין אינטרנט). העברית נשמרה; האנגלית לא השתנתה.",
+    tip5: "״תרגום אוטומטי״ מתרגם בשמירה כל טקסט ששיניתם לשפה השנייה (חינם). מתקנים תרגום? כבו אותו לפני השמירה.",
   } : {
     title: "Editing the page", loading: "Loading the page…",
     save: "Save", saving: "Saving…", cancel: "Leave without saving",
@@ -72,7 +77,7 @@
     textHint: "Click to write", nameHint: "Name (click to write)", bodyHint: "Text (click to write)",
     introHint: "Opening line (click to write; empty = no line)",
     titleNote: "This title is also the menu button's name, in this language only.",
-    langNote: "Texts are saved in English only. For the Hebrew text, open the page in Hebrew.",
+    langNote: "You write in English here. With \"Auto-translate to Hebrew\" (above) the Hebrew updates on saving. To fix the translation, open the page in Hebrew.",
     emptyBack: "The text is empty, so the usual text will show.",
     nameEmpty: "An item without a name is not shown on the site (in this language).",
     notShown: "Not shown in this language — no name",
@@ -91,9 +96,14 @@
     tipTitle: "How to edit the page",
     tip1: "Click any text and write: title, opening line, names and descriptions.",
     tip2: "In lists: \"Add\" for a new item, arrows or dragging to reorder, \"Delete\" to remove.",
-    tip3: "Texts are saved in the page's language only.",
+    tip3: "Reordering, adding or deleting applies to both languages.",
     tip4: "Nothing is saved until \"Save\". Made a mistake? \"Undo\".",
     tipClose: "Got it", help: "Help",
+    autoTr: "Auto-translate to Hebrew", autoTrTip: "On saving, every text you changed here is translated to Hebrew and replaces the Hebrew text. Turn off when you fix a translation.",
+    translating: "Translating to Hebrew…",
+    trDone: "Translated to Hebrew: {n}. To fix it, open the page in Hebrew.",
+    trFail: "Translating to Hebrew failed (maybe the free daily allowance ran out, or there is no internet). The English is saved; the Hebrew did not change.",
+    tip5: "\"Auto-translate\" translates every text you changed into the other language when saving (free). Fixing a translation? Turn it off before saving.",
   };
 
   // ---------- small helpers ----------
@@ -156,9 +166,17 @@
   var saveBtn = button(T.save, save, "pe-btn pe-primary");
   var undoBtn = button("↶ " + T.undo, undo, "pe-btn", T.undoTip);
   undoBtn.disabled = true;
+  var TR_KEY = "bubapix-auto-translate-" + lang, trOn = true;
+  try { trOn = localStorage.getItem(TR_KEY) !== "0"; } catch (e) { trOn = true; }
+  var trBox = el("input", { type: "checkbox", "data-auto-translate": "" });
+  trBox.checked = trOn;
+  trBox.addEventListener("change", function () { try { localStorage.setItem(TR_KEY, trBox.checked ? "1" : "0"); } catch (e) { /* storage blocked */ } });
   var bar = el("div", { "class": "pe-bar", role: "region", "aria-label": T.title }, [
     el("strong", { "class": "pe-bar-title", text: T.title }),
-    el("span", { "class": "pe-bar-layout" }, [button("? " + T.help, function () { showTip(true); }, "pe-btn pe-ghost")]),
+    el("span", { "class": "pe-bar-layout" }, [
+      button("? " + T.help, function () { showTip(true); }, "pe-btn pe-ghost"),
+      el("label", { "class": "pe-check pe-autotr", title: T.autoTrTip }, [trBox, el("span", { text: T.autoTr })]),
+    ]),
     status,
     el("span", { "class": "pe-bar-actions" }, [undoBtn, saveBtn, button(T.cancel, quit, "pe-btn pe-ghost")]),
   ]);
@@ -343,7 +361,7 @@
     if (old) old.remove();
     var tip = el("div", { "class": "pe-tip", role: "note" }, [
       el("strong", { text: T.tipTitle }),
-      el("ol", {}, [T.tip1, T.tip2, T.tip3, T.tip4].map(function (t) { return el("li", { text: t }); })),
+      el("ol", {}, [T.tip1, T.tip2, T.tip3, T.tip5, T.tip4].map(function (t) { return el("li", { text: t }); })),
       button(T.tipClose, function () { try { localStorage.setItem(TIP, "1"); } catch (e) { /* storage blocked */ } tip.remove(); }, "pe-btn pe-primary"),
     ]);
     bar.parentNode.insertBefore(tip, bar.nextSibling);
@@ -355,10 +373,11 @@
     return fetch(BASE + "version.txt?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) { return /^[0-9a-f]{40}$/.test(t.trim()) ? t.trim() : ""; }).catch(function () { return ""; });
   }
   function watchSite() { readVersion().then(function (v) { siteWatch.available = !!v; }); }
-  function followSave(commitSha) {
-    if (!siteWatch.available || !commitSha) { setStatus(T.saved, "ok"); return; }
+  function followSave(commitSha, note, warn) {
+    var plus = note ? " " + note : "";
+    if (!siteWatch.available || !commitSha) { setStatus(T.saved + plus, warn ? "warn" : "ok"); return; }
     siteWatch.savedCommit = commitSha; siteWatch.started = Date.now();
-    setStatus(T.publishing, "ok");
+    setStatus(T.publishing + plus, warn ? "warn" : "ok");
     clearTimeout(siteWatch.timer);
     var check = function () {
       if (siteWatch.savedCommit !== commitSha) return;
@@ -383,12 +402,83 @@
     siteWatch.timer = setTimeout(check, 20000);
   }
 
+  // ---------- automatic translation (free: MyMemory, no key, owner's browser only) ----------
+  var TR_API = "https://api.mymemory.translated.net/get";
+  var bytes = function (t) { return new TextEncoder().encode(t).length; };
+  function chunks(text) {
+    // The service takes up to 500 bytes at a time (a Hebrew letter is 2 bytes): split by sentences, then by words.
+    var out = [], cur = "";
+    String(text).split(/(?<=[.!?…:;])\s+|\n+/).forEach(function (sentence) {
+      var parts = bytes(sentence) > 450 ? sentence.split(/\s+/) : [sentence];
+      parts.forEach(function (w) {
+        var next = cur ? cur + " " + w : w;
+        if (bytes(next) > 450 && cur) { out.push(cur); cur = w; } else cur = next;
+      });
+    });
+    if (cur) out.push(cur);
+    return out;
+  }
+  function decode(t) { return new DOMParser().parseFromString(t, "text/html").documentElement.textContent; }
+  var trCache = {};
+  function translate(text) {
+    if (trCache[text]) return Promise.resolve(trCache[text]);
+    var chain = Promise.resolve([]);
+    chunks(text).forEach(function (part) {
+      chain = chain.then(function (done) {
+        return fetch(TR_API + "?q=" + encodeURIComponent(part) + "&langpair=" + lang + "|" + other, { cache: "no-store" })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            var t = d && d.responseData && d.responseData.translatedText;
+            if (!d || Number(d.responseStatus) !== 200 || d.quotaFinished || !t || /MYMEMORY WARNING/i.test(t)) throw new Error("translate");
+            return done.concat(decode(t).trim());
+          });
+      });
+    });
+    return chain.then(function (list) { var t = clean(list.join(" ")); trCache[text] = t; return t; });
+  }
+  // Every text changed in this language since loading → its twin in the other language.
+  function translateChanges() {
+    var orig = JSON.parse(original), jobs = [];
+    var suffix = "_" + lang;
+    function scan(now, before) {
+      Object.keys(now).forEach(function (k) {
+        if (k.slice(-3) !== suffix || typeof now[k] !== "string" || !now[k] || now[k] === before[k]) return;
+        jobs.push({ text: now[k], put: function (t) { now[k.slice(0, -3) + "_" + other] = t; } });
+      });
+    }
+    scan(state.file, orig.file);
+    scan(state.labels, orig.labels);
+    lists.forEach(function (L) {
+      var was = Array.isArray(orig.file[L.field]) ? orig.file[L.field] : [];
+      (state.file[L.field] || []).forEach(function (it) {
+        L.subs.forEach(function (sub) {
+          var k = sub + suffix, v = it[k];
+          // Unchanged texts (also after moving items around) are found among the texts loaded from the file.
+          if (!v || was.some(function (o) { return o[k] === v; })) return;
+          jobs.push({ text: v, put: function (t) { it[sub + "_" + other] = t; } });
+        });
+      });
+    });
+    if (!trBox.checked || !jobs.length) return Promise.resolve({ n: 0 });
+    setStatus(T.translating);
+    var chain = Promise.resolve(), results = [];
+    jobs.forEach(function (j) { chain = chain.then(function () { return translate(j.text).then(function (t) { results.push(t); }); }); });
+    // All or nothing: a half-translated page would mix languages.
+    return chain.then(function () { jobs.forEach(function (j, i) { j.put(results[i]); }); return { n: jobs.length }; })
+      .catch(function () { return { n: 0, failed: true }; });
+  }
+
   // ---------- save ----------
   function save() {
     lastCommit = "";
     if (!dirty()) return;
     if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
     saveBtn.disabled = true;
+    translateChanges().then(function (tr) { write(tr); });
+  }
+  function write(tr) {
+    var note = tr.failed ? T.trFail : tr.n ? T.trDone.replace("{n}", tr.n) : "";
+    if (tr.n) { commit(); fill(); drawLists(); }
     setStatus(T.saving);
     var orig = JSON.parse(original);
     var jobs = [];
@@ -409,7 +499,7 @@
         });
         return chain;
       })
-      .then(function () { original = snap(); saveBtn.disabled = true; followSave(lastCommit); })
+      .then(function () { original = snap(); saveBtn.disabled = true; followSave(lastCommit, note, tr.failed); })
       .catch(function (err) {
         saveBtn.disabled = false;
         if (wrote) { setStatus(T.errSave, "error"); return; }
