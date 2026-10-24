@@ -946,36 +946,7 @@
   }
   // The picture's title and short text, and where they show.
   function captionDialog(g) {
-    var title = el("input", { type: "text", dir: he ? "rtl" : "ltr", "class": "pe-input", "data-cap-title": "", value: g["title_" + lang] || "" });
-    var note = el("textarea", { dir: he ? "rtl" : "ltr", "class": "pe-input pe-textarea", rows: "3", "data-cap-note": "" });
-    note.value = g["note_" + lang] || "";
-    var where = el("select", { "class": "pe-input", "data-cap-where": "" }, [["hidden", T.capHidden], ["project", T.capProject], ["everywhere", T.capEverywhere]].map(function (o) { return el("option", { value: o[0], text: o[1] }); }));
-    // A picture that has no title yet: what is written will most likely be shown.
-    where.value = g.caption === "project" || g.caption === "everywhere" ? g.caption : (g["title_" + lang] || g["note_" + lang] ? "hidden" : "project");
-    var ok = button(T.ok, function () {
-      close();
-      g["title_" + lang] = title.value.replace(/\s+/g, " ").trim();
-      g["note_" + lang] = clean(note.value);
-      g.caption = where.value;
-      changed();
-    }, "pe-btn pe-primary");
-    var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": T.caption }, [
-      el("div", { "class": "pe-modal-box pe-small-box" }, [
-        el("div", { "class": "pe-modal-head" }, [el("strong", { text: T.caption }), button(T.close, function () { close(); }, "pe-btn pe-ghost")]),
-        el("div", { "class": "pe-modal-foot" }, [
-          el("label", {}, [document.createTextNode(T.captionTitle), title]),
-          el("label", {}, [document.createTextNode(T.captionNote), note]),
-          el("label", {}, [document.createTextNode(T.captionWhere), where]),
-          el("p", { "class": "pe-note", text: T.captionNoteHelp }),
-          ok,
-        ]),
-      ]),
-    ]);
-    function close() { dialog.remove(); document.removeEventListener("keydown", onKey); }
-    function onKey(e) { if (e.key === "Escape") close(); }
-    document.addEventListener("keydown", onKey);
-    document.body.appendChild(dialog);
-    title.focus();
+    core.captionDialog(T, g, lang, [["hidden", T.capHidden], ["project", T.capProject], ["everywhere", T.capEverywhere]], changed);
   }
   // ---------- free sizes (computers) ----------
   var narrow = window.matchMedia ? window.matchMedia("(max-width: 700px)") : { matches: false };
@@ -1096,26 +1067,7 @@
   }
 
   // ---------- description for blind visitors ----------
-  function describe(curHe, curEn, done) {
-    var altHe = el("input", { type: "text", dir: "rtl", "class": "pe-input", value: curHe || "" });
-    var altEn = el("input", { type: "text", dir: "ltr", "class": "pe-input", value: curEn || "" });
-    var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": T.describe }, [
-      el("div", { "class": "pe-modal-box pe-small-box" }, [
-        el("div", { "class": "pe-modal-head" }, [el("strong", { text: T.describe }), button(T.close, function () { close(); }, "pe-btn pe-ghost")]),
-        el("div", { "class": "pe-modal-foot" }, [
-          el("p", { "class": "pe-note", text: T.altEdit }),
-          el("label", {}, [document.createTextNode(T.altHe), altHe]),
-          el("label", {}, [document.createTextNode(T.altEn), altEn]),
-          button(T.ok, function () { close(); done({ he: altHe.value.trim(), en: altEn.value.trim() }); }, "pe-btn pe-primary"),
-        ]),
-      ]),
-    ]);
-    function close() { dialog.remove(); document.removeEventListener("keydown", onKey); }
-    function onKey(e) { if (e.key === "Escape") close(); }
-    document.addEventListener("keydown", onKey);
-    document.body.appendChild(dialog);
-    (he ? altHe : altEn).focus();
-  }
+  function describe(curHe, curEn, done) { core.describe(T, curHe, curEn, done); }
 
   // ---------- picture chooser ----------
   var imageList = null;

@@ -68,6 +68,7 @@
     widthLabel: "רוחב",
     earlier: "הזזה למקום הקודם", later: "הזזה למקום הבא", prevBtn: "→ קודם", nextBtn: "הבא ←", more: "⋯ עוד", drag: "גררו כדי לשנות את הסדר",
     replace: "החלפת התמונה", describe: "תיאור לעיוורים", noAlt: "אין תיאור לעיוורים",
+    nameOn: "השם מתחת לתמונה: מוצג", nameOff: "השם מתחת לתמונה: לא מוצג",
     coverNote: "התמונה כאן היא תמונת השער של הפרויקט: היא מתחלפת גם בדף הפרויקט ובפוסטר בדף הבית.",
     pickTitle: "בחירת תמונה", pickUpload: "העלאה מהמחשב", pickLoading: "טוען תמונות…",
     altHe: "תיאור התמונה לעיוורים, עברית", altEn: "תיאור התמונה לעיוורים, אנגלית",
@@ -115,6 +116,7 @@
     widthLabel: "Width",
     earlier: "Move to the previous place", later: "Move to the next place", prevBtn: "← Earlier", nextBtn: "Later →", more: "⋯ More", drag: "Drag to change the order",
     replace: "Replace the picture", describe: "Description for blind visitors", noAlt: "No description for blind visitors",
+    nameOn: "Name under the picture: shown", nameOff: "Name under the picture: not shown",
     coverNote: "The picture here is the project's cover: it also changes on the project page and on the homepage poster.",
     pickTitle: "Choose a picture", pickUpload: "Upload from this computer", pickLoading: "Loading pictures…",
     altHe: "Description for blind visitors, Hebrew", altEn: "Description for blind visitors, English",
@@ -208,7 +210,7 @@
     });
   }
   // What this page sets in each project file (the rest of the file stays as it is now).
-  var PAGE_FIELDS = ["order", "list_w", "cover", "cover_alt_he", "cover_alt_en"];
+  var PAGE_FIELDS = ["order", "list_w", "cover", "cover_alt_he", "cover_alt_en", "title_in_gallery"];
   function loadVersion(commitSha) {
     return Promise.all(state.list.map(function (p) {
       var path = "content/projects/" + p.slug + ".json";
@@ -496,7 +498,13 @@
       button(T.describe, function () {
         describe(d.cover_alt_he, d.cover_alt_en, function (alts) { d.cover_alt_he = alts.he; d.cover_alt_en = alts.en; changed(); });
       }),
+      // The project's name under its picture on this page (title_in_gallery; off unless chosen).
+      button(d.title_in_gallery === true ? T.nameOn : T.nameOff, function () {
+        if (d.title_in_gallery === true) delete d.title_in_gallery; else d.title_in_gallery = true;
+        changed();
+      }, "pe-btn pe-name-btn"),
     ]));
+    if (d.title_in_gallery === true && nameOf(p)) fig.insertBefore(el("figcaption", { "class": "jg-caption pe-caption" }, [el("span", { "class": "jg-title", text: nameOf(p) })]), media.nextSibling);
     fig.addEventListener("dragstart", function (e) {
       if (e.target && e.target.closest && e.target.closest(".pe-tools, .pe-dot")) { e.preventDefault(); return; }
       dragFrom = p; fig.classList.add("is-dragging");
@@ -578,26 +586,7 @@
   }
 
   // ---------- description for blind visitors ----------
-  function describe(curHe, curEn, done) {
-    var altHe = el("input", { type: "text", dir: "rtl", "class": "pe-input", value: curHe || "" });
-    var altEn = el("input", { type: "text", dir: "ltr", "class": "pe-input", value: curEn || "" });
-    var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": T.describe }, [
-      el("div", { "class": "pe-modal-box pe-small-box" }, [
-        el("div", { "class": "pe-modal-head" }, [el("strong", { text: T.describe }), button(T.close, function () { close(); }, "pe-btn pe-ghost")]),
-        el("div", { "class": "pe-modal-foot" }, [
-          el("p", { "class": "pe-note", text: T.altEdit }),
-          el("label", {}, [document.createTextNode(T.altHe), altHe]),
-          el("label", {}, [document.createTextNode(T.altEn), altEn]),
-          button(T.ok, function () { close(); done({ he: altHe.value.trim(), en: altEn.value.trim() }); }, "pe-btn pe-primary"),
-        ]),
-      ]),
-    ]);
-    function close() { dialog.remove(); document.removeEventListener("keydown", onKey); }
-    function onKey(e) { if (e.key === "Escape") close(); }
-    document.addEventListener("keydown", onKey);
-    document.body.appendChild(dialog);
-    (he ? altHe : altEn).focus();
-  }
+  function describe(curHe, curEn, done) { core.describe(T, curHe, curEn, done); }
 
   // ---------- picture chooser ----------
   var imageList = null;

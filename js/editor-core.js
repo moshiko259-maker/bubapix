@@ -14,6 +14,8 @@
  *   BubaCore.loadStyles(launcher, onChange)  text styles + quick publishing
  *   BubaCore.history(launcher, opts)         "Earlier versions" (js/history.js)
  *   BubaCore.siteWatch(opts)                 "the site is updated ✓" after a save
+ *   BubaCore.describe(T, he, en, done)       "Description for blind visitors" window
+ *   BubaCore.captionDialog(T, g, lang, choices, done)  "Title and text" window for a picture
  */
 (function () {
   "use strict";
@@ -171,9 +173,65 @@
     return { watch: watch, follow: follow };
   }
 
+  function modal(label, kids, focus) {
+    var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": label }, [
+      el("div", { "class": "pe-modal-box pe-small-box" }, [
+        el("div", { "class": "pe-modal-head" }, [el("strong", { text: label }), button(kids.closeText, function () { close(); }, "pe-btn pe-ghost")]),
+        el("div", { "class": "pe-modal-foot" }, kids.body),
+      ]),
+    ]);
+    function close() { dialog.remove(); document.removeEventListener("keydown", onKey); }
+    function onKey(e) { if (e.key === "Escape") close(); }
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(dialog);
+    if (focus) focus.focus();
+    return close;
+  }
+  // "Description for blind visitors": both languages at once.
+  // T: describe, altEdit, altHe, altEn, ok, close.
+  function describe(T, curHe, curEn, done) {
+    var he = document.documentElement.lang === "he";
+    var altHe = el("input", { type: "text", dir: "rtl", "class": "pe-input", value: curHe || "" });
+    var altEn = el("input", { type: "text", dir: "ltr", "class": "pe-input", value: curEn || "" });
+    var close = modal(T.describe, { closeText: T.close, body: [
+      el("p", { "class": "pe-note", text: T.altEdit }),
+      el("label", {}, [document.createTextNode(T.altHe), altHe]),
+      el("label", {}, [document.createTextNode(T.altEn), altEn]),
+      button(T.ok, function () { close(); done({ he: altHe.value.trim(), en: altEn.value.trim() }); }, "pe-btn pe-primary"),
+    ] }, he ? altHe : altEn);
+  }
+  function cleanText(text) { return String(text || "").replace(/\r/g, "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim(); }
+  // "Title and text" for one picture (title_<lang>, note_<lang>, caption), in the page's language.
+  // choices: [[value, label], ...] for "Where to show it"; the first one is "not shown".
+  // T: caption, captionTitle, captionNote, captionWhere, captionNoteHelp, ok, close.
+  function captionDialog(T, g, lang, choices, done) {
+    var dir = lang === "he" ? "rtl" : "ltr";
+    var title = el("input", { type: "text", dir: dir, "class": "pe-input", "data-cap-title": "", value: g["title_" + lang] || "" });
+    var note = el("textarea", { dir: dir, "class": "pe-input pe-textarea", rows: "3", "data-cap-note": "" });
+    note.value = g["note_" + lang] || "";
+    var where = el("select", { "class": "pe-input", "data-cap-where": "" }, choices.map(function (o) { return el("option", { value: o[0], text: o[1] }); }));
+    var values = choices.map(function (o) { return o[0]; });
+    // A picture that has no title yet: what is written will most likely be shown.
+    where.value = g.caption && g.caption !== values[0] && values.indexOf(g.caption) >= 0 ? g.caption : (g["title_" + lang] || g["note_" + lang] ? values[0] : values[1] || values[0]);
+    var close = modal(T.caption, { closeText: T.close, body: [
+      el("label", {}, [document.createTextNode(T.captionTitle), title]),
+      el("label", {}, [document.createTextNode(T.captionNote), note]),
+      el("label", {}, [document.createTextNode(T.captionWhere), where]),
+      el("p", { "class": "pe-note", text: T.captionNoteHelp }),
+      button(T.ok, function () {
+        close();
+        g["title_" + lang] = title.value.replace(/\s+/g, " ").trim();
+        g["note_" + lang] = cleanText(note.value);
+        g.caption = where.value;
+        done();
+      }, "pe-btn pe-primary"),
+    ] }, title);
+  }
+
   window.BubaCore = {
     el: el, button: button, token: token,
     utf8ToB64: utf8ToB64, b64ToUtf8: b64ToUtf8, readB64: readB64,
     github: github, loadStyles: loadStyles, history: history, siteWatch: siteWatch,
+    describe: describe, captionDialog: captionDialog,
   };
 })();

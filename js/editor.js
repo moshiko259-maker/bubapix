@@ -69,6 +69,11 @@
     earlier: "הזזה למקום הקודם", later: "הזזה למקום הבא", prevBtn: "→ קודם", nextBtn: "הבא ←", more: "⋯ עוד", drag: "גררו כדי להזיז",
     replace: "החלפה", hide: "הסתרה", show: "הצגה", remove: "הסרה מהגלריה",
     add: "הוספת תמונה לגלריה",
+    describe: "תיאור לעיוורים", noAlt: "אין תיאור לעיוורים", ok: "אישור",
+    altEdit: "כתבו בקצרה מה רואים בתמונה. קוראי מסך מקריאים את זה לגולשים עיוורים.",
+    caption: "כותרת ותיאור", captionTitle: "כותרת לתמונה (לא חובה)", captionNote: "תיאור קצר (לא חובה)", captionWhere: "איפה להציג",
+    capHidden: "לא להציג (נשמר)", capHome: "מתחת לתמונה, בגלריה של דף הבית",
+    captionNoteHelp: "הכותרת והתיאור מתורגמים לאנגלית בשמירה. תיאור לעיוורים — בכפתור ״תיאור לעיוורים״.",
     hiddenTitle: "תמונות מוסתרות (נשמרות, לא מוצגות)",
     elsewhereTitle: "מוצגות במקום אחר בדף (פתיחה או שורת הפוסטרים), ולכן לא בגלריה",
     replaceHero: "החלפת תמונת הפתיחה",
@@ -174,6 +179,11 @@
     earlier: "Move to the previous place", later: "Move to the next place", prevBtn: "← Earlier", nextBtn: "Later →", more: "⋯ More", drag: "Drag to move",
     replace: "Replace", hide: "Hide", show: "Show", remove: "Remove from gallery",
     add: "Add a picture to the gallery",
+    describe: "Description for blind visitors", noAlt: "No description for blind visitors", ok: "OK",
+    altEdit: "Say briefly what the picture shows. Screen readers read it to blind visitors.",
+    caption: "Title and text", captionTitle: "Picture title (optional)", captionNote: "Short text (optional)", captionWhere: "Where to show it",
+    capHidden: "Not shown (kept)", capHome: "Under the picture, in the homepage gallery",
+    captionNoteHelp: "The title and text are translated to Hebrew on saving. The description for blind visitors is under \"Description for blind visitors\".",
     hiddenTitle: "Hidden pictures (kept, not shown)",
     elsewhereTitle: "Shown elsewhere on the page (opening or posters row), so not in the gallery",
     replaceHero: "Replace the opening image",
@@ -600,6 +610,9 @@
             changed(); syncPage();
           });
         }),
+        button(T.describe, function () {
+          core.describe(T, data.hero_alt_he, data.hero_alt_en, function (alts) { data.hero_alt_he = alts.he; data.hero_alt_en = alts.en; changed(); syncPage(); });
+        }, "pe-btn pe-describe-btn"),
       ]));
     }
     featureTools = el("div", { "class": "pe-tools pe-tools-top" });
@@ -617,6 +630,9 @@
           changed(); syncPage();
         });
       }));
+      if (data.feature_image) featureTools.appendChild(button(T.describe, function () {
+        core.describe(T, data.feature_alt_he, data.feature_alt_en, function (alts) { data.feature_alt_he = alts.he; data.feature_alt_en = alts.en; changed(); syncPage(); });
+      }, "pe-btn pe-describe-btn"));
       if (data.feature_image) featureTools.appendChild(button(T.removeFeature, function () {
         data.feature_image = ""; data.feature_alt_he = ""; data.feature_alt_en = "";
         changed(); syncPage();
@@ -986,8 +1002,23 @@
         }, g.project || "");
       }),
       button(T.hide, function () { g.visible = false; changed(); }),
+      button(T.describe, function () {
+        core.describe(T, g.alt_he, g.alt_en, function (alts) { g.alt_he = alts.he; g.alt_en = alts.en; changed(); });
+      }, "pe-btn pe-describe-btn"),
+      button(T.caption, function () {
+        core.captionDialog(T, g, lang, [["hidden", T.capHidden], ["everywhere", T.capHome]], changed);
+      }, "pe-btn pe-caption-btn"),
       button(T.nextBtn, function () { move(idx, 1); }, "pe-btn pe-move", T.later),
     ]));
+    if (!g["alt_" + lang]) fig.appendChild(el("span", { "class": "pe-missing", text: T.noAlt }));
+    // The title and text as visitors will see them (only when chosen to be shown).
+    var capTitle = g["title_" + lang] || "", capNote = g["note_" + lang] || "";
+    if (g.caption === "everywhere" && (capTitle || capNote)) {
+      fig.insertBefore(el("figcaption", { "class": "jg-caption pe-caption" }, [
+        capTitle ? el("span", { "class": "jg-title", text: capTitle }) : null,
+        capNote ? el("span", { "class": "jg-note", text: capNote }) : null,
+      ]), media.nextSibling);
+    }
     fig.addEventListener("dragstart", function (e) { if (e.target && e.target.closest && e.target.closest(".pe-resize, .pe-tools")) { e.preventDefault(); return; } dragFrom = idx; fig.classList.add("is-dragging"); try { e.dataTransfer.setData("text/plain", String(idx)); e.dataTransfer.effectAllowed = "move"; } catch (x) { /* old browser */ } });
     fig.addEventListener("dragend", function () { fig.classList.remove("is-dragging"); dragFrom = -1; });
     fig.addEventListener("dragover", function (e) { if (dragFrom >= 0 && dragFrom !== idx) { e.preventDefault(); fig.classList.add("is-target"); } });
@@ -1362,7 +1393,7 @@
     if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
     translating = true; saveBtn.disabled = true; trRes = { n: 0 };
     trReady
-      .then(function () { return window.BubaTranslate ? window.BubaTranslate.run(trPairs(), { onStart: function (m) { setStatus(m); } }) : { n: 0 }; })
+      .then(function () { return window.BubaTranslate ? window.BubaTranslate.run(trPairs(), { topOnly: true, onStart: function (m) { setStatus(m); } }) : { n: 0 }; })
       .then(function (r) { trRes = r; }, function () { trRes = { n: 0, failed: true }; })
       .then(function () { translating = false; saveNow(); });
   }
