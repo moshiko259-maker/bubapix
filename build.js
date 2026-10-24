@@ -678,6 +678,7 @@ const assetVersion = {
   pageEditor: fileVersion(["js/page-editor.js"]),
   autoTranslate: fileVersion(["js/auto-translate.js"]),
   textStyle: fileVersion(["js/text-style.js"]),
+  previewPublish: fileVersion(["js/preview-publish.js"]),
 };
 
 function contextFor(lang, pagePath, data) {

@@ -515,6 +515,9 @@
       saveBtn.disabled = true;
     });
   function loadStyles() {
+    // Also: publishing the test site right after a save (js/preview-publish.js).
+    var pp = launcher.getAttribute("data-pp-src");
+    if (pp && !window.BubaPublish) { var ps = document.createElement("script"); ps.src = pp; document.head.appendChild(ps); }
     var src = launcher.getAttribute("data-ts-src");
     var go = function () { if (window.BubaStyle) window.BubaStyle.start({ onChange: refreshStatus }).catch(function () { /* styles stay as they are */ }); };
     if (window.BubaStyle || !src) { go(); return; }
@@ -1421,6 +1424,7 @@
   }
   function watchSite() { readVersion().then(function (v) { siteWatch.available = !!v; }); }
   function followSave(commitSha) {
+    if (window.BubaPublish && commitSha) window.BubaPublish.after(commitSha);
     if (!siteWatch.available || !commitSha) { setStatus(T.saved + trNote(), trKind()); return; }
     siteWatch.savedCommit = commitSha; siteWatch.started = Date.now();
     setStatus(T.publishing + trNote(), trKind());

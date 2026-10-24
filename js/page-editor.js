@@ -321,6 +321,9 @@
     })
     .catch(function (err) { setStatus(err.status === 401 || err.status === 403 ? T.errAuth : T.errLoad, "error"); });
   function loadStyles() {
+    // Also: publishing the test site right after a save (js/preview-publish.js).
+    var pp = launcher.getAttribute("data-pp-src");
+    if (pp && !window.BubaPublish) { var ps = document.createElement("script"); ps.src = pp; document.head.appendChild(ps); }
     var src = launcher.getAttribute("data-ts-src");
     var go = function () { if (window.BubaStyle) window.BubaStyle.start({ onChange: refreshStatus }).catch(function () { /* styles stay as they are */ }); };
     if (window.BubaStyle || !src) { go(); return; }
@@ -800,6 +803,7 @@
   }
   function watchSite() { readVersion().then(function (v) { siteWatch.available = !!v; }); }
   function followSave(commitSha, note, warn) {
+    if (window.BubaPublish && commitSha) window.BubaPublish.after(commitSha);
     var plus = note ? " " + note : "";
     if (!siteWatch.available || !commitSha) { setStatus(T.saved + plus, warn ? "warn" : "ok"); return; }
     siteWatch.savedCommit = commitSha; siteWatch.started = Date.now();
