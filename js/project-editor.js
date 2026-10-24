@@ -121,6 +121,7 @@
     sectionUp: "↑ האזור למעלה", sectionDown: "↓ האזור למטה", sectionUpTip: "הזזת אזור הסרטונים מעל האזור שלפניו", sectionDownTip: "הזזת אזור הסרטונים מתחת לאזור שאחריו",
     videosNote: "הסרטון עצמו נשאר ביוטיוב; באתר נשמר רק הקישור. אזור בלי סרטונים לא מוצג באתר.",
     videoRemoved: "הסרטון הוסר מהדף (ביוטיוב הוא לא נמחק). אפשר לבטל עם ״ביטול פעולה״.",
+    galHeading: "כותרת לגלריה, למשל ״דמויות״ (ריק = ״תמונות״)", galHeadingBehind: "כותרת לאזור (ריק = ״מאחורי הקלעים״)",
     newArea: "אזור סרטונים חדש", newAreaTip: "אזור נוסף עם כותרת משלו, למשל ״טריילר״, ״הסרט המלא״ או ״מאחורי הקלעים״",
     removeArea: "מחיקת האזור", areaRemoved: "אזור הסרטונים הוסר מהדף (ביוטיוב שום דבר לא נמחק). אפשר לבטל עם ״ביטול פעולה״.",
     videoHeading2: "כותרת לאזור, למשל ״טריילר״ או ״הסרט המלא״ (ריק = ״וידאו״)",
@@ -207,6 +208,7 @@
     sectionUp: "↑ Area up", sectionDown: "↓ Area down", sectionUpTip: "Move the videos area above the area before it", sectionDownTip: "Move the videos area below the area after it",
     videosNote: "The video itself stays on YouTube; the site keeps only the link. An area without videos is not shown on the site.",
     videoRemoved: "The video was removed from the page (it is not deleted on YouTube). You can undo it.",
+    galHeading: "Heading for this gallery, e.g. \"Characters\" (empty = \"Images\")", galHeadingBehind: "Heading for this area (empty = \"Behind the scenes\")",
     newArea: "New videos area", newAreaTip: "Another area with its own heading, e.g. \"Trailer\", \"Full film\" or \"Behind the scenes\"",
     removeArea: "Delete the area", areaRemoved: "The videos area was removed from the page (nothing is deleted on YouTube). You can undo it.",
     videoHeading2: "Heading for this area, e.g. \"Trailer\" or \"Full film\" (empty = \"Video\")",
@@ -580,8 +582,12 @@
   }
 
   function galleryBlock(sec, s) {
-    var heading = sec["heading_" + lang] || (sec.type === "behind" ? T.behind : T.gallery);
-    var box = el("section", { "class": "project-section pe-gal-sec" }, [el("h2", { "class": "section-label", text: heading, "data-ts": "project/section-title" })]);
+    // The heading: written here (empty = the usual "Images" / "Behind the scenes").
+    var head = el("h2", { "class": "section-label pe-gal-head", "data-ts": "project/section-title" });
+    head.textContent = sec["heading_" + lang] || "";
+    editable(head, (sec.type === "behind" ? T.galHeadingBehind : T.galHeading), function (txt) { sec["heading_" + lang] = clean(txt).replace(/\n+/g, " "); });
+    head.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); head.blur(); } });
+    var box = el("section", { "class": "project-section pe-gal-sec" }, [head]);
     var hiddenIdx = [], shownList = [];
     sec.images.forEach(function (g, i) {
       if (!g || !g.image) return;
