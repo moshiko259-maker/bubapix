@@ -35,8 +35,8 @@
     {
       "type": "gallery",
       "hidden": false,
-      "heading_en": "",
-      "heading_he": "",
+      "heading_en": "characters",
+      "heading_he": "דמויות",
       "images": [
         {
           "image": "/assets/work/bradley-turnaround.jpg",
