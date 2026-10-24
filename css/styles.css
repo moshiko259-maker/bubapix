@@ -1081,6 +1081,7 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .pe-gal-size .pe-select { color: var(--ink); background: #fff; border-color: var(--line); }
 .pe-gal .pe-crop img { object-fit: cover; }
 .pe-title-note { margin: 0.4rem 0 0; }
+.pe-label-note { margin: -0.25rem 0 1.25rem; max-width: 46rem; }
 h1.pe-editable { min-width: 4ch; }
 .pe-poster-note { margin: 0 0 0.6rem; }
 .pe-list-item { position: relative; cursor: grab; }

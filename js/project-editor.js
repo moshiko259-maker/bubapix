@@ -98,6 +98,12 @@
     errLoad: "לא הצלחתי לטעון את דף הפרויקט מ־GitHub.",
     errSave: "השמירה נכשלה. שום דבר לא השתנה.",
     errChanged: "דף הפרויקט השתנה בינתיים במקום אחר (למשל בכלי הניהול או בעריכה של דף הבית). כדי לא למחוק את השינוי ההוא, לא שמרתי. צאו מהעריכה, רעננו את הדף ונסו שוב.",
+    errPartial: "חלק מהשינויים נשמרו וחלק לא (אולי קובץ השתנה בינתיים במקום אחר). צאו מהעריכה, רעננו את הדף ובדקו מה חסר.",
+    labelHint: "טקסט שמשותף לכל דפי הפרויקטים (לחצו כדי לשנות)",
+    labelNote: "״כל הפרויקטים״, ״הפרויקט הקודם״, ״הפרויקט הבא״, ״תקציר״ ו״מהחנות״ משותפים לכל דפי הפרויקטים: שינוי כאן משנה אותם בכולם (בשפת הדף; התרגום האוטומטי משנה גם את השפה השנייה).",
+    labelEmpty: "הטקסט ריק, ולכן אחרי השמירה יוצג הטקסט הרגיל.",
+    // The usual texts (as in src/i18n/he.json), shown when a shared text is left empty.
+    usual: { work_back: "כל הפרויקטים", work_previous: "הפרויקט הקודם", work_next: "הפרויקט הבא", synopsis: "תקציר", project_shop: "מהחנות" },
     errAuth: "הכניסה פגה או שאין הרשאה. היכנסו מחדש לכלי הניהול ונסו שוב.",
     leave: "יש שינויים שלא נשמרו. לצאת בכל זאת?",
     publishing: "נשמר ✓ אתר הבדיקה מתעדכן. אפשר להמשיך לעבוד.",
@@ -193,6 +199,12 @@
     errLoad: "Could not load the project page from GitHub.",
     errSave: "Saving failed. Nothing was changed.",
     errChanged: "The project page was changed elsewhere in the meantime (for example in the admin panel or while editing the homepage). To keep that change, nothing was saved. Leave editing, reload the page and try again.",
+    errPartial: "Some changes were saved and some were not (perhaps a file was changed elsewhere in the meantime). Leave editing, reload the page and check what is missing.",
+    labelHint: "A text shared by all project pages (click to change)",
+    labelNote: "\"All projects\", \"Previous project\", \"Next project\", \"Synopsis\" and \"Shop\" are shared by all project pages: changing them here changes them on all of them (in this language; the automatic translation also changes the other language).",
+    labelEmpty: "The text is empty, so the usual text will be shown after saving.",
+    // The usual texts (as in src/i18n/en.json), shown when a shared text is left empty.
+    usual: { work_back: "All projects", work_previous: "Previous project", work_next: "Next project", synopsis: "Synopsis", project_shop: "Shop" },
     errAuth: "The sign-in expired or has no permission. Sign in to the admin panel again and retry.",
     leave: "There are unsaved changes. Leave anyway?",
     publishing: "Saved ✓ The test site is updating. You can keep working.",
@@ -323,8 +335,14 @@
 
   // ---------- state ----------
   var data = null, sha = "", original = "";
+  // Shared texts of all project pages ("All projects", "Next project",
+  // "Synopsis"…): content/labels.json, key_<lang>; empty = the usual text.
+  var LABELS = "content/labels.json";
+  var labels = {}, labelsSha = "", labelsOrig = "{}";
+  var labelsDirty = function () { return JSON.stringify(labels) !== labelsOrig; };
   // Text styles (js/text-style.js) are saved together with the project.
-  var dirty = function () { return !!data && (JSON.stringify(data) !== original || !!(window.BubaStyle && window.BubaStyle.dirty())); };
+  var dirty = function () { return !!data && (JSON.stringify(data) !== original || labelsDirty() || !!(window.BubaStyle && window.BubaStyle.dirty())); };
+  var snapshot = function () { return JSON.stringify({ d: data, l: labels }); };
 
   // ---------- toolbar ----------
   var status = el("span", { "class": "pe-status", role: "status", "aria-live": "polite" });
@@ -364,17 +382,18 @@
   var past = [], last = "";
   function commit() {
     if (!data) return;
-    var now = JSON.stringify(data);
+    var now = snapshot();
     if (last && now !== last) { past.push(last); if (past.length > 100) past.shift(); }
     last = now;
     undoBtn.disabled = !past.length;
   }
   function undo() {
     if (!past.length) { setStatus(T.nothingToUndo); return; }
-    data = JSON.parse(past.pop());
-    last = JSON.stringify(data);
+    var snap = JSON.parse(past.pop());
+    data = snap.d; labels = snap.l;
+    last = snapshot();
     undoBtn.disabled = !past.length;
-    fillLede(); render(); refreshStatus();
+    fillLede(); fillLabels(); render(); refreshStatus();
     if (dirty()) setStatus(T.undone + " · " + T.unsaved, "warn");
   }
   document.addEventListener("keydown", function (e) {
@@ -393,14 +412,20 @@
     return;
   }
 
-  api("/contents/" + encPath(FILE) + ref)
-    .then(function (res) {
+  Promise.all([
+    api("/contents/" + encPath(FILE) + ref),
+    api("/contents/" + encPath(LABELS) + ref).catch(function (err) { if (err.status === 404) return null; throw err; }),
+  ])
+    .then(function (r) {
+      var res = r[0];
       sha = res.sha;
       data = JSON.parse(b64ToUtf8(res.content));
       if (!Array.isArray(data.sections)) data.sections = [];
       original = JSON.stringify(data);
+      if (r[1]) { labelsSha = r[1].sha; labels = JSON.parse(b64ToUtf8(r[1].content)) || {}; }
+      labelsOrig = JSON.stringify(labels);
       start();
-      last = JSON.stringify(data);
+      last = snapshot();
       refreshStatus();
       watchSite();
       showTip(false);
@@ -485,7 +510,35 @@
     }
     if (head) head.parentNode.insertBefore(area, head.nextSibling);
     else article.insertBefore(area, article.firstChild);
+    // Shared texts on this page: "All projects", previous / next, "Shop".
+    var crumb = article.querySelector(".crumb a");
+    if (crumb) labelPart(crumb, "work_back");
+    var prev = article.querySelector(".pager-prev > span"), next = article.querySelector(".pager-next > span");
+    if (prev) labelPart(prev, "work_previous");
+    if (next) labelPart(next, "work_next");
+    var shopHead = article.querySelector("#project-shop-title");
+    if (shopHead) labelPart(shopHead, "project_shop");
+    // Links that hold a shared text do not open another page while editing.
+    Array.prototype.forEach.call(article.querySelectorAll(".crumb a, .pager a"), function (a) {
+      a.addEventListener("click", function (e) { e.preventDefault(); }, true);
+    });
+    if (crumb) crumb.parentNode.parentNode.insertBefore(el("p", { "class": "pe-note pe-label-note", text: T.labelNote }), crumb.parentNode.nextSibling);
     render();
+  }
+  // A shared text: what the page shows is the saved text, or the usual one.
+  var labelNodes = []; // { node, key, usual }
+  function labelPart(node, key) {
+    var k = key + "_" + lang, usual = T.usual[key] || node.textContent;
+    node.textContent = labels[k] || usual;
+    labelNodes.push({ node: node, key: k, usual: usual });
+    editable(node, T.labelHint, function (txt) { var v = clean(txt).replace(/\n+/g, " "); if (v) labels[k] = v; else delete labels[k]; });
+    node.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); node.blur(); } });
+    node.addEventListener("blur", function () { if (!clean(node.innerText)) setStatus(T.labelEmpty, "warn"); });
+    return node;
+  }
+  function fillLabels() {
+    labelNodes.forEach(function (p) { if (p.node.isConnected && document.activeElement !== p.node) p.node.textContent = labels[p.key] || p.usual; });
+    labelNodes = labelNodes.filter(function (p) { return p.node.isConnected; });
   }
   function fillLede() {
     if (ledeEl) ledeEl.textContent = data["text_" + lang] || "";
@@ -606,7 +659,8 @@
   }
 
   function synopsisBlock() {
-    var sec = el("section", { "class": "project-section" }, [el("h2", { "class": "section-label", text: T.synopsisTitle, "data-ts": "project/section-title" })]);
+    var syn = labelPart(el("h2", { "class": "section-label", "data-ts": "project/section-title" }), "synopsis");
+    var sec = el("section", { "class": "project-section" }, [syn]);
     var body = el("div", { "class": "prose prose-large pe-synopsis", "data-ts": "project/synopsis" });
     body.textContent = data["description_" + lang] || "";
     editable(body, T.synopsis, function (txt) { data["description_" + lang] = clean(txt); });
@@ -1223,7 +1277,7 @@
     document.head.appendChild(s);
   });
   trReady.then(function () { if (window.BubaTranslate) (bar.querySelector(".pe-bar-layout") || bar).appendChild(window.BubaTranslate.toggle()); });
-  var trPairs = function () { return [{ now: data, before: JSON.parse(original) }]; };
+  var trPairs = function () { return [{ now: data, before: JSON.parse(original) }, { now: labels, before: JSON.parse(labelsOrig) }]; };
   function trNote() { var n = window.BubaTranslate ? window.BubaTranslate.note(trRes) : ""; return n ? " " + n : ""; }
   function trKind() { return trRes.failed ? "warn" : "ok"; }
   function save() {
@@ -1253,15 +1307,28 @@
         .then(function () { uploads[p].done = true; });
     });
     var fileChanged = JSON.stringify(data) !== original;
-    chain
-      .then(function () { return fileChanged ? api("/contents/" + encPath(FILE) + ref) : null; })
-      .then(function (cur) {
+    var labelsChanged = labelsDirty();
+    var wrote = 0;
+    var shaOf = function (path) { return api("/contents/" + encPath(path) + ref).then(function (cur) { return cur.sha; }).catch(function (err) { if (err.status === 404) return ""; throw err; }); };
+    // First make sure neither file changed elsewhere since it was loaded; only then write.
+    Promise.all([fileChanged ? shaOf(FILE) : sha, labelsChanged ? shaOf(LABELS) : labelsSha])
+      .then(function (shas) {
+        if (shas[0] !== sha || shas[1] !== labelsSha) { var err = new Error("changed"); err.changed = true; throw err; }
+        return chain;
+      })
+      .then(function () {
         if (!fileChanged) return null;
-        if (cur.sha !== sha) { var err = new Error("changed"); err.changed = true; throw err; }
         return api("/contents/" + encPath(FILE), { method: "PUT", body: { message: "Project " + SLUG + ": edited on the page", content: utf8ToB64(JSON.stringify(data, null, 2) + "\n"), sha: sha, branch: BRANCH } });
       })
       .then(function (res) {
-        if (res) { sha = res.content.sha; original = JSON.stringify(data); }
+        if (res) { sha = res.content.sha; original = JSON.stringify(data); wrote++; }
+        if (!labelsChanged) return null;
+        var body = { message: "Project pages: shared texts edited on the page (" + SLUG + ")", content: utf8ToB64(JSON.stringify(labels, null, 2) + "\n"), branch: BRANCH };
+        if (labelsSha) body.sha = labelsSha;
+        return api("/contents/" + encPath(LABELS), { method: "PUT", body: body });
+      })
+      .then(function (res) {
+        if (res) { labelsSha = res.content.sha; labelsOrig = JSON.stringify(labels); wrote++; }
         return window.BubaStyle ? window.BubaStyle.save("project " + SLUG) : "";
       })
       .then(function (c) {
@@ -1271,6 +1338,7 @@
       })
       .catch(function (err) {
         saveBtn.disabled = false;
+        if (wrote) { setStatus(T.errPartial, "error"); return; }
         setStatus(err.changed || err.status === 409 ? T.errChanged : err.status === 401 || err.status === 403 ? T.errAuth : T.errSave, "error");
       });
   }
@@ -1278,6 +1346,7 @@
   function quit() {
     if (dirty() && !window.confirm(T.leave)) return;
     original = data ? JSON.stringify(data) : original; // allow leaving without the browser's own warning
+    labelsOrig = JSON.stringify(labels);
     leaving = true;
     location.reload();
   }
