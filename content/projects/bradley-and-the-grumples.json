@@ -18,6 +18,21 @@
   "details": [],
   "sections": [
     {
+      "type": "videos",
+      "hidden": false,
+      "heading_en": "",
+      "heading_he": "",
+      "items": [
+        {
+          "url": "https://youtu.be/cfV7IpP0a0U?si=UEmM5sPQAZjz0LmA",
+          "file": "",
+          "title_en": "",
+          "title_he": "",
+          "shape": "wide"
+        }
+      ]
+    },
+    {
       "type": "gallery",
       "hidden": false,
       "heading_en": "",
