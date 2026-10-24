@@ -36,6 +36,13 @@
   function translate(text, from, to) {
     var key = from + "|" + to + "|" + text;
     if (cache[key]) return Promise.resolve(cache[key]);
+    // Several paragraphs: each is translated on its own, so the paragraphs stay.
+    var paras = String(text).split(/\n{2,}/).filter(function (p) { return p.trim(); });
+    if (paras.length > 1) {
+      var seq = Promise.resolve([]);
+      paras.forEach(function (p) { seq = seq.then(function (done) { return translate(p, from, to).then(function (t) { return done.concat(t); }); }); });
+      return seq.then(function (list) { var t = list.join("\n\n"); cache[key] = t; return t; });
+    }
     var chain = Promise.resolve([]);
     chunks(text).forEach(function (part) {
       chain = chain.then(function (done) {
@@ -58,13 +65,13 @@
   // Walk the data as it is now, next to the data as it was loaded. Lists may
   // have been reordered, so a text counts as unchanged when any item loaded
   // in the same list had exactly that text.
-  function collect(now, before, lang, other, exclude, topOnly) {
+  function collect(now, before, lang, other, exclude, topOnly, skip) {
     var jobs = [], suffix = "_" + lang;
     function walk(node, cands, depth) {
       Object.keys(node).forEach(function (k) {
         var v = node[k];
         if (typeof v === "string") {
-          if (k.slice(-3) !== suffix || !v.trim() || (exclude && exclude.test(k) && !(topOnly && depth > 0))) return;
+          if (k.slice(-3) !== suffix || !v.trim() || (exclude && exclude.test(k) && !(topOnly && depth > 0)) || (skip && skip(k, node))) return;
           if (cands.some(function (c) { return c && c[k] === v; })) return;
           var twin = k.slice(0, -3) + "_" + other, tw = node[twin];
           // Both languages written by hand now: keep both as written.
@@ -124,7 +131,9 @@
       opts = opts || {};
       if (!box.checked) return Promise.resolve({ n: 0 });
       var jobs = [];
-      pairs.forEach(function (p) { jobs = jobs.concat(collect(p.now, p.before, lang, other, opts.exclude || /^title_/, !!opts.topOnly)); });
+      // exclude: keys never translated (default: project names, title_*); false = none. skip(key, item): more exceptions.
+      var exclude = opts.exclude === undefined ? /^title_/ : opts.exclude;
+      pairs.forEach(function (p) { jobs = jobs.concat(collect(p.now, p.before, lang, other, exclude, !!opts.topOnly, opts.skip)); });
       if (!jobs.length) return Promise.resolve({ n: 0 });
       if (opts.onStart) opts.onStart(T.working);
       var results = [], chain = Promise.resolve();
@@ -134,5 +143,8 @@
         .catch(function () { return { n: 0, failed: true }; });
     },
     note: function (res) { return res.failed ? T.failed : res.n ? T.done.replace("{n}", res.n) : ""; },
+    // Is the switch on? And one text into the other language (e.g. a new product's name).
+    enabled: function () { return box.checked; },
+    translate: function (text) { return translate(text, lang, other); },
   };
 })();

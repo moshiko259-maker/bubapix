@@ -86,8 +86,6 @@
     tip3: "כל שינוי בסדר, הוספה או מחיקה — חל על שתי השפות.",
     tip4: "שום דבר לא נשמר עד ״שמירה״. טעיתם? ״ביטול פעולה״.",
     tipClose: "הבנתי", help: "עזרה",
-    autoTr: "תרגום אוטומטי לאנגלית", autoTrTip: "בשמירה, כל טקסט ששיניתם כאן מתורגם לאנגלית ומחליף את הטקסט באנגלית. כבו כשאתם מתקנים תרגום.",
-    translating: "מתרגם לאנגלית…",
     trDone: "תורגמו לאנגלית {n} טקסטים. לתיקון — פתחו את הדף באנגלית, וכבו שם את ״תרגום אוטומטי״ לפני השמירה.",
     trFail: "התרגום לאנגלית לא הצליח (אולי נגמרה המכסה היומית החינמית, או שאין אינטרנט). העברית נשמרה; האנגלית לא השתנתה.",
     tip5: "״תרגום אוטומטי״ מתרגם בשמירה כל טקסט ששיניתם לשפה השנייה (חינם). מתקנים תרגום? כבו אותו לפני השמירה.",
@@ -146,8 +144,6 @@
     tip3: "Reordering, adding or deleting applies to both languages.",
     tip4: "Nothing is saved until \"Save\". Made a mistake? \"Undo\".",
     tipClose: "Got it", help: "Help",
-    autoTr: "Auto-translate to Hebrew", autoTrTip: "On saving, every text you changed here is translated to Hebrew and replaces the Hebrew text. Turn off when you fix a translation.",
-    translating: "Translating to Hebrew…",
     trDone: "Translated to Hebrew: {n}. To fix it, open the page in Hebrew and turn off \"Auto-translate\" there before saving.",
     trFail: "Translating to Hebrew failed (maybe the free daily allowance ran out, or there is no internet). The English is saved; the Hebrew did not change.",
     tip5: "\"Auto-translate\" translates every text you changed into the other language when saving (free). Fixing a translation? Turn it off before saving.",
@@ -241,16 +237,19 @@
   var saveBtn = button(T.save, save, "pe-btn pe-primary");
   var undoBtn = button("↶ " + T.undo, undo, "pe-btn", T.undoTip);
   undoBtn.disabled = true;
-  var TR_KEY = "bubapix-auto-translate-" + lang, trOn = true;
-  try { trOn = localStorage.getItem(TR_KEY) !== "0"; } catch (e) { trOn = true; }
-  var trBox = el("input", { type: "checkbox", "data-auto-translate": "" });
-  trBox.checked = trOn;
-  trBox.addEventListener("change", function () { try { localStorage.setItem(TR_KEY, trBox.checked ? "1" : "0"); } catch (e) { /* storage blocked */ } });
+  // Automatic translation: the shared js/auto-translate.js (its switch joins this bar).
+  var trReady = new Promise(function (resolve) {
+    var src = launcher.getAttribute("data-tr-src");
+    if (window.BubaTranslate || !src) { resolve(); return; }
+    var sc = document.createElement("script");
+    sc.src = src; sc.onload = sc.onerror = function () { resolve(); };
+    document.head.appendChild(sc);
+  });
+  var trOn = function () { return !!(window.BubaTranslate && window.BubaTranslate.enabled()); };
   var bar = el("div", { "class": "pe-bar", role: "region", "aria-label": T.title }, [
     el("strong", { "class": "pe-bar-title", text: T.title }),
     el("span", { "class": "pe-bar-layout" }, [
       button("? " + T.help, function () { showTip(true); }, "pe-btn pe-ghost"),
-      el("label", { "class": "pe-check pe-autotr", title: T.autoTrTip }, [trBox, el("span", { text: T.autoTr })]),
     ]),
     status,
     el("span", { "class": "pe-bar-actions" }, [undoBtn, saveBtn, button(T.cancel, quit, "pe-btn pe-ghost")]),
@@ -265,6 +264,7 @@
     bar.insertBefore(more, lay);
   })();
   document.body.insertBefore(bar, document.body.firstChild);
+  trReady.then(function () { if (window.BubaTranslate) bar.querySelector(".pe-bar-layout").appendChild(window.BubaTranslate.toggle()); });
   document.documentElement.classList.add("page-editing");
   setStatus(T.loading);
   saveBtn.disabled = true;
@@ -661,7 +661,7 @@
       var titles = {};
       titles["title_" + lang] = n;
       var path = norm(photo);
-      (trBox.checked ? translate(n).catch(function () { return ""; }) : Promise.resolve(""))
+      (trOn() ? window.BubaTranslate.translate(n).catch(function () { return ""; }) : Promise.resolve(""))
         .then(function (o) {
           titles["title_" + other] = o;
           var base = slugify(lang === "en" ? n : o) || "product-" + Date.now().toString(36);
@@ -832,83 +832,24 @@
     siteWatch.timer = setTimeout(check, 20000);
   }
 
-  // ---------- automatic translation (free: MyMemory, no key, owner's browser only) ----------
-  var TR_API = "https://api.mymemory.translated.net/get";
-  var bytes = function (t) { return new TextEncoder().encode(t).length; };
-  function chunks(text) {
-    // The service takes up to 500 bytes at a time (a Hebrew letter is 2 bytes): split by sentences, then by words.
-    var out = [], cur = "";
-    String(text).split(/(?<=[.!?…:;])\s+|\n+/).forEach(function (sentence) {
-      var parts = bytes(sentence) > 450 ? sentence.split(/\s+/) : [sentence];
-      parts.forEach(function (w) {
-        var next = cur ? cur + " " + w : w;
-        if (bytes(next) > 450 && cur) { out.push(cur); cur = w; } else cur = next;
-      });
-    });
-    if (cur) out.push(cur);
-    return out;
-  }
-  var ADDED = [/https?:\/\//i, /www\./i, /\]\(/, /\*\*/, /[<>]/, /@[\w-]+\.[a-z]/i];
-  function decode(t) { return new DOMParser().parseFromString(t, "text/html").documentElement.textContent; }
-  var trCache = {};
-  function translate(text) {
-    if (trCache[text]) return Promise.resolve(trCache[text]);
-    // Several paragraphs: each is translated on its own, so the paragraphs stay.
-    var paras = String(text).split(/\n{2,}/);
-    if (paras.length > 1) {
-      var seq = Promise.resolve([]);
-      paras.forEach(function (p) { seq = seq.then(function (done) { return translate(p).then(function (t) { return done.concat(t); }); }); });
-      return seq.then(function (list) { var t = list.join("\n\n"); trCache[text] = t; return t; });
-    }
-    var chain = Promise.resolve([]);
-    chunks(text).forEach(function (part) {
-      chain = chain.then(function (done) {
-        return fetch(TR_API + "?q=" + encodeURIComponent(part) + "&langpair=" + lang + "|" + other, { cache: "no-store" })
-          .then(function (r) { return r.json(); })
-          .then(function (d) {
-            var t = d && d.responseData && d.responseData.translatedText;
-            if (!d || Number(d.responseStatus) !== 200 || d.quotaFinished || !t || /MYMEMORY WARNING/i.test(t)) throw new Error("translate");
-            t = decode(t).trim();
-            // The shared translation memory must not add links or formatting
-            // that were not in the owner's text (they would be published).
-            if (ADDED.some(function (re) { return re.test(t) && !re.test(part); })) throw new Error("translate");
-            return done.concat(t);
-          });
-      });
-    });
-    return chain.then(function (list) { var t = clean(list.join(" ")); trCache[text] = t; return t; });
-  }
-  // Every text changed in this language since loading → its twin in the other language.
+  // ---------- automatic translation (js/auto-translate.js) ----------
+  // Every text changed in this language since loading → its twin in the other
+  // language. Names of people (data-ed-notr) are never translated.
   function translateChanges() {
-    var orig = JSON.parse(original), jobs = [];
-    var suffix = "_" + lang;
-    function scan(now, before) {
-      Object.keys(now).forEach(function (k) {
-        if (k.slice(-3) !== suffix || typeof now[k] !== "string" || !now[k] || now[k] === before[k]) return;
-        jobs.push({ text: now[k], put: function (t) { now[k.slice(0, -3) + "_" + other] = t; } });
-      });
-    }
-    scan(state.file, orig.file);
-    scan(state.labels, orig.labels);
+    var orig = JSON.parse(original);
+    var notr = new WeakMap();
     lists.forEach(function (L) {
-      var was = Array.isArray(orig.file[L.field]) ? orig.file[L.field] : [];
-      (state.file[L.field] || []).forEach(function (it) {
-        L.subs.forEach(function (sub) {
-          var k = keyOf(L, sub, lang), ko = keyOf(L, sub, other), v = it[k];
-          if (L.notr.indexOf(sub) >= 0) return;
-          // Unchanged texts (also after moving items around) are found among the texts loaded from the file.
-          if (!v || was.some(function (o) { return o[k] === v; })) return;
-          jobs.push({ text: v, put: function (t) { it[ko] = t; } });
-        });
-      });
+      if (!L.notr.length) return;
+      (state.file[L.field] || []).forEach(function (it) { notr.set(it, L.notr.map(function (sub) { return keyOf(L, sub, lang); })); });
     });
-    if (!trBox.checked || !jobs.length) return Promise.resolve({ n: 0 });
-    setStatus(T.translating);
-    var chain = Promise.resolve(), results = [];
-    jobs.forEach(function (j) { chain = chain.then(function () { return translate(j.text).then(function (t) { results.push(t); }); }); });
-    // All or nothing: a half-translated page would mix languages.
-    return chain.then(function () { jobs.forEach(function (j, i) { j.put(results[i]); }); return { n: jobs.length }; })
-      .catch(function () { return { n: 0, failed: true }; });
+    return trReady.then(function () {
+      if (!window.BubaTranslate) return { n: 0 };
+      return window.BubaTranslate.run([{ now: state.file, before: orig.file }, { now: state.labels, before: orig.labels }], {
+        exclude: false,
+        skip: function (key, item) { var k = notr.get(item); return !!(k && k.indexOf(key) >= 0); },
+        onStart: function (m) { setStatus(m); },
+      });
+    }).catch(function () { return { n: 0, failed: true }; });
   }
 
   // ---------- save ----------
