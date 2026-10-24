@@ -615,13 +615,16 @@ function contentFor(lang) {
     },
     about: {
       body: pick(raw.about, "body", lang),
+      // i = the member's place in content/about.json (the page editor uses it).
       team: (raw.about.team || [])
-        .filter((m) => m && m.name)
-        .map((m, i) => ({
+        .map((m, i) => ({ m, i }))
+        .filter(({ m }) => m && m.name)
+        .map(({ m, i }) => ({
           name: lang === "he" ? String(m.name_he || "").trim() || m.name : m.name,
           role: pick(m, "role", lang),
           bio: pick(m, "bio", lang),
-          photo: imgWithAlt(m.photo, m.name, `team member ${i + 1}`),
+          photo: imgWithAlt(m.photo, lang === "he" ? String(m.name_he || "").trim() || m.name : m.name, `team member ${i + 1}`),
+          i,
         })),
     },
     // A testimonial is shown only when it is visible AND the client's

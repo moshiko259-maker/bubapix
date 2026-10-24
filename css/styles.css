@@ -1088,6 +1088,10 @@ h1.pe-editable { min-width: 4ch; }
 .pe-poster-box .poster.pe-framed { cursor: grab; }
 .pe-work-name { position: absolute; inset-block-end: 0.4rem; inset-inline-start: 0.4rem; padding: 0.15rem 0.5rem; border-radius: 6px; background: rgba(22, 22, 29, 0.78); color: var(--paper); font-size: 0.8rem; font-weight: 600; pointer-events: none; }
 .bottom-hint.pe-editable { display: block; }
+/* A text of several paragraphs, while the owner edits it: shown as written. */
+[data-multiline].pe-editable { white-space: pre-wrap; min-height: 6em; }
+.pe-list-item .pe-badge.pe-new { position: static; display: inline-block; margin-bottom: 0.4rem; }
+.pe-list-tools { flex-wrap: wrap; gap: 0.35rem; }
 .manage-projects-title { margin: 1rem 0 0.4rem; font-weight: 600; }
 .manage-projects { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0; padding: 0; list-style: none; }
 .manage-projects a { color: var(--ink); }

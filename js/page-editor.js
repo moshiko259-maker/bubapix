@@ -10,6 +10,12 @@
  *   data-ed-label="key"             an interface text: key_<lang> in content/labels.json
  *   data-ed-list="listField"        a list (services, steps…) in that file;
  *     data-ed-subs="name,text"      its texts; children: data-ed-item, data-ed-sub, data-ed-num
+ *     data-ed-tags="h3,p.muted,p"   (optional) element for each text when it is missing
+ *     data-ed-bare-en="name"        (optional) these texts are "name" in English, not "name_en"
+ *     data-ed-notr="name"           (optional) never translated (names of people); an empty
+ *                                   other language gets the same text
+ *     data-ed-photo="photo"         (optional) each item has a picture in this field
+ *   data-multiline (on a data-ed)   a text of several paragraphs (Enter = new line)
  * Texts are saved in the page's language only; everything else in the files
  * is kept exactly as it is. Saving writes to the work branch with the
  * owner's own GitHub sign-in, and never over a file changed elsewhere.
@@ -68,6 +74,12 @@
     trDone: "תורגמו לאנגלית {n} טקסטים. לתיקון — פתחו את הדף באנגלית, וכבו שם את ״תרגום אוטומטי״ לפני השמירה.",
     trFail: "התרגום לאנגלית לא הצליח (אולי נגמרה המכסה היומית החינמית, או שאין אינטרנט). העברית נשמרה; האנגלית לא השתנתה.",
     tip5: "״תרגום אוטומטי״ מתרגם בשמירה כל טקסט ששיניתם לשפה השנייה (חינם). מתקנים תרגום? כבו אותו לפני השמירה.",
+    photoAdd: "הוספת תמונה", photoChange: "החלפת התמונה", photoRemove: "הסרת התמונה", photoRemoved: "התמונה הוסרה. אפשר לבטל עם ״ביטול פעולה״.",
+    pickTitle: "בחירת תמונה", pickLoading: "טוען תמונות…", pickUpload: "העלאה מהמחשב או מהטלפון:", uploadNote: "(תישמר באתר רק בלחיצה על ״שמירה״)",
+    choose: "בחירה", close: "סגירה", newBadge: "חדשה — תישמר בשמירה",
+    bodyHint2: "טקסט (לחצו כדי לכתוב; Enter = שורה חדשה, שורה ריקה = פסקה חדשה)",
+    hint_role: "תפקיד (לחצו כדי לכתוב)", hint_bio: "כמה שורות על היוצר (לחצו כדי לכתוב)",
+    nameShared: "שם של אדם לא מתורגם. אם אין לו שם בשפה השנייה, יישמר שם אותו שם.",
   } : {
     title: "Editing the page", loading: "Loading the page…",
     save: "Save", saving: "Saving…", cancel: "Leave without saving",
@@ -104,6 +116,12 @@
     trDone: "Translated to Hebrew: {n}. To fix it, open the page in Hebrew and turn off \"Auto-translate\" there before saving.",
     trFail: "Translating to Hebrew failed (maybe the free daily allowance ran out, or there is no internet). The English is saved; the Hebrew did not change.",
     tip5: "\"Auto-translate\" translates every text you changed into the other language when saving (free). Fixing a translation? Turn it off before saving.",
+    photoAdd: "Add a picture", photoChange: "Replace the picture", photoRemove: "Remove the picture", photoRemoved: "Picture removed. You can undo it.",
+    pickTitle: "Choose a picture", pickLoading: "Loading pictures…", pickUpload: "Upload from your computer or phone:", uploadNote: "(saved on the site only when you press \"Save\")",
+    choose: "Choose", close: "Close", newBadge: "New — saved when you save",
+    bodyHint2: "Text (click to write; Enter = new line, an empty line = new paragraph)",
+    hint_role: "Role (click to write)", hint_bio: "A few lines about them (click to write)",
+    nameShared: "A person's name is not translated. If there is no name in the other language, the same name is saved there.",
   };
 
   // ---------- small helpers ----------
@@ -266,7 +284,9 @@
   function fieldPart(node) {
     var key = node.getAttribute("data-ed") + "_" + lang;
     parts.push({ node: node, get: function () { return state.file[key] || ""; } });
-    editable(node, node.classList.contains("lede") ? T.introHint : T.textHint, function (v) { state.file[key] = v; });
+    // A text of several paragraphs is shown as written (blank line = new paragraph).
+    if (node.hasAttribute("data-multiline")) node.textContent = state.file[key] || "";
+    editable(node, node.hasAttribute("data-multiline") ? T.bodyHint2 : node.classList.contains("lede") ? T.introHint : T.textHint, function (v) { state.file[key] = v; });
   }
   function labelPart(node) {
     var key = node.getAttribute("data-ed-label") + "_" + lang, usual = node.textContent;
@@ -290,11 +310,21 @@
     Array.prototype.forEach.call(box.querySelectorAll("[data-ed]"), function (n) { if (!n.closest("[data-ed-list]")) fieldPart(n); });
     Array.prototype.forEach.call(box.querySelectorAll("[data-ed-list]"), function (n) {
       var tpl = n.querySelector("[data-ed-item]");
-      lists.push({ node: n, field: n.getAttribute("data-ed-list"), subs: (n.getAttribute("data-ed-subs") || "name").split(","), tpl: tpl ? tpl.cloneNode(true) : el("li") });
+      var words = function (a) { return (n.getAttribute(a) || "").split(",").filter(Boolean); };
+      lists.push({ node: n, field: n.getAttribute("data-ed-list"), subs: (n.getAttribute("data-ed-subs") || "name").split(","), tpl: tpl ? tpl.cloneNode(true) : el("li"),
+        tags: words("data-ed-tags"), bare: words("data-ed-bare-en"), notr: words("data-ed-notr"), photo: n.getAttribute("data-ed-photo") || "" });
     });
     var hd = box.querySelector(".page-head");
     if (hd) hd.parentNode.insertBefore(el("p", { "class": "pe-note pe-proj-note", text: T.langNote }), hd.nextSibling);
     drawLists();
+  }
+  // The key of a list text in a language ("name_he", "name_en", or "name" for English when bare).
+  function keyOf(L, sub, lg) { return lg === "en" && L.bare.indexOf(sub) >= 0 ? sub : sub + "_" + lg; }
+  function tagFor(L, k) {
+    var spec = (L.tags[k] || (k === 0 ? "h2" : "p")).split(".");
+    var n = el(spec[0]);
+    if (spec[1]) n.className = spec.slice(1).join(" ");
+    return n;
   }
   var dragFrom = null;
   function drawLists() {
@@ -308,19 +338,35 @@
         li.setAttribute("draggable", "true");
         var num = li.querySelector("[data-ed-num]");
         if (num) num.textContent = String(i + 1);
+        // The item's picture: what the file says now (not the copied template's picture).
+        var oldImg = li.querySelector("img");
+        if (oldImg) oldImg.remove();
+        if (L.photo && it[L.photo]) {
+          var pic = picture(it[L.photo]);
+          li.insertBefore(pic, li.firstChild);
+          if (uploads[norm(it[L.photo])]) li.insertBefore(el("span", { "class": "pe-badge pe-new", text: T.newBadge }), pic.nextSibling);
+        }
         L.subs.forEach(function (sub, k) {
           var n = li.querySelector('[data-ed-sub="' + sub + '"]');
-          if (!n) { n = el(k === 0 ? "h2" : "p", { "data-ed-sub": sub }); li.appendChild(n); }
-          var key = sub + "_" + lang;
+          if (!n) { n = tagFor(L, k); n.setAttribute("data-ed-sub", sub); li.appendChild(n); }
+          var key = keyOf(L, sub, lang);
           n.textContent = it[key] || "";
-          editable(n, k === 0 ? T.nameHint : T.bodyHint, function (v) { it[key] = v; }, function () { if (k === 0 && !it[key]) setStatus(T.nameEmpty, "warn"); });
+          var shared = L.notr.indexOf(sub) >= 0;
+          editable(n, T["hint_" + sub] || (k === 0 ? T.nameHint : T.bodyHint), function (v) { it[key] = v; }, function () { if (k === 0 && !it[key]) setStatus(T.nameEmpty, "warn"); else if (shared && it[key] && !it[keyOf(L, sub, other)]) setStatus(T.nameShared); });
         });
-        if (!it[L.subs[0] + "_" + lang]) li.appendChild(el("span", { "class": "pe-missing", text: T.notShown }));
-        li.appendChild(el("div", { "class": "pe-tools pe-list-tools" }, [
+        if (!it[keyOf(L, L.subs[0], lang)]) li.appendChild(el("span", { "class": "pe-missing", text: T.notShown }));
+        var tools = [
           button(T.prevBtn, function () { move(L, i, -1); }, "pe-btn pe-move", T.earlier),
           button(T.remove, function () { items.splice(i, 1); changed(); setStatus(T.removed, "warn"); }, "pe-btn pe-danger"),
           button(T.nextBtn, function () { move(L, i, 1); }, "pe-btn pe-move", T.later),
-        ]));
+        ];
+        if (L.photo) {
+          tools.push(button(it[L.photo] ? T.photoChange : T.photoAdd, function () {
+            pickPicture(function (path) { it[L.photo] = "/" + path; changed(); });
+          }, "pe-btn"));
+          if (it[L.photo]) tools.push(button(T.photoRemove, function () { it[L.photo] = ""; changed(); setStatus(T.photoRemoved, "warn"); }, "pe-btn"));
+        }
+        li.appendChild(el("div", { "class": "pe-tools pe-list-tools" }, tools));
         // Dragging starts only from the item's frame, so selecting text with the mouse still works.
         li.addEventListener("mousedown", function (e) { li.draggable = !(e.target.isContentEditable || (e.target.closest && e.target.closest(".pe-tools"))); });
         li.addEventListener("mouseup", function () { li.draggable = true; });
@@ -345,7 +391,8 @@
       if (!addBox) {
         addBox = el("div", { "class": "pe-add" }, [button("+ " + T.add, function () {
           var blank = {};
-          L.subs.forEach(function (sub) { blank[sub + "_he"] = ""; blank[sub + "_en"] = ""; });
+          L.subs.forEach(function (sub) { blank[keyOf(L, sub, "he")] = ""; blank[keyOf(L, sub, "en")] = ""; });
+          if (L.photo) blank[L.photo] = "";
           (Array.isArray(state.file[L.field]) ? state.file[L.field] : (state.file[L.field] = [])).push(blank);
           changed();
           var last = L.node.lastElementChild && L.node.lastElementChild.querySelector("[data-ed-sub]");
@@ -360,6 +407,84 @@
     if (j < 0 || j >= items.length) return;
     var tmp = items[i]; items[i] = items[j]; items[j] = tmp;
     changed();
+  }
+
+  // ---------- pictures (lists with data-ed-photo) ----------
+  // A picture chosen from this computer stays in the browser until "Save";
+  // then it is uploaded to assets/uploads/<page>/ before the page's file.
+  var uploads = {}; // "assets/uploads/…" → { file, blobUrl, done }
+  var PAGE = FILE.replace(/^content\/|\.json$/g, "");
+  function norm(p) { return String(p || "").replace(/^\/+/, ""); }
+  function picture(path) {
+    var p = norm(path), img = el("img", { alt: "", loading: "lazy", decoding: "async" });
+    img.src = uploads[p] ? uploads[p].blobUrl : BASE + p.split("/").map(encodeURIComponent).join("/");
+    return img;
+  }
+  var imageList = null;
+  function listImages() {
+    if (imageList) return Promise.resolve(imageList);
+    var get = function (d) { return api("/contents/" + encPath(d) + ref).catch(function () { return []; }); };
+    return Promise.all([get("assets/work"), get("assets/uploads")]).then(function (top) {
+      var sub = (Array.isArray(top[1]) ? top[1] : []).filter(function (f) { return f.type === "dir"; }).map(function (f) { return get(f.path); });
+      return Promise.all(sub).then(function (more) { return top.concat(more); });
+    }).then(function (res) {
+      var out = [];
+      res.forEach(function (items) { (Array.isArray(items) ? items : []).forEach(function (f) { if (f.type === "file" && /\.(jpe?g|png|webp)$/i.test(f.name)) out.push(f.path); }); });
+      Object.keys(uploads).forEach(function (p) { if (out.indexOf(p) < 0) out.unshift(p); });
+      imageList = out;
+      return out;
+    });
+  }
+  function pickPicture(done) {
+    var chosen = "";
+    var grid = el("div", { "class": "pe-pick-grid" }, [el("p", { text: T.pickLoading })]);
+    var chooseBtn = button(T.choose, function () { if (!chosen) return; close(); done(chosen); }, "pe-btn pe-primary");
+    chooseBtn.disabled = true;
+    var file = el("input", { type: "file", accept: "image/jpeg,image/png,image/webp", "class": "pe-file" });
+    file.addEventListener("change", function () {
+      var f = file.files && file.files[0];
+      if (!f) return;
+      var safe = f.name.toLowerCase().replace(/\.[^.]+$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "picture";
+      var ext = (f.name.match(/\.(jpe?g|png|webp)$/i) || [".jpg"])[0].toLowerCase();
+      var path = "assets/uploads/" + PAGE + "/" + safe + "-" + Date.now().toString(36) + ext;
+      uploads[path] = { file: f, blobUrl: URL.createObjectURL(f) };
+      if (imageList) imageList.unshift(path);
+      choosePath(path); draw();
+    });
+    var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": T.pickTitle }, [
+      el("div", { "class": "pe-modal-box" }, [
+        el("div", { "class": "pe-modal-head" }, [el("strong", { text: T.pickTitle }), button(T.close, function () { close(); }, "pe-btn pe-ghost")]),
+        el("label", { "class": "pe-upload" }, [document.createTextNode(T.pickUpload + " "), file, el("span", { "class": "pe-note", text: " " + T.uploadNote })]),
+        grid,
+        el("div", { "class": "pe-modal-foot" }, [chooseBtn]),
+      ]),
+    ]);
+    function close() { dialog.remove(); document.removeEventListener("keydown", onKey); }
+    function onKey(e) { if (e.key === "Escape") close(); }
+    document.addEventListener("keydown", onKey);
+    function choosePath(path) {
+      chosen = path; chooseBtn.disabled = false;
+      Array.prototype.forEach.call(grid.querySelectorAll("button[data-path]"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-path") === path)); });
+    }
+    function draw() {
+      grid.textContent = "";
+      (imageList || []).forEach(function (p) {
+        var b = el("button", { type: "button", "class": "pe-pick", "data-path": p, "aria-pressed": String(p === chosen), title: p.split("/").pop(), "aria-label": p.split("/").pop() }, [picture(p)]);
+        b.addEventListener("click", function () { choosePath(p); });
+        b.addEventListener("dblclick", function () { choosePath(p); chooseBtn.click(); });
+        grid.appendChild(b);
+      });
+    }
+    document.body.appendChild(dialog);
+    listImages().then(draw);
+  }
+  function readB64(f) {
+    return new Promise(function (resolve, reject) {
+      var r = new FileReader();
+      r.onload = function () { resolve(String(r.result).split(",")[1] || ""); };
+      r.onerror = function () { reject(r.error); };
+      r.readAsDataURL(f);
+    });
   }
 
   // ---------- first-time tips ----------
@@ -434,6 +559,13 @@
   var trCache = {};
   function translate(text) {
     if (trCache[text]) return Promise.resolve(trCache[text]);
+    // Several paragraphs: each is translated on its own, so the paragraphs stay.
+    var paras = String(text).split(/\n{2,}/);
+    if (paras.length > 1) {
+      var seq = Promise.resolve([]);
+      paras.forEach(function (p) { seq = seq.then(function (done) { return translate(p).then(function (t) { return done.concat(t); }); }); });
+      return seq.then(function (list) { var t = list.join("\n\n"); trCache[text] = t; return t; });
+    }
     var chain = Promise.resolve([]);
     chunks(text).forEach(function (part) {
       chain = chain.then(function (done) {
@@ -468,10 +600,11 @@
       var was = Array.isArray(orig.file[L.field]) ? orig.file[L.field] : [];
       (state.file[L.field] || []).forEach(function (it) {
         L.subs.forEach(function (sub) {
-          var k = sub + suffix, v = it[k];
+          var k = keyOf(L, sub, lang), ko = keyOf(L, sub, other), v = it[k];
+          if (L.notr.indexOf(sub) >= 0) return;
           // Unchanged texts (also after moving items around) are found among the texts loaded from the file.
           if (!v || was.some(function (o) { return o[k] === v; })) return;
-          jobs.push({ text: v, put: function (t) { it[sub + "_" + other] = t; } });
+          jobs.push({ text: v, put: function (t) { it[ko] = t; } });
         });
       });
     });
@@ -490,6 +623,12 @@
     if (!dirty()) return;
     if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
     saveBtn.disabled = true;
+    // A person's name without a name in the other language keeps the same name there.
+    lists.forEach(function (L) {
+      (state.file[L.field] || []).forEach(function (it) {
+        L.notr.forEach(function (sub) { var v = it[keyOf(L, sub, lang)], ko = keyOf(L, sub, other); if (v && !it[ko]) it[ko] = v; });
+      });
+    });
     translateChanges().then(function (tr) { write(tr); });
   }
   function write(tr) {
@@ -506,6 +645,14 @@
       .then(function (cur) {
         jobs.forEach(function (j, k) { if (cur[k] !== j.get()) { var err = new Error("changed"); err.changed = true; throw err; } });
         var chain = Promise.resolve();
+        // Pictures chosen from this computer that the page now uses go up first.
+        var used = {};
+        lists.forEach(function (L) { if (L.photo) (state.file[L.field] || []).forEach(function (it) { var p = norm(it[L.photo]); if (uploads[p] && !uploads[p].done) used[p] = true; }); });
+        Object.keys(used).forEach(function (path) {
+          chain = chain.then(function () { return readB64(uploads[path].file); })
+            .then(function (b64) { return api("/contents/" + encPath(path), { method: "PUT", body: { message: "Upload picture (" + PAGE + " page, edited on the page)", content: b64, branch: BRANCH } }); })
+            .then(function () { uploads[path].done = true; });
+        });
         jobs.forEach(function (j) {
           chain = chain.then(function () {
             var body = { message: j.message, content: utf8ToB64(JSON.stringify(j.data, null, 2) + "\n"), branch: BRANCH };

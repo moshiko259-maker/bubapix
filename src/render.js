@@ -1038,17 +1038,20 @@ function about(ctx) {
     title: pageTitle(ctx, t.about.title),
     description: clip(a.body) || data.seoDescription,
     current: "about",
+    pageEditor: "page",
+    // data-ed-* marks what the owner's page editor (js/page-editor.js) can
+    // change; visitors see the same page. Names of people are not translated.
     main: `
-    <div class="page">
-      <header class="page-head"><h1 class="page-title">${e(t.about.title)}</h1></header>
+    <div class="page" data-ed-file="content/about.json">
+      <header class="page-head"><h1 class="page-title" data-ed-label="nav_about">${e(t.about.title)}</h1></header>
       <div class="about-layout">
-        <div class="prose prose-large">${md(a.body)}</div>
+        <div class="prose prose-large" data-ed="body" data-multiline>${md(a.body)}</div>
         ${logo(ctx, t.footer.logoAlt, "logo-full", 'loading="lazy" decoding="async"')}
       </div>${a.team.length ? `
       <section class="section-inner" aria-labelledby="team-title">
-        <h2 id="team-title" class="section-label">${e(t.about.team)}</h2>
-        <ul class="team">${a.team.map((m) => `
-          <li>${m.photo ? img(ctx, m.photo, { sizes: "(max-width: 560px) 100vw, 25vw" }) : ""}<h3>${e(m.name)}</h3>${m.role ? `<p class="muted">${e(m.role)}</p>` : ""}${m.bio ? `<p>${e(m.bio)}</p>` : ""}</li>`).join("")}
+        <h2 id="team-title" class="section-label" data-ed-label="about_team">${e(t.about.team)}</h2>
+        <ul class="team" data-ed-list="team" data-ed-subs="name,role,bio" data-ed-tags="h3,p.muted,p" data-ed-bare-en="name" data-ed-notr="name" data-ed-photo="photo">${a.team.map((m) => `
+          <li data-ed-item="${m.i}">${m.photo ? img(ctx, m.photo, { sizes: "(max-width: 560px) 100vw, 25vw" }) : ""}<h3 data-ed-sub="name">${e(m.name)}</h3>${m.role ? `<p class="muted" data-ed-sub="role">${e(m.role)}</p>` : ""}${m.bio ? `<p data-ed-sub="bio">${e(m.bio)}</p>` : ""}</li>`).join("")}
         </ul>
       </section>` : ""}
     </div>`,
