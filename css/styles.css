@@ -1127,6 +1127,8 @@ h1.pe-editable { min-width: 4ch; }
 .pe-video .pe-select { color: var(--paper); }
 .pe-video-title.pe-editable { display: block; min-height: 1.4em; }
 .pe-videos-sec h2.pe-editable, .pe-gal-head.pe-editable { min-width: 6ch; min-height: 1.4em; }
+.pe-textarea { min-height: 5.5em; padding: 0.5rem 0.6rem; resize: vertical; }
+.pe-item .pe-caption { pointer-events: none; }
 .pe-video-msg:empty { display: none; }
 .manage-projects-title { margin: 1rem 0 0.4rem; font-weight: 600; }
 .manage-projects { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0; padding: 0; list-style: none; }

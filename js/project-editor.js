@@ -121,6 +121,9 @@
     sectionUp: "↑ האזור למעלה", sectionDown: "↓ האזור למטה", sectionUpTip: "הזזת אזור הסרטונים מעל האזור שלפניו", sectionDownTip: "הזזת אזור הסרטונים מתחת לאזור שאחריו",
     videosNote: "הסרטון עצמו נשאר ביוטיוב; באתר נשמר רק הקישור. אזור בלי סרטונים לא מוצג באתר.",
     videoRemoved: "הסרטון הוסר מהדף (ביוטיוב הוא לא נמחק). אפשר לבטל עם ״ביטול פעולה״.",
+    caption: "כותרת ותיאור", captionTitle: "כותרת לתמונה (לא חובה)", captionNote: "תיאור קצר (לא חובה)", captionWhere: "איפה להציג",
+    capHidden: "לא להציג (נשמר)", capProject: "מתחת לתמונה, בדף הפרויקט", capEverywhere: "מתחת לתמונה, גם בגלריה של דף הבית",
+    captionNoteHelp: "הכותרת והתיאור מתורגמים לאנגלית בשמירה. תיאור לעיוורים — בכפתור ״תיאור לעיוורים״.",
     galHeading: "כותרת לגלריה, למשל ״דמויות״ (ריק = ״תמונות״)", galHeadingBehind: "כותרת לאזור (ריק = ״מאחורי הקלעים״)",
     newArea: "אזור סרטונים חדש", newAreaTip: "אזור נוסף עם כותרת משלו, למשל ״טריילר״, ״הסרט המלא״ או ״מאחורי הקלעים״",
     removeArea: "מחיקת האזור", areaRemoved: "אזור הסרטונים הוסר מהדף (ביוטיוב שום דבר לא נמחק). אפשר לבטל עם ״ביטול פעולה״.",
@@ -208,6 +211,9 @@
     sectionUp: "↑ Area up", sectionDown: "↓ Area down", sectionUpTip: "Move the videos area above the area before it", sectionDownTip: "Move the videos area below the area after it",
     videosNote: "The video itself stays on YouTube; the site keeps only the link. An area without videos is not shown on the site.",
     videoRemoved: "The video was removed from the page (it is not deleted on YouTube). You can undo it.",
+    caption: "Title and text", captionTitle: "Picture title (optional)", captionNote: "Short text (optional)", captionWhere: "Where to show it",
+    capHidden: "Not shown (kept)", capProject: "Under the picture, on the project page", capEverywhere: "Under the picture, also in the homepage gallery",
+    captionNoteHelp: "The title and text are translated to Hebrew on saving. The description for blind visitors is under \"Description for blind visitors\".",
     galHeading: "Heading for this gallery, e.g. \"Characters\" (empty = \"Images\")", galHeadingBehind: "Heading for this area (empty = \"Behind the scenes\")",
     newArea: "New videos area", newAreaTip: "Another area with its own heading, e.g. \"Trailer\", \"Full film\" or \"Behind the scenes\"",
     removeArea: "Delete the area", areaRemoved: "The videos area was removed from the page (nothing is deleted on YouTube). You can undo it.",
@@ -792,6 +798,7 @@
       button(T.describe, function () {
         describe(g.alt_he, g.alt_en, function (alts) { g.alt_he = alts.he; g.alt_en = alts.en; changed(); });
       }),
+      button(T.caption, function () { captionDialog(g); }, "pe-btn pe-caption-btn"),
       button(T.hide, function () { g.visible = false; changed(); }),
       button(T.remove, function () { removeAt(sec, g); }, "pe-btn pe-danger"),
     ]));
@@ -812,8 +819,49 @@
       sec.images.splice(sec.images.indexOf(g) + (afterTarget ? 1 : 0), 0, moved);
       dragFrom = null; changed();
     });
+    // A title and text shown under the picture (as visitors will see them).
+    var capTitle = g["title_" + lang] || "", capNote = g["note_" + lang] || "";
+    if (g.caption && g.caption !== "hidden" && (capTitle || capNote)) {
+      fig.insertBefore(el("figcaption", { "class": "jg-caption pe-caption" }, [
+        capTitle ? el("span", { "class": "jg-title", text: capTitle }) : null,
+        capNote ? el("span", { "class": "jg-note", text: capNote }) : null,
+      ]), media.nextSibling);
+    }
     fig.setAttribute("aria-label", g["alt_" + lang] || g.image);
     return fig;
+  }
+  // The picture's title and short text, and where they show.
+  function captionDialog(g) {
+    var title = el("input", { type: "text", dir: he ? "rtl" : "ltr", "class": "pe-input", "data-cap-title": "", value: g["title_" + lang] || "" });
+    var note = el("textarea", { dir: he ? "rtl" : "ltr", "class": "pe-input pe-textarea", rows: "3", "data-cap-note": "" });
+    note.value = g["note_" + lang] || "";
+    var where = el("select", { "class": "pe-input", "data-cap-where": "" }, [["hidden", T.capHidden], ["project", T.capProject], ["everywhere", T.capEverywhere]].map(function (o) { return el("option", { value: o[0], text: o[1] }); }));
+    // A picture that has no title yet: what is written will most likely be shown.
+    where.value = g.caption === "project" || g.caption === "everywhere" ? g.caption : (g["title_" + lang] || g["note_" + lang] ? "hidden" : "project");
+    var ok = button(T.ok, function () {
+      close();
+      g["title_" + lang] = title.value.replace(/\s+/g, " ").trim();
+      g["note_" + lang] = clean(note.value);
+      g.caption = where.value;
+      changed();
+    }, "pe-btn pe-primary");
+    var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": T.caption }, [
+      el("div", { "class": "pe-modal-box pe-small-box" }, [
+        el("div", { "class": "pe-modal-head" }, [el("strong", { text: T.caption }), button(T.close, function () { close(); }, "pe-btn pe-ghost")]),
+        el("div", { "class": "pe-modal-foot" }, [
+          el("label", {}, [document.createTextNode(T.captionTitle), title]),
+          el("label", {}, [document.createTextNode(T.captionNote), note]),
+          el("label", {}, [document.createTextNode(T.captionWhere), where]),
+          el("p", { "class": "pe-note", text: T.captionNoteHelp }),
+          ok,
+        ]),
+      ]),
+    ]);
+    function close() { dialog.remove(); document.removeEventListener("keydown", onKey); }
+    function onKey(e) { if (e.key === "Escape") close(); }
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(dialog);
+    title.focus();
   }
   // ---------- free sizes (computers) ----------
   var narrow = window.matchMedia ? window.matchMedia("(max-width: 700px)") : { matches: false };
