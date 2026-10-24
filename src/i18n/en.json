@@ -338,11 +338,11 @@
     "doneTitle": "What we did",
     "done": [
       "The whole site works with a keyboard: Tab and Shift+Tab to move, Enter to choose, Esc to close a menu or a picture window, arrows to move between pictures.",
-      "Every page starts with a \"Skip to content\" link.",
+      "Every page starts with a “Skip to content” link.",
       "Pictures have text descriptions for screen readers.",
       "The contrast between the main text and the background meets the standard.",
       "The site adapts to narrow screens and to browser zoom, without sideways scrolling.",
-      "When a device is set to \"reduce motion\", animations are off.",
+      "When a device is set to “reduce motion”, animations are off.",
       "Each page states its language and writing direction, in Hebrew and in English.",
       "There is no accessibility toolbar: the site itself is built to be accessible."
     ],

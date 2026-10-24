@@ -11,7 +11,7 @@
     {
       "name_en": "Animation",
       "name_he": "אנימציה",
-      "text_en": "Stylised animation with a consistent visual language from first frame to last.",
+      "text_en": "Stylized animation with a consistent visual language from first frame to last.",
       "text_he": "אנימציה מסוגננת בשפה חזותית עקבית, מהפריים הראשון ועד האחרון."
     },
     {
@@ -49,33 +49,33 @@
   "process_title_he": "מרעיון לסרט",
   "process": [
     {
-      "name_en": "It Starts with an Idea",
-      "name_he": "הרעיון מתחיל כאן",
+      "name_en": "It starts with an idea",
+      "name_he": "הכול מתחיל ברעיון",
       "text_en": "It can start with your idea, a product or business need, or an idea we develop together.",
       "text_he": "התהליך יכול להתחיל מרעיון שלכם, ממוצר או מצורך עסקי, או מרעיון שנפתח יחד."
     },
     {
-      "name_en": "We Shape the Story",
+      "name_en": "We shape the story",
       "name_he": "בונים את הסיפור",
       "text_en": "We write the script and build the story scene by scene, until the message is clear.",
       "text_he": "כותבים תסריט ובונים את הסיפור סצנה אחר סצנה, עד שהמסר ברור."
     },
     {
-      "name_en": "We Build the World",
+      "name_en": "We build the world",
       "name_he": "מעצבים עולם",
       "text_en": "We design the characters, places and visual style, and approve them with you before production.",
       "text_he": "מעצבים את הדמויות, המקומות והסגנון החזותי, ומאשרים אותם איתכם לפני ההפקה."
     },
     {
-      "name_en": "We Create the Film",
+      "name_en": "We create the film",
       "name_he": "מפיקים את הסרט",
       "text_en": "We generate, direct and refine every shot until it meets a cinematic standard.",
       "text_he": "יוצרים, מביימים ומלטשים כל שוט, עד שהוא עומד בסטנדרט קולנועי."
     },
     {
-      "name_en": "Ready for the Screen",
+      "name_en": "Ready for the screen",
       "name_he": "מוכנים למסך",
-      "text_en": "We edit, add sound and music, grade the colour, and deliver in every format you need.",
+      "text_en": "We edit, add sound and music, grade the color, and deliver in every format you need.",
       "text_he": "עורכים, מוסיפים סאונד ומוזיקה, מתקנים צבע ומוסרים בכל פורמט שתצטרכו."
     }
   ]
