@@ -113,7 +113,7 @@
     tipClose: "הבנתי",
     help: "עזרה",
     tipVideo: "״הוספת סרטון״ — מדביקים קישור מיוטיוב (כפתור ״שיתוף״ ← ״העתקה״). הסרטון נשאר ביוטיוב, ובאתר נשמר רק הקישור.",
-    videos: "וידאו", videoHeading: "כותרת לאזור (לא חובה; ריק = ״וידאו״)", addVideo: "הוספת סרטון", addVideos: "הוספת סרטון לדף",
+    videos: "וידאו", addVideo: "הוספת סרטון", addVideos: "הוספת סרטון לדף",
     videoTitle: "כותרת לסרטון (לא חובה)", videoUrl: "קישור לסרטון ביוטיוב או ב־Vimeo",
     videoUrlHint: "ביוטיוב: ״שיתוף״ ← ״העתקה״, ומדביקים כאן. גם סרטון ״לא רשום״ (Unlisted) מוצג באתר.",
     badVideo: "זה לא קישור של יוטיוב או של Vimeo. בדקו את הקישור ונסו שוב.", changeLink: "שינוי הקישור",
@@ -121,6 +121,9 @@
     sectionUp: "↑ האזור למעלה", sectionDown: "↓ האזור למטה", sectionUpTip: "הזזת אזור הסרטונים מעל האזור שלפניו", sectionDownTip: "הזזת אזור הסרטונים מתחת לאזור שאחריו",
     videosNote: "הסרטון עצמו נשאר ביוטיוב; באתר נשמר רק הקישור. אזור בלי סרטונים לא מוצג באתר.",
     videoRemoved: "הסרטון הוסר מהדף (ביוטיוב הוא לא נמחק). אפשר לבטל עם ״ביטול פעולה״.",
+    newArea: "אזור סרטונים חדש", newAreaTip: "אזור נוסף עם כותרת משלו, למשל ״טריילר״, ״הסרט המלא״ או ״מאחורי הקלעים״",
+    removeArea: "מחיקת האזור", areaRemoved: "אזור הסרטונים הוסר מהדף (ביוטיוב שום דבר לא נמחק). אפשר לבטל עם ״ביטול פעולה״.",
+    videoHeading2: "כותרת לאזור, למשל ״טריילר״ או ״הסרט המלא״ (ריק = ״וידאו״)",
   } : {
     title: "Editing the project page",
     loading: "Loading the project page…",
@@ -196,7 +199,7 @@
     tipClose: "Got it",
     help: "Help",
     tipVideo: "\"Add a video\": paste a YouTube link (\"Share\" → \"Copy\"). The video stays on YouTube; the site keeps only the link.",
-    videos: "Video", videoHeading: "Heading for this area (optional; empty = \"Video\")", addVideo: "Add a video", addVideos: "Add a video to the page",
+    videos: "Video", addVideo: "Add a video", addVideos: "Add a video to the page",
     videoTitle: "Title of the video (optional)", videoUrl: "Link to the video on YouTube or Vimeo",
     videoUrlHint: "On YouTube: \"Share\" → \"Copy\", then paste here. An unlisted video also shows on the site.",
     badVideo: "That is not a YouTube or Vimeo link. Check the link and try again.", changeLink: "Change the link",
@@ -204,6 +207,9 @@
     sectionUp: "↑ Area up", sectionDown: "↓ Area down", sectionUpTip: "Move the videos area above the area before it", sectionDownTip: "Move the videos area below the area after it",
     videosNote: "The video itself stays on YouTube; the site keeps only the link. An area without videos is not shown on the site.",
     videoRemoved: "The video was removed from the page (it is not deleted on YouTube). You can undo it.",
+    newArea: "New videos area", newAreaTip: "Another area with its own heading, e.g. \"Trailer\", \"Full film\" or \"Behind the scenes\"",
+    removeArea: "Delete the area", areaRemoved: "The videos area was removed from the page (nothing is deleted on YouTube). You can undo it.",
+    videoHeading2: "Heading for this area, e.g. \"Trailer\" or \"Full film\" (empty = \"Video\")",
   };
 
   // ---------- small helpers ----------
@@ -678,12 +684,13 @@
     var box = el("section", { "class": "project-section pe-videos-sec", "data-videos": String(s) });
     var head = el("h2", { "class": "section-label" });
     head.textContent = sec["heading_" + lang] || "";
-    editable(head, T.videoHeading, function (txt) { sec["heading_" + lang] = clean(txt).replace(/\n+/g, " "); });
+    editable(head, T.videoHeading2, function (txt) { sec["heading_" + lang] = clean(txt).replace(/\n+/g, " "); });
     head.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); head.blur(); } });
     box.appendChild(head);
     box.appendChild(el("div", { "class": "pe-gal-tools" }, [
       button(T.sectionUp, function () { moveSection(s, -1); }, "pe-btn pe-sec-up", T.sectionUpTip),
       button(T.sectionDown, function () { moveSection(s, 1); }, "pe-btn pe-sec-down", T.sectionDownTip),
+      button(T.removeArea, function () { data.sections.splice(s, 1); changed(); setStatus(T.areaRemoved, "warn"); }, "pe-btn pe-danger pe-sec-remove"),
       el("span", { "class": "pe-note", text: T.videosNote }),
     ]));
     var list = el("div", { "class": "pe-video-list" });
@@ -705,9 +712,16 @@
       list.appendChild(el("figure", { "class": "video-item pe-video" + (isTall(v) ? " is-tall" : ""), "data-video": String(i) }, [player(v), cap, el("div", { "class": "pe-tools pe-video-tools" }, tools)]));
     });
     box.appendChild(list);
-    box.appendChild(el("div", { "class": "pe-add" }, [button("+ " + T.addVideo, function () {
-      askVideo(null, function (item) { sec.items.push(item); changed(); });
-    })]));
+    box.appendChild(el("div", { "class": "pe-add" }, [
+      button("+ " + T.addVideo, function () { askVideo(null, function (item) { sec.items.push(item); changed(); }); }, "pe-btn pe-add-one"),
+      // Another area right after this one, starting with its first video.
+      button("+ " + T.newArea, function () {
+        askVideo(null, function (item) {
+          data.sections.splice(s + 1, 0, { type: "videos", hidden: false, heading_en: "", heading_he: "", items: [item] });
+          changed();
+        });
+      }, "pe-btn pe-new-area", T.newAreaTip),
+    ]));
     return box;
   }
 
