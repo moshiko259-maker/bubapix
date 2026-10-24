@@ -6,7 +6,9 @@
  * page's language (fields ending _he / _en) is translated into the other
  * language with MyMemory (free, no account, no key) and replaces it there.
  * Not translated: project names (title_*), and texts whose twin in the other
- * language was also changed by hand in the same session.
+ * language was also changed by hand in the same session. With topOnly, only
+ * the file's own title_* is left alone (a video's title inside it is
+ * translated).
  */
 (function () {
   "use strict";
@@ -56,13 +58,13 @@
   // Walk the data as it is now, next to the data as it was loaded. Lists may
   // have been reordered, so a text counts as unchanged when any item loaded
   // in the same list had exactly that text.
-  function collect(now, before, lang, other, exclude) {
+  function collect(now, before, lang, other, exclude, topOnly) {
     var jobs = [], suffix = "_" + lang;
-    function walk(node, cands) {
+    function walk(node, cands, depth) {
       Object.keys(node).forEach(function (k) {
         var v = node[k];
         if (typeof v === "string") {
-          if (k.slice(-3) !== suffix || !v.trim() || (exclude && exclude.test(k))) return;
+          if (k.slice(-3) !== suffix || !v.trim() || (exclude && exclude.test(k) && !(topOnly && depth > 0))) return;
           if (cands.some(function (c) { return c && c[k] === v; })) return;
           var twin = k.slice(0, -3) + "_" + other, tw = node[twin];
           // Both languages written by hand now: keep both as written.
@@ -71,13 +73,13 @@
         } else if (Array.isArray(v)) {
           var kids = [];
           cands.forEach(function (c) { if (c && Array.isArray(c[k])) kids = kids.concat(c[k]); });
-          v.forEach(function (item) { if (item && typeof item === "object" && !Array.isArray(item)) walk(item, kids); });
+          v.forEach(function (item) { if (item && typeof item === "object" && !Array.isArray(item)) walk(item, kids, depth + 1); });
         } else if (v && typeof v === "object") {
-          walk(v, cands.map(function (c) { return c && c[k]; }).filter(function (c) { return c && typeof c === "object"; }));
+          walk(v, cands.map(function (c) { return c && c[k]; }).filter(function (c) { return c && typeof c === "object"; }), depth + 1);
         }
       });
     }
-    if (now && typeof now === "object") walk(now, before && typeof before === "object" ? [before] : []);
+    if (now && typeof now === "object") walk(now, before && typeof before === "object" ? [before] : [], 0);
     return jobs;
   }
 
@@ -122,7 +124,7 @@
       opts = opts || {};
       if (!box.checked) return Promise.resolve({ n: 0 });
       var jobs = [];
-      pairs.forEach(function (p) { jobs = jobs.concat(collect(p.now, p.before, lang, other, opts.exclude || /^title_/)); });
+      pairs.forEach(function (p) { jobs = jobs.concat(collect(p.now, p.before, lang, other, opts.exclude || /^title_/, !!opts.topOnly)); });
       if (!jobs.length) return Promise.resolve({ n: 0 });
       if (opts.onStart) opts.onStart(T.working);
       var results = [], chain = Promise.resolve();

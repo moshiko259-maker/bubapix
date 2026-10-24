@@ -345,7 +345,9 @@ function contentFor(lang) {
         if (url && !parsed) images.warnings.push(`${where}: video ${i + 1} is not a YouTube or Vimeo address`);
         const local = typeof file === "string" && /\.(mp4|webm)$/i.test(file) && fs.existsSync(path.join(root, file.replace(/^\/+/, ""))) ? file.replace(/^\/+/, "") : "";
         if (!parsed && !local) return null;
-        return { embed: parsed, file: local, title: typeof v === "string" ? "" : pick(v, "title", lang) };
+        // Upright videos (phone format, YouTube Shorts) get an upright frame.
+        const tall = typeof v === "string" ? /youtube\.com\/shorts\//.test(url) : v.shape === "tall" || (!v.shape && /youtube\.com\/shorts\//.test(url || ""));
+        return { embed: parsed, file: local, title: typeof v === "string" ? "" : pick(v, "title", lang), tall };
       };
 
       // Optional sections, in the order chosen in the admin.

@@ -287,6 +287,7 @@ collections:
                     required: false
                     pattern: ['^$|^https://(www\.|m\.)?(youtube\.com|youtu\.be|vimeo\.com)/', "Use a YouTube or Vimeo address / כתובת YouTube או Vimeo"]
                   - { name: file, label: "Or a short MP4 file, up to 25 MB / או קובץ MP4 קצר", widget: file, required: false, accept: "video/mp4,video/webm" }
+                  - { name: shape, label: "Shape / צורה", widget: select, required: false, default: "wide", options: [{ label: "Wide 16:9 / רחב", value: "wide" }, { label: "Upright, phone format / אנכי (טלפון)", value: "tall" }] }
                   - { name: title_en, label: "Title, English (optional) / כותרת, אנגלית", widget: string, required: false }
                   - { name: title_he, label: "Title, Hebrew (optional) / כותרת, עברית", widget: string, required: false }
           - name: text

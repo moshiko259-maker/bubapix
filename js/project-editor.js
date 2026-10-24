@@ -11,13 +11,15 @@
  *   - replace the cover picture,
  *   - reorder, replace, hide, show and remove pictures in the galleries,
  *   - add pictures (from the site or uploaded from this computer),
- *   - write descriptions for blind visitors.
+ *   - write descriptions for blind visitors,
+ *   - add videos by their YouTube or Vimeo link (title, wide or upright
+ *     frame, order, delete), and move a videos area above or below pictures.
  * It saves the file back to the work branch with the owner's own GitHub
  * sign-in (the one saved in this browser by the admin panel). The live site
  * is not touched: the work branch is published only to the private test site.
  *
  * Everything else in the file (links, titles, frames, hidden sections,
- * videos, the other language) is kept exactly as it is.
+ * video files, the other language) is kept exactly as it is.
  */
 (function () {
   "use strict";
@@ -110,6 +112,15 @@
     tipTouch: "בטלפון ובטאבלט: נוגעים בתמונה בגלריה כדי לבחור אותה, והכלים (״→ קודם״, ״הבא ←״, החלפה, הסתרה, הסרה, תיאור) מופיעים מתחתיה. נגיעה בתמונה לא משנה כלום בעצמה.",
     tipClose: "הבנתי",
     help: "עזרה",
+    tipVideo: "״הוספת סרטון״ — מדביקים קישור מיוטיוב (כפתור ״שיתוף״ ← ״העתקה״). הסרטון נשאר ביוטיוב, ובאתר נשמר רק הקישור.",
+    videos: "וידאו", videoHeading: "כותרת לאזור (לא חובה; ריק = ״וידאו״)", addVideo: "הוספת סרטון", addVideos: "הוספת סרטון לדף",
+    videoTitle: "כותרת לסרטון (לא חובה)", videoUrl: "קישור לסרטון ביוטיוב או ב־Vimeo",
+    videoUrlHint: "ביוטיוב: ״שיתוף״ ← ״העתקה״, ומדביקים כאן. גם סרטון ״לא רשום״ (Unlisted) מוצג באתר.",
+    badVideo: "זה לא קישור של יוטיוב או של Vimeo. בדקו את הקישור ונסו שוב.", changeLink: "שינוי הקישור",
+    wide: "רחב (16:9)", tall: "אנכי (טלפון)", shape: "צורת המסגרת", videoFile: "קובץ וידאו שהועלה בכלי הניהול:",
+    sectionUp: "↑ האזור למעלה", sectionDown: "↓ האזור למטה", sectionUpTip: "הזזת אזור הסרטונים מעל האזור שלפניו", sectionDownTip: "הזזת אזור הסרטונים מתחת לאזור שאחריו",
+    videosNote: "הסרטון עצמו נשאר ביוטיוב; באתר נשמר רק הקישור. אזור בלי סרטונים לא מוצג באתר.",
+    videoRemoved: "הסרטון הוסר מהדף (ביוטיוב הוא לא נמחק). אפשר לבטל עם ״ביטול פעולה״.",
   } : {
     title: "Editing the project page",
     loading: "Loading the project page…",
@@ -184,6 +195,15 @@
     tipTouch: "On phones and tablets: tap a gallery picture to choose it, and its tools (\"← Earlier\", \"Later →\", replace, hide, remove, description) appear below it. A tap on a picture changes nothing by itself.",
     tipClose: "Got it",
     help: "Help",
+    tipVideo: "\"Add a video\": paste a YouTube link (\"Share\" → \"Copy\"). The video stays on YouTube; the site keeps only the link.",
+    videos: "Video", videoHeading: "Heading for this area (optional; empty = \"Video\")", addVideo: "Add a video", addVideos: "Add a video to the page",
+    videoTitle: "Title of the video (optional)", videoUrl: "Link to the video on YouTube or Vimeo",
+    videoUrlHint: "On YouTube: \"Share\" → \"Copy\", then paste here. An unlisted video also shows on the site.",
+    badVideo: "That is not a YouTube or Vimeo link. Check the link and try again.", changeLink: "Change the link",
+    wide: "Wide (16:9)", tall: "Upright (phone)", shape: "Frame shape", videoFile: "A video file uploaded in the admin panel:",
+    sectionUp: "↑ Area up", sectionDown: "↓ Area down", sectionUpTip: "Move the videos area above the area before it", sectionDownTip: "Move the videos area below the area after it",
+    videosNote: "The video itself stays on YouTube; the site keeps only the link. An area without videos is not shown on the site.",
+    videoRemoved: "The video was removed from the page (it is not deleted on YouTube). You can undo it.",
   };
 
   // ---------- small helpers ----------
@@ -399,6 +419,7 @@
     var firstGallery = null;
     Array.prototype.forEach.call(article.querySelectorAll(".project-section"), function (s) {
       if (s.querySelector(".jg-project")) { if (!firstGallery) firstGallery = s; s.hidden = true; }
+      else if (s.classList.contains("videos")) s.hidden = true;
     });
     // The project name: the field the page shows (a name without a Hebrew
     // version is shared by both languages, as on the site).
@@ -450,20 +471,43 @@
     area.textContent = "";
     area.appendChild(coverBlock());
     area.appendChild(synopsisBlock());
-    var shown = 0, hiddenGroups = 0;
+    // A page without videos: "Add a video to the page" sits where the new videos area will go (above the pictures).
+    var videoSlot = el("div", { "class": "pe-add pe-video-slot" });
+    area.appendChild(videoSlot);
+    var shown = 0, hiddenGroups = 0, videoAreas = 0;
     data.sections.forEach(function (sec, s) {
-      if (!sec || (sec.type !== "gallery" && sec.type !== "behind")) return;
-      if (sec.hidden === true) { hiddenGroups++; return; }
+      if (!sec || (sec.type !== "gallery" && sec.type !== "behind" && sec.type !== "videos")) return;
+      if (sec.hidden === true) { if (sec.type !== "videos") hiddenGroups++; return; }
+      if (sec.type === "videos") {
+        if (!Array.isArray(sec.items)) sec.items = [];
+        area.appendChild(videosBlock(sec, s));
+        videoAreas++;
+        return;
+      }
       if (!Array.isArray(sec.images)) sec.images = [];
       area.appendChild(galleryBlock(sec, s));
       shown++;
     });
+    var adds = [];
     if (!shown) {
-      area.appendChild(el("div", { "class": "pe-add" }, [button("+ " + T.newGallery, function () {
+      adds.push(button("+ " + T.newGallery, function () {
         data.sections.push({ type: "gallery", hidden: false, heading_en: "", heading_he: "", images: [] });
         changed();
-      })]));
+      }));
     }
+    if (videoAreas) videoSlot.remove();
+    else {
+      videoSlot.appendChild(button("+ " + T.addVideos, function () {
+        askVideo(null, function (item) {
+          var first = -1;
+          data.sections.forEach(function (sec, i) { if (first < 0 && sec && sec.hidden !== true && (sec.type === "gallery" || sec.type === "behind")) first = i; });
+          var sec = { type: "videos", hidden: false, heading_en: "", heading_he: "", items: [item] };
+          if (first < 0) data.sections.push(sec); else data.sections.splice(first, 0, sec);
+          changed();
+        });
+      }, "pe-btn pe-add-video"));
+    }
+    if (adds.length) area.appendChild(el("div", { "class": "pe-add" }, adds));
     if (hiddenGroups) area.appendChild(el("p", { "class": "pe-note pe-proj-note", text: T.hiddenSections.replace("{n}", hiddenGroups) }));
   }
 
@@ -571,6 +615,99 @@
       });
       box.appendChild(el("div", { "class": "pe-strip" }, [el("p", { "class": "pe-strip-title", text: T.hiddenTitle }), row]));
     }
+    return box;
+  }
+
+  // ---------- videos (a "videos" area: links to YouTube or Vimeo) ----------
+  function parseVideo(u) {
+    var m = /^https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,20})/.exec(String(u || "").trim());
+    if (m) return { kind: "youtube", id: m[1] };
+    m = /^https:\/\/(?:www\.)?(?:player\.)?vimeo\.com\/(?:video\/)?(\d{5,12})/.exec(String(u || "").trim());
+    if (m) return { kind: "vimeo", id: m[1] };
+    return null;
+  }
+  function isTall(v) { return v.shape === "tall" || (!v.shape && /youtube\.com\/shorts\//.test(v.url || "")); }
+  function player(v) {
+    var p = parseVideo(v.url);
+    if (!p) return el("p", { "class": "pe-note pe-video-file", text: T.videoFile + " " + String(v.file || "").split("/").pop() });
+    var src = p.kind === "youtube" ? "https://www.youtube-nocookie.com/embed/" + p.id : "https://player.vimeo.com/video/" + p.id + "?dnt=1";
+    return el("div", { "class": "video" + (isTall(v) ? " video-tall" : "") }, [el("iframe", { src: src, title: v["title_" + lang] || T.videos, loading: "lazy", allow: "encrypted-media; picture-in-picture; fullscreen", allowfullscreen: "", referrerpolicy: "strict-origin-when-cross-origin" })]);
+  }
+  // Asks for a link (and a title); a new link starts as wide, or upright for YouTube Shorts.
+  function askVideo(v, done) {
+    var link = el("input", { type: "url", dir: "ltr", "class": "pe-input", "data-video-url": "", value: v ? v.url || "" : "", placeholder: "https://youtu.be/…" });
+    var title = el("input", { type: "text", dir: he ? "rtl" : "ltr", "class": "pe-input", "data-video-title": "", value: v ? v["title_" + lang] || "" : "" });
+    var msg = el("p", { "class": "pe-note pe-video-msg", role: "status", "aria-live": "polite" });
+    var ok = button(T.ok, function () {
+      var u = link.value.trim();
+      if (!parseVideo(u)) { msg.textContent = T.badVideo; link.focus(); return; }
+      close();
+      var item = v || { url: "", file: "", title_en: "", title_he: "" };
+      item.url = u;
+      item["title_" + lang] = title.value.trim();
+      if (!v) item.shape = /youtube\.com\/shorts\//.test(u) ? "tall" : "wide";
+      done(item);
+    }, "pe-btn pe-primary");
+    var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": v ? T.changeLink : T.addVideo }, [
+      el("div", { "class": "pe-modal-box pe-small-box" }, [
+        el("div", { "class": "pe-modal-head" }, [el("strong", { text: v ? T.changeLink : T.addVideo }), button(T.close, function () { close(); }, "pe-btn pe-ghost")]),
+        el("div", { "class": "pe-modal-foot" }, [
+          el("label", {}, [document.createTextNode(T.videoUrl), link]),
+          el("p", { "class": "pe-note", text: T.videoUrlHint }),
+          el("label", {}, [document.createTextNode(T.videoTitle), title]),
+          msg,
+          ok,
+        ]),
+      ]),
+    ]);
+    function close() { dialog.remove(); document.removeEventListener("keydown", onKey); }
+    function onKey(e) { if (e.key === "Escape") close(); if (e.key === "Enter" && e.target && e.target.tagName === "INPUT") { e.preventDefault(); ok.click(); } }
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(dialog);
+    link.focus();
+  }
+  // The videos area moves past the next shown area (pictures or videos) before or after it.
+  function moveSection(s, dir) {
+    var j = s + dir;
+    while (j >= 0 && j < data.sections.length && !(data.sections[j] && data.sections[j].hidden !== true && /^(gallery|behind|videos)$/.test(data.sections[j].type))) j += dir;
+    if (j < 0 || j >= data.sections.length) return;
+    var tmp = data.sections[s]; data.sections[s] = data.sections[j]; data.sections[j] = tmp;
+    changed();
+  }
+  function videosBlock(sec, s) {
+    var box = el("section", { "class": "project-section pe-videos-sec", "data-videos": String(s) });
+    var head = el("h2", { "class": "section-label" });
+    head.textContent = sec["heading_" + lang] || "";
+    editable(head, T.videoHeading, function (txt) { sec["heading_" + lang] = clean(txt).replace(/\n+/g, " "); });
+    head.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); head.blur(); } });
+    box.appendChild(head);
+    box.appendChild(el("div", { "class": "pe-gal-tools" }, [
+      button(T.sectionUp, function () { moveSection(s, -1); }, "pe-btn pe-sec-up", T.sectionUpTip),
+      button(T.sectionDown, function () { moveSection(s, 1); }, "pe-btn pe-sec-down", T.sectionDownTip),
+      el("span", { "class": "pe-note", text: T.videosNote }),
+    ]));
+    var list = el("div", { "class": "pe-video-list" });
+    sec.items.forEach(function (v, i) {
+      if (!v) return;
+      var cap = el("p", { "class": "video-title pe-video-title" });
+      cap.textContent = v["title_" + lang] || "";
+      editable(cap, T.videoTitle, function (txt) { v["title_" + lang] = clean(txt).replace(/\n+/g, " "); });
+      cap.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); cap.blur(); } });
+      var tools = [
+        button(T.prevBtn, function () { if (i > 0) { sec.items.splice(i - 1, 0, sec.items.splice(i, 1)[0]); changed(); } }, "pe-btn pe-move", T.earlier),
+        button(T.nextBtn, function () { if (i < sec.items.length - 1) { sec.items.splice(i + 1, 0, sec.items.splice(i, 1)[0]); changed(); } }, "pe-btn pe-move", T.later),
+      ];
+      if (parseVideo(v.url)) {
+        tools.push(button(T.changeLink, function () { askVideo(v, function () { changed(); }); }, "pe-btn"));
+        tools.push(selectBox(T.shape, isTall(v) ? "tall" : "wide", [["wide", T.wide], ["tall", T.tall]], function (val) { v.shape = val; changed(); }));
+      }
+      tools.push(button(T.remove.split(" ")[0], function () { sec.items.splice(i, 1); changed(); setStatus(T.videoRemoved, "warn"); }, "pe-btn pe-danger"));
+      list.appendChild(el("figure", { "class": "video-item pe-video" + (isTall(v) ? " is-tall" : ""), "data-video": String(i) }, [player(v), cap, el("div", { "class": "pe-tools pe-video-tools" }, tools)]));
+    });
+    box.appendChild(list);
+    box.appendChild(el("div", { "class": "pe-add" }, [button("+ " + T.addVideo, function () {
+      askVideo(null, function (item) { sec.items.push(item); changed(); });
+    })]));
     return box;
   }
 
@@ -874,7 +1011,7 @@
     if (old) old.remove();
     var box = el("div", { "class": "pe-tip", role: "note" }, [
       el("strong", { text: T.tipTitle }),
-      el("ol", {}, (touch.matches ? [T.tip1, T.tipTouch, T.tip3, T.tip4] : [T.tip1, T.tip2, T.tip3, T.tip4]).map(function (t) { return el("li", { text: t }); })),
+      el("ol", {}, (touch.matches ? [T.tip1, T.tipTouch, T.tip3, T.tipVideo, T.tip4] : [T.tip1, T.tip2, T.tip3, T.tipVideo, T.tip4]).map(function (t) { return el("li", { text: t }); })),
       button(T.tipClose, function () { try { localStorage.setItem(TIP, "1"); } catch (e) { /* storage blocked */ } box.remove(); }, "pe-btn pe-primary"),
     ]);
     bar.parentNode.insertBefore(box, bar.nextSibling);
@@ -942,7 +1079,7 @@
     if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
     translating = true; saveBtn.disabled = true; trRes = { n: 0 };
     trReady
-      .then(function () { return window.BubaTranslate ? window.BubaTranslate.run(trPairs(), { onStart: function (m) { setStatus(m); } }) : { n: 0 }; })
+      .then(function () { return window.BubaTranslate ? window.BubaTranslate.run(trPairs(), { onStart: function (m) { setStatus(m); }, topOnly: true }) : { n: 0 }; })
       .then(function (r) { trRes = r; }, function () { trRes = { n: 0, failed: true }; })
       .then(function () { translating = false; saveNow(); });
   }

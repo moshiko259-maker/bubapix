@@ -762,7 +762,7 @@ function videoBlock(ctx, v, projectTitle, poster) {
   } else if (v.file) {
     player = `<video controls preload="metadata" playsinline${poster ? ` poster="${ctx.assetBase}${e(poster.src)}"` : ""}><source src="${ctx.assetBase}${e(v.file)}" type="${/\.webm$/i.test(v.file) ? "video/webm" : "video/mp4"}"></video>`;
   }
-  return `<figure class="video-item"><div class="video">${player}</div>${v.title ? `<figcaption class="video-title">${e(v.title)}</figcaption>` : ""}</figure>`;
+  return `<figure class="video-item${v.tall ? " is-tall" : ""}"><div class="video${v.tall ? " video-tall" : ""}">${player}</div>${v.title ? `<figcaption class="video-title">${e(v.title)}</figcaption>` : ""}</figure>`;
 }
 
 // Free sizes (set by dragging in the page editor): each picture has a width in
