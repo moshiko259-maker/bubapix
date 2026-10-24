@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-WZRJfWvsnNCPcxzZwvyhovnZGqhZaC+8gPGPRbx6wTk='; style-src 'self'; font-src 'self'; img-src 'self' data: https://raw.githubusercontent.com; media-src 'self' https://raw.githubusercontent.com; connect-src https://ouskvcsmcddgdukcofex.supabase.co; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-WZRJfWvsnNCPcxzZwvyhovnZGqhZaC+8gPGPRbx6wTk='; style-src 'self'; font-src 'self'; img-src 'self' data: https://raw.githubusercontent.com; media-src 'self' https://raw.githubusercontent.com; connect-src https://ouskvcsmcddgdukcofex.supabase.co https://api.github.com; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="robots" content="noindex">
   
   <title>ניהול האתר — BubaPix</title>
@@ -31,9 +31,9 @@
   <link rel="preload" href="../../assets/fonts/heebo-hebrew-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../../css/fonts.css?v=9db4e44dc6">
   <script>document.documentElement.classList.add("js");</script>
-  <link rel="stylesheet" href="../../css/styles.css?v=2725837722">
+  <link rel="stylesheet" href="../../css/styles.css?v=7f85811d3b">
   <link rel="stylesheet" href="../../css/gallery.css?v=87a93e92ba">
-  <script src="../../js/main.js?v=b26f9d103b" defer></script>
+  <script src="../../js/main.js?v=2e2a3c0393" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">דלגו לתוכן</a>
@@ -59,7 +59,7 @@
       <header class="page-head"><h1 class="page-title">ניהול האתר</h1>
         <p class="lede">מכאן עורכים את כל מה שבאתר. הכניסה מוגנת: רק לחשבונות שלכם יש הרשאה.</p></header>
       <p class="manage-note">זה אתר הבדיקה. כל עריכה כאן נשמרת בענף העבודה ומופיעה רק באתר הבדיקה. האתר החי לא משתנה.</p>
-      <p class="manage-signin" data-signin hidden><span data-signin-ok hidden>✓ מחוברים לעריכה בדפדפן הזה.</span><span data-signin-no hidden>עוד לא מחוברים לעריכה בדפדפן הזה. נכנסים פעם אחת דרך ״עריכה מתקדמת״ עם מפתח GitHub, ואז כל כלי העריכה עובדים.</span></p>
+      <p class="manage-signin" data-signin hidden><span data-signin-ok hidden>✓ מחוברים לעריכה בדפדפן הזה.</span><span data-signin-no hidden>עוד לא מחוברים לעריכה בדפדפן הזה. נכנסים פעם אחת דרך ״עריכה מתקדמת״ עם מפתח GitHub, ואז כל כלי העריכה עובדים.</span><span data-signin-expired hidden>המפתח ל־GitHub פג או בוטל, ולכן העריכה לא תעבוד. צרו מפתח חדש (״כניסה ראשונה״ למטה) והיכנסו שוב דרך ״פתיחת העריכה המתקדמת״.</span></p>
       <section class="manage-box manage-main">
         <h2>עריכה על הדף (הדרך הקלה)</h2>
         <p>פותחים את דף הבית ועורכים ישירות עליו: תמונות, סדר, גודל, פריסה, משפט הפתיחה, פרויקטים ושמות. רואים כל שינוי מיד, ויש ״ביטול פעולה״ וגרסאות קודמות.</p>
@@ -79,7 +79,7 @@
       <div class="manage-grid">
         <section class="manage-box">
           <h2>עריכה מתקדמת (באנגלית)</h2>
-          <p>לכל מה שעוד אין בעריכה על הדף: מוצרים, חנות, עמודים, טקסטים בממשק. לכלי הזה אין עברית. כל שמירה בו היא טיוטה, ורואים אותה באתר רק אחרי Publish.</p>
+          <p>לכל מה שעוד אין בעריכה על הדף: מוצרים, חנות, עמודים, טקסטים בממשק. ממשק הכלי באנגלית, ושמות השדות בו כתובים גם בעברית. כל שמירה בו היא טיוטה, ורואים אותה באתר רק אחרי Publish.</p>
           <a class="button button-large" href="../../admin/index.html" target="_blank" rel="noopener">פתיחת העריכה המתקדמת</a>
         </section>
         <section class="manage-box">
@@ -115,9 +115,9 @@
       <section class="manage-section" aria-labelledby="first-title">
         <h2 id="first-title" class="section-label">כניסה ראשונה (פעם אחת)</h2>
         <h3>עריכת תוכן: כניסה עם מפתח גישה של GitHub.</h3>
-        <ol class="manage-steps"><li>ב־github.com פותחים Settings ← Developer settings ← Personal access tokens ← Fine-grained tokens ← Generate new token.</li><li>בגישה למאגרים בוחרים רק את המאגר bubapix. בהרשאות: Contents — Read and write; Pull requests — Read and write.</li><li>מעתיקים את המפתח. ב״עריכה מתקדמת״ בוחרים ״Sign In Using Access Token״ ומדביקים. מעכשיו הדפדפן הזה מחובר גם לעריכה על הדף.</li></ol>
+        <ol class="manage-steps"><li>ב־github.com פותחים, לפי הסדר: ⁦Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token⁩. בתפוגה (Expiration) בוחרים 90 יום.</li><li>בגישה למאגרים בוחרים רק את המאגר bubapix. בהרשאות: Contents — Read and write; Pull requests — Read and write.</li><li>מעתיקים את המפתח. ב״עריכה מתקדמת״ בוחרים ״Sign In Using Access Token״ ומדביקים. מעכשיו הדפדפן הזה מחובר גם לעריכה על הדף.</li></ol>
         <h3>תגובות והודעות: כניסה עם מייל וסיסמה.</h3>
-        <ol class="manage-steps"><li>ב־supabase.com פותחים את הפרויקט של BubaPix ← Authentication ← Users ← Add user ← Create new user.</li><li>מייל: moshiko259@gmail.com. בוחרים סיסמה ושומרים אותה לעצמכם. מסמנים ״Auto Confirm User״.</li><li>פותחים ״תגובות והודעות״ ונכנסים עם המייל והסיסמה.</li></ol>
+        <ol class="manage-steps"><li>ב־supabase.com פותחים את הפרויקט של BubaPix, ואז לפי הסדר: ⁦Authentication → Users → Add user → Create new user⁩.</li><li>מייל: המייל הפרטי שלכם שמוגדר כמנהל. בוחרים סיסמה ושומרים אותה לעצמכם. מסמנים ״Auto Confirm User״.</li><li>פותחים ״תגובות והודעות״ ונכנסים עם המייל והסיסמה.</li></ol>
       </section>
     </div>
   </main>
