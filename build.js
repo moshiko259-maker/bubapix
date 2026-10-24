@@ -98,6 +98,7 @@ const raw = {
   participation: readJsonOr("content/participation.json", {}),
   // Optional replacements for headings and menu names (Settings > Interface texts).
   labels: readJsonOr("content/labels.json", {}),
+  styles: readJsonOr("content/styles.json", {}),
   projects: readFolder("content/projects"),
   products: readFolder("content/products"),
   shop: readJsonOr("content/shop.json", { categories: [] }),
@@ -676,6 +677,7 @@ const assetVersion = {
   workEditor: fileVersion(["js/work-editor.js"]),
   pageEditor: fileVersion(["js/page-editor.js"]),
   autoTranslate: fileVersion(["js/auto-translate.js"]),
+  textStyle: fileVersion(["js/text-style.js"]),
 };
 
 function contextFor(lang, pagePath, data) {
@@ -812,6 +814,12 @@ for (const [file, lang, start, desc] of [
 {
   const gv = crypto.createHash("sha256").update(outputs.get("css/gallery.css")).digest("hex").slice(0, 10);
   for (const [rel, html] of outputs) if (rel.endsWith(".html") && html.includes("__GALLERY_V__")) outputs.set(rel, html.split("__GALLERY_V__").join(gv));
+}
+// Text styles chosen by the owner (content/styles.json) become classes on
+// the marked texts (data-ts) of every page.
+{
+  const { applyStyles } = require("./src/text-style.js");
+  for (const [rel, html] of outputs) if (rel.endsWith(".html") && !rel.startsWith("admin/") && typeof html === "string") outputs.set(rel, applyStyles(html, raw.styles));
 }
 // The service worker. Pages always come from the network first (so changes
 // show at once) and fall back to the saved copy when offline; styles,

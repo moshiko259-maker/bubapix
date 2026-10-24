@@ -1195,3 +1195,59 @@ h1.pe-editable { min-width: 4ch; }
 .pe-crop img { object-fit: cover; width: 100%; height: 100%; }
 .pe-item.is-resizing .pe-tools, .pe-holder.is-resizing .pe-tools { opacity: 0 !important; }
 .pe-resize { display: none; }
+
+/* Text styles chosen by the owner (content/styles.json, added by the build;
+   js/text-style.js while editing). They win over the usual look of the text.
+   Sizes grow and shrink with the screen from z7 up, so big titles stay
+   readable on phones. Alignment is "start/end", so it mirrors between Hebrew
+   and English. */
+.ts-z1 { font-size: 0.75rem !important; }
+.ts-z2 { font-size: 0.875rem !important; }
+.ts-z3 { font-size: 1rem !important; }
+.ts-z4 { font-size: 1.125rem !important; }
+.ts-z5 { font-size: 1.25rem !important; }
+.ts-z6 { font-size: 1.5rem !important; }
+.ts-z7 { font-size: clamp(1.5rem, 3vw, 1.875rem) !important; line-height: 1.2 !important; }
+.ts-z8 { font-size: clamp(1.625rem, 4vw, 2.25rem) !important; line-height: 1.15 !important; }
+.ts-z9 { font-size: clamp(1.875rem, 5vw, 3rem) !important; line-height: 1.1 !important; }
+.ts-z10 { font-size: clamp(2.125rem, 6.5vw, 3.75rem) !important; line-height: 1.05 !important; }
+.ts-z11 { font-size: clamp(2.375rem, 8vw, 4.75rem) !important; line-height: 1.02 !important; }
+.ts-a-start { text-align: start !important; }
+.ts-a-center { text-align: center !important; }
+.ts-a-end { text-align: end !important; }
+.ts-a-center, .ts-a-end { align-self: stretch; }
+.ts-sp-m1 { margin-block: 0.25rem !important; }
+.ts-sp-1 { margin-block: 1.75rem !important; }
+.ts-sp-2 { margin-block: 3.5rem !important; }
+.ts-f-heebo { font-family: "Heebo", system-ui, sans-serif !important; }
+.ts-f-rubik { font-family: "Rubik", system-ui, sans-serif !important; }
+.ts-f-assistant { font-family: "Assistant", system-ui, sans-serif !important; }
+.ts-f-frank { font-family: "Frank Ruhl Libre", Georgia, serif !important; }
+.ts-f-secular { font-family: "Secular One", system-ui, sans-serif !important; font-weight: 400 !important; }
+.ts-f-varela { font-family: "Varela Round", system-ui, sans-serif !important; font-weight: 400 !important; }
+.ts-f-amatic { font-family: "Amatic SC", system-ui, sans-serif !important; }
+.ts-f-suez { font-family: "Suez One", Georgia, serif !important; font-weight: 400 !important; }
+[class*="ts-f-"] { font-synthesis: none; }
+/* The text style bar while editing (js/text-style.js). */
+.ts-bar { position: fixed; z-index: 85; inset-inline: 0; inset-block-end: 0; padding: 0.55rem 0.75rem calc(0.55rem + env(safe-area-inset-bottom)); background: var(--ink); color: var(--paper); box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25); }
+.ts-bar[hidden] { display: none; }
+.ts-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.9rem; }
+.ts-group { position: relative; display: inline-flex; flex-wrap: wrap; gap: 0.3rem; }
+.ts-btn { min-height: 36px; padding: 0 0.7rem; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: var(--paper); font: inherit; font-size: 0.875rem; cursor: pointer; }
+.ts-btn:hover { background: rgba(255, 255, 255, 0.22); }
+.ts-btn[aria-pressed="true"] { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+.ts-btn:disabled { opacity: 0.45; cursor: default; }
+.ts-what { font-weight: 600; }
+.ts-note { margin: 0.35rem 0 0; font-size: 0.8125rem; opacity: 0.85; }
+.ts-font-menu { position: absolute; z-index: 2; inset-block-end: calc(100% + 6px); inset-inline-start: 0; display: grid; gap: 2px; width: max-content; min-width: 13rem; max-width: calc(100vw - 1.5rem); max-height: 60vh; overflow: auto; padding: 0.4rem; border-radius: 10px; background: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
+.ts-font-menu[hidden] { display: none; }
+.ts-font-menu .ts-font-item { border-color: transparent; background: transparent; color: var(--ink); text-align: start; font-size: 1.125rem; }
+.ts-font-menu .ts-font-item:hover, .ts-font-menu .ts-font-item[aria-pressed="true"] { background: var(--paper-2, #ecebe3); color: var(--ink); }
+.ts-current { outline: 3px solid #2f6fde !important; outline-offset: 4px; }
+html.ts-open body { padding-block-end: 10rem; }
+@media (max-width: 700px) {
+  .ts-row { gap: 0.35rem 0.5rem; }
+  .ts-btn { min-height: 40px; padding: 0 0.55rem; }
+  .ts-font-wrap { position: static; }
+  .ts-font-menu { inset-inline: 0.75rem; inset-block-end: calc(100% + 6px); width: auto; }
+}

@@ -305,7 +305,8 @@
 
   // ---------- state ----------
   var data = null, sha = "", original = "";
-  var dirty = function () { return !!data && JSON.stringify(data) !== original; };
+  // Text styles (js/text-style.js) are saved together with the project.
+  var dirty = function () { return !!data && (JSON.stringify(data) !== original || !!(window.BubaStyle && window.BubaStyle.dirty())); };
 
   // ---------- toolbar ----------
   var status = el("span", { "class": "pe-status", role: "status", "aria-live": "polite" });
@@ -385,13 +386,23 @@
       refreshStatus();
       watchSite();
       showTip(false);
+      loadStyles();
     })
     .catch(function (err) {
       setStatus(err.status === 401 || err.status === 403 ? T.errAuth : T.errLoad, "error");
     });
+  function loadStyles() {
+    var src = launcher.getAttribute("data-ts-src");
+    var go = function () { if (window.BubaStyle) window.BubaStyle.start({ onChange: refreshStatus }).catch(function () { /* styles stay as they are */ }); };
+    if (window.BubaStyle || !src) { go(); return; }
+    var sc = document.createElement("script");
+    sc.src = src; sc.onload = go;
+    document.head.appendChild(sc);
+  }
 
+  var leaving = false;
   window.addEventListener("beforeunload", function (e) {
-    if (dirty()) { e.preventDefault(); e.returnValue = ""; }
+    if (!leaving && dirty()) { e.preventDefault(); e.returnValue = ""; }
   });
 
   // ---------- page parts ----------
@@ -446,7 +457,7 @@
       if (titleField !== "title_" + lang) head.insertBefore(el("p", { "class": "pe-note pe-title-note", text: T.titleShared }), h1.nextSibling);
     }
     ledeEl = head ? head.querySelector(".lede") : null;
-    if (!ledeEl && head) { ledeEl = el("p", { "class": "lede" }); head.appendChild(ledeEl); }
+    if (!ledeEl && head) { ledeEl = el("p", { "class": "lede", "data-ts": "project/lede" }); head.appendChild(ledeEl); }
     if (ledeEl) {
       editable(ledeEl, T.lede, function (txt) { data["text_" + lang] = clean(txt).replace(/\n+/g, " "); });
       fillLede();
@@ -559,8 +570,8 @@
   }
 
   function synopsisBlock() {
-    var sec = el("section", { "class": "project-section" }, [el("h2", { "class": "section-label", text: T.synopsisTitle })]);
-    var body = el("div", { "class": "prose prose-large pe-synopsis" });
+    var sec = el("section", { "class": "project-section" }, [el("h2", { "class": "section-label", text: T.synopsisTitle, "data-ts": "project/section-title" })]);
+    var body = el("div", { "class": "prose prose-large pe-synopsis", "data-ts": "project/synopsis" });
     body.textContent = data["description_" + lang] || "";
     editable(body, T.synopsis, function (txt) { data["description_" + lang] = clean(txt); });
     sec.appendChild(body);
@@ -570,7 +581,7 @@
 
   function galleryBlock(sec, s) {
     var heading = sec["heading_" + lang] || (sec.type === "behind" ? T.behind : T.gallery);
-    var box = el("section", { "class": "project-section pe-gal-sec" }, [el("h2", { "class": "section-label", text: heading })]);
+    var box = el("section", { "class": "project-section pe-gal-sec" }, [el("h2", { "class": "section-label", text: heading, "data-ts": "project/section-title" })]);
     var hiddenIdx = [], shownList = [];
     sec.images.forEach(function (g, i) {
       if (!g || !g.image) return;
@@ -682,7 +693,7 @@
   }
   function videosBlock(sec, s) {
     var box = el("section", { "class": "project-section pe-videos-sec", "data-videos": String(s) });
-    var head = el("h2", { "class": "section-label" });
+    var head = el("h2", { "class": "section-label", "data-ts": "project/section-title" });
     head.textContent = sec["heading_" + lang] || "";
     editable(head, T.videoHeading2, function (txt) { sec["heading_" + lang] = clean(txt).replace(/\n+/g, " "); });
     head.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); head.blur(); } });
@@ -696,7 +707,7 @@
     var list = el("div", { "class": "pe-video-list" });
     sec.items.forEach(function (v, i) {
       if (!v) return;
-      var cap = el("p", { "class": "video-title pe-video-title" });
+      var cap = el("p", { "class": "video-title pe-video-title", "data-ts": "project/video-title" });
       cap.textContent = v["title_" + lang] || "";
       editable(cap, T.videoTitle, function (txt) { v["title_" + lang] = clean(txt).replace(/\n+/g, " "); });
       cap.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); cap.blur(); } });
@@ -1114,15 +1125,20 @@
         .then(function (b64) { return api("/contents/" + encPath(p), { method: "PUT", body: { message: "Upload picture (project " + SLUG + ", edited on the page)", content: b64, branch: BRANCH } }); })
         .then(function () { uploads[p].done = true; });
     });
+    var fileChanged = JSON.stringify(data) !== original;
     chain
-      .then(function () { return api("/contents/" + encPath(FILE) + ref); })
+      .then(function () { return fileChanged ? api("/contents/" + encPath(FILE) + ref) : null; })
       .then(function (cur) {
+        if (!fileChanged) return null;
         if (cur.sha !== sha) { var err = new Error("changed"); err.changed = true; throw err; }
         return api("/contents/" + encPath(FILE), { method: "PUT", body: { message: "Project " + SLUG + ": edited on the page", content: utf8ToB64(JSON.stringify(data, null, 2) + "\n"), sha: sha, branch: BRANCH } });
       })
       .then(function (res) {
-        sha = res.content.sha;
-        original = JSON.stringify(data);
+        if (res) { sha = res.content.sha; original = JSON.stringify(data); }
+        return window.BubaStyle ? window.BubaStyle.save("project " + SLUG) : "";
+      })
+      .then(function (c) {
+        if (c) lastCommit = c;
         saveBtn.disabled = true;
         followSave(lastCommit);
       })
@@ -1135,6 +1151,7 @@
   function quit() {
     if (dirty() && !window.confirm(T.leave)) return;
     original = data ? JSON.stringify(data) : original; // allow leaving without the browser's own warning
+    leaving = true;
     location.reload();
   }
 })();

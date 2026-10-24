@@ -214,7 +214,8 @@
   // page, in the page's order (each with its file's data and version).
   var state = null, files = null, original = "";
   var snap = function () { return JSON.stringify(state); };
-  var dirty = function () { return !!state && snap() !== original; };
+  // Text styles (js/text-style.js) are saved with the page too.
+  var dirty = function () { return !!state && (snap() !== original || !!(window.BubaStyle && window.BubaStyle.dirty())); };
   var TITLE = "nav_work_" + lang, HINT = "work_hint_" + lang;
 
   // ---------- toolbar ----------
@@ -302,10 +303,20 @@
       refreshStatus();
       watchSite();
       showTip(false);
+      loadStyles();
     })
     .catch(function (err) { setStatus(err.status === 401 || err.status === 403 ? T.errAuth : T.errLoad, "error"); });
+  function loadStyles() {
+    var src = launcher.getAttribute("data-ts-src");
+    var go = function () { if (window.BubaStyle) window.BubaStyle.start({ onChange: refreshStatus }).catch(function () { /* styles stay as they are */ }); };
+    if (window.BubaStyle || !src) { go(); return; }
+    var sc = document.createElement("script");
+    sc.src = src; sc.onload = go;
+    document.head.appendChild(sc);
+  }
 
-  window.addEventListener("beforeunload", function (e) { if (dirty()) { e.preventDefault(); e.returnValue = ""; } });
+  var leaving = false;
+  window.addEventListener("beforeunload", function (e) { if (!leaving && dirty()) { e.preventDefault(); e.returnValue = ""; } });
 
   // ---------- page parts ----------
   var area = el("div", { "class": "pe-proj-area pe-work-area" });
@@ -341,7 +352,7 @@
       });
       titleEl.parentNode.appendChild(el("p", { "class": "pe-note pe-title-note", text: T.titleNote }));
     }
-    hintEl = el("p", { "class": "page-hint bottom-hint" });
+    hintEl = el("p", { "class": "page-hint bottom-hint", "data-ts": "work/hint" });
     hintEl.textContent = state.labels[HINT] || (oldHint ? oldHint.textContent : "");
     editable(hintEl, T.hint, function (txt) { var v = clean(txt); if (v) state.labels[HINT] = v; else delete state.labels[HINT]; });
     if (oldHint) oldHint.hidden = true;
@@ -775,7 +786,7 @@
             return api("/contents/" + encPath(w.file.path), { method: "PUT", body: body }).then(function (res) { w.file.sha = res.content.sha; wrote++; });
           });
         });
-        return chain;
+        return chain.then(function () { return window.BubaStyle ? window.BubaStyle.save("projects page") : ""; }).then(function (c) { if (c) { lastCommit = c; wrote++; } });
       })
       .then(function () {
         original = snap();
@@ -792,6 +803,7 @@
   function quit() {
     if (dirty() && !window.confirm(T.leave)) return;
     original = state ? snap() : original;
+    leaving = true;
     location.reload();
   }
 })();

@@ -378,7 +378,8 @@
   // services list (content/services.json). Changed here in the page's language.
   var texts = { labels: {}, services: null }, textsOrig = "", labelsSha = "", servicesSha = "";
   var textsDirty = function () { return !!textsOrig && JSON.stringify(texts) !== textsOrig; };
-  var dirty = function () { return data && (JSON.stringify(data) !== original || hasPageAdds() || renamed().length > 0 || created().length > 0 || textsDirty()); };
+  // Text styles (js/text-style.js) are saved with the homepage too.
+  var dirty = function () { return data && (JSON.stringify(data) !== original || hasPageAdds() || renamed().length > 0 || created().length > 0 || textsDirty() || !!(window.BubaStyle && window.BubaStyle.dirty())); };
   function displayName(p) { return (he ? p.title_he || p.title_en : p.title_en || p.title_he) || p.slug; }
   var projectName = function (slug) { var p = projects.filter(function (x) { return x.slug === slug; })[0]; return p ? p.name : slug; };
   function loadProjects() {
@@ -507,11 +508,20 @@
       last = snapshot();
       refreshStatus();
       watchSite();
+      loadStyles();
     })
     .catch(function (err) {
       setStatus(err.status === 401 || err.status === 403 ? T.errAuth : T.errLoad, "error");
       saveBtn.disabled = true;
     });
+  function loadStyles() {
+    var src = launcher.getAttribute("data-ts-src");
+    var go = function () { if (window.BubaStyle) window.BubaStyle.start({ onChange: refreshStatus }).catch(function () { /* styles stay as they are */ }); };
+    if (window.BubaStyle || !src) { go(); return; }
+    var sc = document.createElement("script");
+    sc.src = src; sc.onload = go;
+    document.head.appendChild(sc);
+  }
 
   var leaving = false;
   window.addEventListener("beforeunload", function (e) {
@@ -1495,7 +1505,9 @@
       })
       .then(saveTexts)
       .then(saveRenames)
-      .then(function () {
+      .then(function () { return window.BubaStyle ? window.BubaStyle.save("homepage") : ""; })
+      .then(function (c) {
+        if (c) lastCommit = c;
         saveBtn.disabled = true;
         followSave(lastCommit);
         render();

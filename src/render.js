@@ -360,7 +360,7 @@ function editBar(ctx, edits, pageEditor = false) {
   // Project pages have their own editor (js/project-editor.js).
   const src = pageEditor === "project" ? `js/project-editor.js?v=${ctx.v.projectEditor}` : pageEditor === "work" ? `js/work-editor.js?v=${ctx.v.workEditor}` : pageEditor === "page" ? `js/page-editor.js?v=${ctx.v.pageEditor}` : `js/editor.js?v=${ctx.v.editor}`;
   const onPage = pageEditor && ctx.site.repo
-    ? `<button type="button" class="edit-bar-page" data-page-editor data-src="${ctx.assetBase}${src}" data-repo="${e(ctx.site.repo)}" data-branch="${e(ctx.site.branch)}" data-tr-src="${ctx.assetBase}js/auto-translate.js?v=${ctx.v.autoTranslate}" data-manage="${makeLink(ctx)("manage/")}">${icon("edit")}<span>${e(t.edit.onPage)}</span></button>`
+    ? `<button type="button" class="edit-bar-page" data-page-editor data-src="${ctx.assetBase}${src}" data-repo="${e(ctx.site.repo)}" data-branch="${e(ctx.site.branch)}" data-tr-src="${ctx.assetBase}js/auto-translate.js?v=${ctx.v.autoTranslate}" data-ts-src="${ctx.assetBase}js/text-style.js?v=${ctx.v.textStyle}" data-manage="${makeLink(ctx)("manage/")}">${icon("edit")}<span>${e(t.edit.onPage)}</span></button>`
     : "";
   const items = edits
     .map(([label, hash, community]) => `<li><a href="${e(community ? communityHref(ctx) : adminHref(ctx, hash))}" target="_blank" rel="noopener">${icon("edit")}<span>${e(label)}</span></a></li>`)
@@ -592,7 +592,7 @@ function home(ctx) {
     <section class="opening" aria-label="BubaPix">${opening ? `
       <div class="opening-hero${openW("h", lay.heroW)}">${cell(0, 1)}</div>` : ""}${feature ? `
       <div class="opening-feature${lay.feature ? ` feature-${lay.feature}` : ""}${openW("f", lay.featureW)}">${feature}</div>` : ""}${data.tagline ? `
-      <p class="tagline opening-tagline">${e(data.tagline)}</p>` : ""}
+      <p class="tagline opening-tagline" data-ts="home/tagline">${e(data.tagline)}</p>` : ""}
     </section>`
     : "";
   // Posters in tight rows of the same height (no empty space under shorter
@@ -645,12 +645,12 @@ function home(ctx) {
     </section>`
     : "";
   const tagline = data.tagline && !openingBlock ? `
-    <p class="tagline">${e(data.tagline)}</p>` : "";
+    <p class="tagline" data-ts="home/tagline">${e(data.tagline)}</p>` : "";
   // Showreel: only when a video link is set in the admin.
   const showreel = data.showreel
     ? `
     <section class="section section-showreel" aria-labelledby="showreel-title">
-      <h2 id="showreel-title" class="section-label">${e(t.home.showreel)}</h2>
+      <h2 id="showreel-title" class="section-label" data-ts="home/showreel-title">${e(t.home.showreel)}</h2>
       ${videoBlock(ctx, { embed: data.showreel, file: "", title: "" }, "BubaPix", null)}
     </section>`
     : "";
@@ -659,11 +659,11 @@ function home(ctx) {
     ? `
     <section class="section home-services" aria-labelledby="home-services-title">
       <div class="section-head">
-        <h2 id="home-services-title" class="section-label">${e(t.nav.services)}</h2>
+        <h2 id="home-services-title" class="section-label" data-ts="home/services-title">${e(t.nav.services)}</h2>
         <a class="text-link" href="${link("services/")}">${e(t.home.allServices)}</a>
       </div>
       <ul class="home-service-list">${data.services.items.map((x) => `
-        <li>${e(x.name)}</li>`).join("")}
+        <li data-ts="home/service">${e(x.name)}</li>`).join("")}
       </ul>
     </section>`
     : "";
@@ -679,7 +679,7 @@ function home(ctx) {
   const intro = data.intro
     ? `
     <section class="section intro" aria-label="${e(t.nav.about)}">
-      <p class="intro-text">${e(data.intro)}</p>
+      <p class="intro-text" data-ts="home/intro">${e(data.intro)}</p>
     </section>`
     : "";
 
@@ -701,7 +701,7 @@ function home(ctx) {
     },
     description: data.seoDescription || data.intro,
     main: `    <h1 class="visually-hidden">BubaPix</h1>${openingBlock}${tagline}${posters}${showreel}${work}${services}${intro}${start}${hint ? `
-    <p class="page-hint bottom-hint">${e(hint)}</p>` : ""}`,
+    <p class="page-hint bottom-hint" data-ts="home/hint">${e(hint)}</p>` : ""}`,
   });
 }
 
@@ -744,9 +744,9 @@ function work(ctx) {
     pageEditor: "work",
     main: `
     <div class="page" data-work-page>
-      <header class="page-head"><h1 class="page-title" data-work-title>${e(t.work.title)}</h1></header>${filters}
+      <header class="page-head"><h1 class="page-title" data-work-title data-ts="work/title">${e(t.work.title)}</h1></header>${filters}
       ${grid}${items.length && t.work.hint ? `
-      <p class="page-hint bottom-hint" data-work-hint>${e(t.work.hint)}</p>` : ""}
+      <p class="page-hint bottom-hint" data-work-hint data-ts="work/hint">${e(t.work.hint)}</p>` : ""}
     </div>`,
   });
 }
@@ -762,7 +762,7 @@ function videoBlock(ctx, v, projectTitle, poster) {
   } else if (v.file) {
     player = `<video controls preload="metadata" playsinline${poster ? ` poster="${ctx.assetBase}${e(poster.src)}"` : ""}><source src="${ctx.assetBase}${e(v.file)}" type="${/\.webm$/i.test(v.file) ? "video/webm" : "video/mp4"}"></video>`;
   }
-  return `<figure class="video-item${v.tall ? " is-tall" : ""}"><div class="video${v.tall ? " video-tall" : ""}">${player}</div>${v.title ? `<figcaption class="video-title">${e(v.title)}</figcaption>` : ""}</figure>`;
+  return `<figure class="video-item${v.tall ? " is-tall" : ""}"><div class="video${v.tall ? " video-tall" : ""}">${player}</div>${v.title ? `<figcaption class="video-title" data-ts="${projectTitle === "BubaPix" ? "home/video-title" : "project/video-title"}">${e(v.title)}</figcaption>` : ""}</figure>`;
 }
 
 // Free sizes (set by dragging in the page editor): each picture has a width in
@@ -827,7 +827,7 @@ function projectSection(ctx, p, sec, i) {
   const id = `section-${i + 1}`;
   const head = (fallback) => {
     const h = sec.heading || fallback;
-    return h ? `<h2 id="${id}" class="section-label">${e(h)}</h2>` : "";
+    return h ? `<h2 id="${id}" class="section-label" data-ts="project/section-title">${e(h)}</h2>` : "";
   };
   const open = (fallback, extra = "") => {
     const h = sec.heading || fallback;
@@ -966,8 +966,8 @@ function project(ctx, p, prev, next) {
   const synopsis = p.description
     ? `
       <section class="project-section" aria-labelledby="synopsis-title">
-        <h2 id="synopsis-title" class="section-label">${e(t.work.synopsis)}</h2>
-        <div class="prose prose-large">${md(p.description)}</div>
+        <h2 id="synopsis-title" class="section-label" data-ts="project/section-title">${e(t.work.synopsis)}</h2>
+        <div class="prose prose-large" data-ts="project/synopsis">${md(p.description)}</div>
       </section>`
     : "";
   const community = (data.participation.comments && p.comments) || data.participation.ratings ? communitySection(ctx, p) : "";
@@ -986,9 +986,9 @@ function project(ctx, p, prev, next) {
     <article class="page project" data-slug="${e(p.slug)}">
       <header class="page-head">
         <p class="crumb"><a href="${link("work/")}">${e(t.work.back)}</a></p>
-        <h1 class="${p.showTitle ? "page-title" : "visually-hidden"}" data-project-title>${e(p.title)}</h1>${cats ? `
+        <h1 class="${p.showTitle ? "page-title" : "visually-hidden"}" data-project-title data-ts="project/title">${e(p.title)}</h1>${cats ? `
         <p class="project-meta">${e(cats)}</p>` : ""}${p.text ? `
-        <p class="lede">${e(p.text)}</p>` : ""}
+        <p class="lede" data-ts="project/lede">${e(p.text)}</p>` : ""}
       </header>${cover}${synopsis}${p.sections.map((sec, i) => projectSection(ctx, p, sec, i)).join("")}${p.products && p.products.length ? `
       <section class="project-section" aria-labelledby="project-shop-title">
         <h2 id="project-shop-title" class="section-label">${e(t.shop.projectShop)}</h2>
@@ -1015,15 +1015,15 @@ function services(ctx) {
     pageEditor: "page",
     main: `
     <div class="page" data-ed-file="content/services.json">
-      <header class="page-head"><h1 class="page-title" data-ed-label="nav_services">${e(t.services.title)}</h1>${s.intro ? `
-        <p class="lede" data-ed="intro">${e(s.intro)}</p>` : ""}</header>
-      <ul class="service-list" data-ed-list="services" data-ed-subs="name,text">${s.items.map((x) => `
-        <li data-ed-item="${x.i}"><h2 data-ed-sub="name">${e(x.name)}</h2>${x.text ? `<p data-ed-sub="text">${e(x.text)}</p>` : ""}</li>`).join("")}
+      <header class="page-head"><h1 class="page-title" data-ed-label="nav_services" data-ts="services/title">${e(t.services.title)}</h1>${s.intro ? `
+        <p class="lede" data-ed="intro" data-ts="services/intro">${e(s.intro)}</p>` : ""}</header>
+      <ul class="service-list" data-ed-list="services" data-ed-subs="name,text" data-ts-subs="services/service-name,services/service-text">${s.items.map((x) => `
+        <li data-ed-item="${x.i}"><h2 data-ed-sub="name" data-ts="services/service-name">${e(x.name)}</h2>${x.text ? `<p data-ed-sub="text" data-ts="services/service-text">${e(x.text)}</p>` : ""}</li>`).join("")}
       </ul>${s.process.length ? `
       <section class="section-inner" aria-labelledby="process-title">
-        <h2 id="process-title" class="section-label" data-ed="process_title">${e(s.processTitle)}</h2>
-        <ol class="steps" data-ed-list="process" data-ed-subs="name,text">${s.process.map((x, i) => `
-          <li data-ed-item="${x.i}"><span class="step-num" data-ed-num>${i + 1}</span><h3 data-ed-sub="name">${e(x.name)}</h3>${x.text ? `<p data-ed-sub="text">${e(x.text)}</p>` : ""}</li>`).join("")}
+        <h2 id="process-title" class="section-label" data-ed="process_title" data-ts="services/process-title">${e(s.processTitle)}</h2>
+        <ol class="steps" data-ed-list="process" data-ed-subs="name,text" data-ts-subs="services/step-name,services/step-text">${s.process.map((x, i) => `
+          <li data-ed-item="${x.i}"><span class="step-num" data-ed-num>${i + 1}</span><h3 data-ed-sub="name" data-ts="services/step-name">${e(x.name)}</h3>${x.text ? `<p data-ed-sub="text" data-ts="services/step-text">${e(x.text)}</p>` : ""}</li>`).join("")}
         </ol>
       </section>` : ""}
     </div>`,
@@ -1043,15 +1043,15 @@ function about(ctx) {
     // change; visitors see the same page. Names of people are not translated.
     main: `
     <div class="page" data-ed-file="content/about.json">
-      <header class="page-head"><h1 class="page-title" data-ed-label="nav_about">${e(t.about.title)}</h1></header>
+      <header class="page-head"><h1 class="page-title" data-ed-label="nav_about" data-ts="about/title">${e(t.about.title)}</h1></header>
       <div class="about-layout">
-        <div class="prose prose-large" data-ed="body" data-multiline>${md(a.body)}</div>
+        <div class="prose prose-large" data-ed="body" data-multiline data-ts="about/body">${md(a.body)}</div>
         ${logo(ctx, t.footer.logoAlt, "logo-full", 'loading="lazy" decoding="async"')}
       </div>${a.team.length ? `
       <section class="section-inner" aria-labelledby="team-title">
-        <h2 id="team-title" class="section-label" data-ed-label="about_team">${e(t.about.team)}</h2>
-        <ul class="team" data-ed-list="team" data-ed-subs="name,role,bio" data-ed-tags="h3,p.muted,p" data-ed-bare-en="name" data-ed-notr="name" data-ed-photo="photo">${a.team.map((m) => `
-          <li data-ed-item="${m.i}">${m.photo ? img(ctx, m.photo, { sizes: "(max-width: 560px) 100vw, 25vw" }) : ""}<h3 data-ed-sub="name">${e(m.name)}</h3>${m.role ? `<p class="muted" data-ed-sub="role">${e(m.role)}</p>` : ""}${m.bio ? `<p data-ed-sub="bio">${e(m.bio)}</p>` : ""}</li>`).join("")}
+        <h2 id="team-title" class="section-label" data-ed-label="about_team" data-ts="about/team-title">${e(t.about.team)}</h2>
+        <ul class="team" data-ed-list="team" data-ed-subs="name,role,bio" data-ed-tags="h3,p.muted,p" data-ed-bare-en="name" data-ed-notr="name" data-ed-photo="photo" data-ts-subs="about/name,about/role,about/bio">${a.team.map((m) => `
+          <li data-ed-item="${m.i}">${m.photo ? img(ctx, m.photo, { sizes: "(max-width: 560px) 100vw, 25vw" }) : ""}<h3 data-ed-sub="name" data-ts="about/name">${e(m.name)}</h3>${m.role ? `<p class="muted" data-ed-sub="role" data-ts="about/role">${e(m.role)}</p>` : ""}${m.bio ? `<p data-ed-sub="bio" data-ts="about/bio">${e(m.bio)}</p>` : ""}</li>`).join("")}
         </ul>
       </section>` : ""}
     </div>`,
@@ -1083,7 +1083,7 @@ function contact(ctx) {
   const mail = (m, field) => `<a class="contact-link" href="mailto:${e(m)}" data-ed="${field}" data-ed-plain data-ed-kind="email" dir="ltr">${e(m)}</a>`;
   const missing = (html) => `<template data-ed-missing>${html}</template>`;
   const emptyMail = (field) => `<a class="contact-link" data-ed="${field}" data-ed-plain data-ed-kind="email" dir="ltr"></a>`;
-  const row = (label, dd) => `<div><dt data-ed-label="${label}">${e(t.contact[label.replace("contact_", "")])}</dt><dd>${dd}</dd></div>`;
+  const row = (label, dd) => `<div><dt data-ed-label="${label}" data-ts="contact/label">${e(t.contact[label.replace("contact_", "")])}</dt><dd>${dd}</dd></div>`;
   const mails = c.email || c.email2
     ? row("contact_email", [c.email ? mail(c.email, "email") : missing(emptyMail("email")), c.email2 ? mail(c.email2, "email_2") : missing(`<br>${emptyMail("email_2")}`)].join(c.email && c.email2 ? "<br>" : ""))
     : missing(row("contact_email", `${emptyMail("email")}<br>${emptyMail("email_2")}`));
@@ -1091,10 +1091,10 @@ function contact(ctx) {
     ? row("contact_phone", `<a class="contact-link" href="tel:${e(c.phone.replace(/[^\d+]/g, ""))}" data-ed="phone" data-ed-plain data-ed-kind="phone" dir="ltr">${e(c.phone)}</a>`)
     : missing(row("contact_phone", `<a class="contact-link" data-ed="phone" data-ed-plain data-ed-kind="phone" dir="ltr"></a>`));
   const location = c.location
-    ? row("contact_location", `<span data-ed="location">${e(c.location)}</span>`)
-    : missing(row("contact_location", `<span data-ed="location"></span>`));
+    ? row("contact_location", `<span data-ed="location" data-ts="contact/location">${e(c.location)}</span>`)
+    : missing(row("contact_location", `<span data-ed="location" data-ts="contact/location"></span>`));
   const social = c.social.length
-    ? `<div><dt data-ed-label="contact_social">${e(t.contact.social)}</dt><dd>${socialList(ctx, "social social-named", true)}</dd></div>`
+    ? `<div><dt data-ed-label="contact_social" data-ts="contact/label">${e(t.contact.social)}</dt><dd>${socialList(ctx, "social social-named", true)}</dd></div>`
     : "";
   const any = c.email || c.email2 || c.phone || c.location || social;
   return layout(ctx, {
@@ -1106,14 +1106,14 @@ function contact(ctx) {
     pageEditor: "page",
     main: `
     <div class="page" data-ed-file="content/contact.json">
-      <header class="page-head"><h1 class="page-title" data-ed-label="nav_contact">${e(t.contact.title)}</h1>${c.intro ? `
-        <p class="lede" data-ed="intro">${e(c.intro)}</p>` : ""}</header>
+      <header class="page-head"><h1 class="page-title" data-ed-label="nav_contact" data-ts="contact/title">${e(t.contact.title)}</h1>${c.intro ? `
+        <p class="lede" data-ed="intro" data-ts="contact/intro">${e(c.intro)}</p>` : ""}</header>
       ${any || !data.participation.consult
         ? `<dl class="contact-list">${mails}${phone}${location}${social}</dl>${any ? "" : `<p class="muted">${e(t.contact.pending)}</p>`}`
         : ""}${data.participation.consult ? `
       <section class="section-inner community" aria-labelledby="consult-title">
-        <h2 id="consult-title" class="section-label" data-ed-label="consult_title">${e(t.consult.title)}</h2>
-        <p class="lede" data-ed-label="consult_intro">${e(t.consult.intro)}</p>
+        <h2 id="consult-title" class="section-label" data-ed-label="consult_title" data-ts="contact/consult-title">${e(t.consult.title)}</h2>
+        <p class="lede" data-ed-label="consult_intro" data-ts="contact/consult-intro">${e(t.consult.intro)}</p>
         ${noscript(ctx)}
         <div class="community-body" data-community hidden>
           ${participationForm(ctx, "consult")}
@@ -1297,7 +1297,7 @@ function shop(ctx) {
         ${data.products.map((x) => productCard(ctx, x)).join("\n        ")}
       </div>`
     : `
-      <p class="shop-empty" data-ed-label="shop_empty">${e(t.shop.empty)}</p>`;
+      <p class="shop-empty" data-ed-label="shop_empty" data-ts="shop/empty">${e(t.shop.empty)}</p>`;
   // The owner's page editor (js/page-editor.js): title, opening line, and the
   // categories (name and picture) as a list that is shown only while editing,
   // in place of the category strip (data-ed-hide). New products are added
@@ -1314,8 +1314,8 @@ function shop(ctx) {
     pageEditor: "page",
     main: `
     <div class="page" data-ed-file="content/shop.json">
-      <header class="page-head shop-head"><h1 class="page-title" data-ed-label="nav_shop">${e(t.shop.title)}</h1>${orderLink(ctx)}${data.shop.intro ? `
-        <p class="lede" data-ed="intro">${e(data.shop.intro)}</p>` : ""}</header>${filters}${catEditor}${data.products.some((x) => x.priceText) ? currencyPicker(ctx) : ""}${grid}
+      <header class="page-head shop-head"><h1 class="page-title" data-ed-label="nav_shop" data-ts="shop/title">${e(t.shop.title)}</h1>${orderLink(ctx)}${data.shop.intro ? `
+        <p class="lede" data-ed="intro" data-ts="shop/intro">${e(data.shop.intro)}</p>` : ""}</header>${filters}${catEditor}${data.products.some((x) => x.priceText) ? currencyPicker(ctx) : ""}${grid}
     </div>`,
     shopScript: true,
   });
@@ -1412,7 +1412,7 @@ function product(ctx, x) {
         <div class="pe-photos-box"><ul class="pe-photos" data-ed-list="images" data-ed-subs="alt" data-ed-tags="p" data-ed-photo="image" data-ed-photo-main><li data-ed-item="0"><p data-ed-sub="alt"></p></li></ul></div>`)}
         <div class="product-info">${x.example ? `
           <p class="example-badge">${e(t.shop.exampleBadge)}</p>` : ""}
-          <h1 class="page-title product-title"${editing ? ' data-ed="title"' : ""}>${e(x.title)}</h1>
+          <h1 class="page-title product-title"${editing ? ' data-ed="title"' : ""} data-ts="product/title">${e(x.title)}</h1>
           <p class="product-sub">${sub.map(e).join(" · ")}</p>
           <div class="buy-box">${x.priceText ? `
             <p class="buy-price"><span${priceAttrs(x.price, x.currency, x.priceFrom)}>${x.priceFrom ? fromPrefix(ctx) : ""}${e(x.priceText)}</span>${vatNote(ctx)}</p>` : ""}
@@ -1420,11 +1420,11 @@ function product(ctx, x) {
             <div class="product-action">${action}</div>` : ""}${rows.length ? `
             <dl class="buy-rows">${rows.join("")}</dl>` : ""}
           </div>${x.description ? `
-          <div class="prose product-description"${editing ? " data-ed=\"description\" data-multiline" : ""}>${md(x.description)}</div>` : missing(`
-          <div class="prose product-description" data-ed="description" data-multiline></div>`)}${missing(`
-          <ul class="pe-details" data-ed-list="details" data-ed-subs="title,text" data-ed-tags="h3,p" data-ed-multi="text"><li data-ed-item="0"><h3 data-ed-sub="title"></h3><p data-ed-sub="text"></p></li></ul>`)}${x.details.length || sh.returns ? `
+          <div class="prose product-description"${editing ? " data-ed=\"description\" data-multiline" : ""} data-ts="product/description">${md(x.description)}</div>` : missing(`
+          <div class="prose product-description" data-ed="description" data-multiline data-ts="product/description"></div>`)}${missing(`
+          <ul class="pe-details" data-ed-list="details" data-ed-subs="title,text" data-ed-tags="h3,p" data-ed-multi="text" data-ts-subs="product/detail-title,product/detail-text"><li data-ed-item="0"><h3 data-ed-sub="title" data-ts="product/detail-title"></h3><p data-ed-sub="text" data-ts="product/detail-text"></p></li></ul>`)}${x.details.length || sh.returns ? `
           <div class="product-more">${x.details.map((d) => `
-            <details${hide}><summary>${e(d.title)}</summary><div class="prose">${md(d.text)}</div></details>`).join("")}${sh.returns ? `
+            <details${hide}><summary data-ts="product/detail-title">${e(d.title)}</summary><div class="prose" data-ts="product/detail-text">${md(d.text)}</div></details>`).join("")}${sh.returns ? `
             <details><summary>${e(t.shop.returnsTitle)}</summary><div class="prose">${md(sh.returns)}</div></details>` : ""}
           </div>` : ""}${x.variants.length ? `
           <dl class="details product-variants">${x.variants.map((v) => `<div><dt>${e(v.name)}</dt><dd>${v.values.map(e).join(" · ")}</dd></div>`).join("")}</dl>` : ""}${x.projects.length ? `

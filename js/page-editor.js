@@ -73,6 +73,7 @@
     openManage: "לכלי הניהול",
     errLoad: "לא הצלחתי לטעון את הדף מ־GitHub.",
     errSave: "השמירה נכשלה. שום דבר לא נשמר, והאתר לא השתנה.",
+    errPartial: "חלק מהשינויים נשמרו וחלק לא (אולי קובץ השתנה בינתיים במקום אחר). צאו מהעריכה, רעננו את הדף ובדקו מה חסר.",
     errChanged: "קובץ של הדף השתנה בינתיים במקום אחר (למשל בכלי הניהול או בעורך אחר). כדי לא למחוק את השינוי ההוא, לא שמרתי. צאו מהעריכה, רעננו את הדף ונסו שוב.",
     errAuth: "הכניסה פגה או שאין הרשאה. היכנסו מחדש לכלי הניהול ונסו שוב.",
     leave: "יש שינויים שלא נשמרו. לצאת בכל זאת?",
@@ -132,6 +133,7 @@
     openManage: "Open the admin panel",
     errLoad: "Could not load the page from GitHub.",
     errSave: "Saving failed. Nothing was saved, and the site did not change.",
+    errPartial: "Some changes were saved and some were not (perhaps a file changed elsewhere meanwhile). Leave editing, reload the page and check what is missing.",
     errChanged: "A file of this page was changed elsewhere in the meantime (for example in the admin panel or another editor). To keep that change, nothing was saved. Leave editing, reload the page and try again.",
     errAuth: "The sign-in expired or has no permission. Sign in to the admin panel again and retry.",
     leave: "There are unsaved changes. Leave anyway?",
@@ -230,7 +232,9 @@
   // ---------- state ----------
   var state = null, original = "", sha = "", labelsSha = "";
   var snap = function () { return JSON.stringify(state); };
-  var dirty = function () { return !!state && snap() !== original; };
+  // Text styles (size, alignment, spacing, font: js/text-style.js) are saved with the page.
+  var styleDirty = function () { return !!(window.BubaStyle && window.BubaStyle.dirty()); };
+  var dirty = function () { return !!state && (snap() !== original || styleDirty()); };
 
   // ---------- toolbar ----------
   var status = el("span", { "class": "pe-status", role: "status", "aria-live": "polite" });
@@ -313,8 +317,17 @@
       refreshStatus();
       watchSite();
       showTip(false);
+      loadStyles();
     })
     .catch(function (err) { setStatus(err.status === 401 || err.status === 403 ? T.errAuth : T.errLoad, "error"); });
+  function loadStyles() {
+    var src = launcher.getAttribute("data-ts-src");
+    var go = function () { if (window.BubaStyle) window.BubaStyle.start({ onChange: refreshStatus }).catch(function () { /* styles stay as they are */ }); };
+    if (window.BubaStyle || !src) { go(); return; }
+    var sc = document.createElement("script");
+    sc.src = src; sc.onload = go;
+    document.head.appendChild(sc);
+  }
 
   var leaving = false;
   window.addEventListener("beforeunload", function (e) { if (!leaving && dirty()) { e.preventDefault(); e.returnValue = ""; } });
@@ -361,7 +374,8 @@
     var key = node.getAttribute("data-ed-label") + "_" + lang, usual = node.textContent;
     parts.push({ node: node, get: function () { return state.labels[key] || usual; } });
     editable(node, T.textHint, function (v) { if (v) state.labels[key] = v; else delete state.labels[key]; }, function () {
-      if (!state.labels[key]) { node.textContent = usual; setStatus(T.emptyBack, "warn"); }
+      // Only a text left empty goes back to the usual one (leaving it untouched is fine).
+      if (!clean(node.innerText)) { node.textContent = usual; setStatus(T.emptyBack, "warn"); }
     });
     if (node.tagName === "H1") node.parentNode.insertBefore(el("p", { "class": "pe-note pe-title-note", text: T.titleNote }), node.nextSibling);
   }
@@ -387,7 +401,7 @@
     // An opening line that is empty today still gets a place to write it.
     if (!box.querySelector('[data-ed="intro"]')) {
       var head = box.querySelector(".page-head");
-      if (head && "intro_" + lang in state.file) head.appendChild(el("p", { "class": "lede", "data-ed": "intro" }));
+      if (head && "intro_" + lang in state.file) head.appendChild(el("p", { "class": "lede", "data-ed": "intro", "data-ts": PAGE + "/intro" }));
     }
     Array.prototype.forEach.call(box.querySelectorAll("[data-ed]"), function (n) { if (!n.closest("[data-ed-list]")) fieldPart(n); });
     Array.prototype.forEach.call(box.querySelectorAll("[data-ed-list]"), function (n) {
@@ -396,7 +410,7 @@
       var field = n.getAttribute("data-ed-list");
       lists.push({ node: n, field: field, subs: (n.getAttribute("data-ed-subs") || "name").split(","), tpl: tpl ? tpl.cloneNode(true) : el("li"),
         tags: words("data-ed-tags"), bare: words("data-ed-bare-en"), notr: words("data-ed-notr"), photo: n.getAttribute("data-ed-photo") || "",
-        photoMain: n.hasAttribute("data-ed-photo-main"), multi: words("data-ed-multi"), slug: n.getAttribute("data-ed-slug") || "" });
+        photoMain: n.hasAttribute("data-ed-photo-main"), multi: words("data-ed-multi"), slug: n.getAttribute("data-ed-slug") || "", ts: words("data-ts-subs") });
       // A list shown only while editing gets its own heading and a short explanation.
       if (T["list_" + field]) {
         n.parentNode.insertBefore(el("h2", { "class": "section-label pe-list-title", text: T["list_" + field] }), n);
@@ -440,7 +454,7 @@
         }
         L.subs.forEach(function (sub, k) {
           var n = li.querySelector('[data-ed-sub="' + sub + '"]');
-          if (!n) { n = tagFor(L, k); n.setAttribute("data-ed-sub", sub); li.appendChild(n); }
+          if (!n) { n = tagFor(L, k); n.setAttribute("data-ed-sub", sub); if (L.ts[k]) n.setAttribute("data-ts", L.ts[k]); li.appendChild(n); }
           var key = keyOf(L, sub, lang);
           n.textContent = it[key] || "";
           var shared = L.notr.indexOf(sub) >= 0;
@@ -937,12 +951,13 @@
             return api("/contents/" + encPath(j.path), { method: "PUT", body: body }).then(function (res) { j.set(res.content.sha); wrote++; });
           });
         });
-        return chain;
+        // The text styles last (only when they changed).
+        return chain.then(function () { return window.BubaStyle ? window.BubaStyle.save(PAGE) : ""; }).then(function (c) { if (c) { lastCommit = c; wrote++; } });
       })
       .then(function () { original = snap(); saveBtn.disabled = true; followSave(lastCommit, note, tr.failed); })
       .catch(function (err) {
         saveBtn.disabled = false;
-        if (wrote) { setStatus(T.errSave, "error"); return; }
+        if (wrote) { setStatus(T.errPartial, "error"); return; }
         setStatus(err.changed || err.status === 409 ? T.errChanged : err.status === 401 || err.status === 403 ? T.errAuth : T.errSave, "error");
       });
   }
