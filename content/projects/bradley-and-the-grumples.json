@@ -35,7 +35,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/white-creatures-swimming.jpg",
@@ -49,7 +50,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/white-bow-creature-turnaround.jpg",
@@ -63,7 +65,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/white-creatures-rope.jpg",
@@ -77,7 +80,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/pink-creature-speech-bubbles.jpg",
@@ -91,7 +95,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/grumpy-white-creature-views.jpg",
@@ -105,7 +110,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/pink-bow-creature-turnaround.jpg",
@@ -119,7 +125,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/mohawk-creature-sheet.jpg",
@@ -133,7 +140,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/sphere-creature-sheet.jpg",
@@ -147,7 +155,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/bradley-expressions.png",
@@ -161,7 +170,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/scientist-creature-turnaround.jpg",
@@ -175,7 +185,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/pilot-creature-sheet.jpg",
@@ -189,7 +200,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/glasses-creature-sheet.jpg",
@@ -203,7 +215,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 52
         },
         {
           "image": "/assets/work/bradley-sailing-vertical.jpg",
@@ -217,7 +230,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 16
         },
         {
           "image": "/assets/work/bradley-poster-2.png",
@@ -231,7 +245,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 29
         },
         {
           "image": "/assets/work/creatures-around-boat.jpg",
@@ -245,7 +260,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 54
         },
         {
           "image": "/assets/work/grumpy-gray-trio.png",
@@ -259,7 +275,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 45
         },
         {
           "image": "/assets/work/creatures-pull-boat-beach.jpg",
@@ -273,7 +290,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/creatures-pull-boat-rocks.png",
@@ -287,7 +305,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/chef-creature-turnaround.jpg",
@@ -301,7 +320,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/star-glasses-creature-turnaround.jpg",
@@ -315,7 +335,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 63
         },
         {
           "image": "/assets/work/swimsuit-creature-sheet.jpg",
@@ -329,7 +350,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 35
         },
         {
           "image": "/assets/work/teacher-creature-sheet.jpg",
@@ -343,7 +365,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/beanie-creature-sheet.jpg",
@@ -357,7 +380,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/grumples-village.jpg",
@@ -371,7 +395,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/flute-creature-turnaround.jpg",
@@ -385,7 +410,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/meditating-creature-sheet.jpg",
@@ -399,7 +425,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/spherical-creature-sheet.jpg",
@@ -413,7 +440,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/astronaut-creature-sheet.jpg",
@@ -427,7 +455,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/scientist-creature-microscope-sheet.jpg",
@@ -441,7 +470,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/tambourine-creature-turnaround.jpg",
@@ -455,7 +485,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/creatures-tow-boat-sea.jpg",
@@ -469,7 +500,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/bow-creature-gray-turnaround.png",
@@ -483,7 +515,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/zoo-lollipop-scene.jpg",
@@ -497,7 +530,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/zoo-do-not-feed-scene.jpg",
@@ -511,7 +545,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/maintenance-creature-sheet.jpg",
@@ -525,7 +560,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/zoo-map-scene.jpg",
@@ -539,7 +575,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/bradley-binoculars.jpg",
@@ -553,7 +590,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/furry-characters-lineup.png",
@@ -567,7 +605,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/plush-characters-lineup-1.png",
@@ -581,7 +620,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/plush-characters-lineup-2.png",
@@ -595,7 +635,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/character-lineup.png",
@@ -609,7 +650,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/plush-characters-lineup-3.png",
@@ -623,7 +665,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/plush-characters-lineup-4.png",
@@ -637,7 +680,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         }
       ]
     }
