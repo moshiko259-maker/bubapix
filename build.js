@@ -680,6 +680,7 @@ const assetVersion = {
   textStyle: fileVersion(["js/text-style.js"]),
   previewPublish: fileVersion(["js/preview-publish.js"]),
   history: fileVersion(["js/history.js"]),
+  editorCore: fileVersion(["js/editor-core.js"]),
 };
 
 function contextFor(lang, pagePath, data) {

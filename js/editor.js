@@ -17,15 +17,19 @@
  */
 (function () {
   "use strict";
+  // The parts all the editors share (js/editor-core.js, loaded first by js/main.js).
+  var core = window.BubaCore;
+  if (!core) return;
   if (window.__bubapixPageEditor) return;
   window.__bubapixPageEditor = true;
+  var el = core.el, button = core.button, token = core.token;
+  var utf8ToB64 = core.utf8ToB64, b64ToUtf8 = core.b64ToUtf8, readB64 = core.readB64;
 
   var launcher = document.querySelector("[data-page-editor]");
   if (!launcher) return;
   var REPO = launcher.getAttribute("data-repo");
   var BRANCH = launcher.getAttribute("data-branch");
   var FILE = "content/site.json";
-  var API = "https://api.github.com/repos/" + REPO;
   var lang = document.documentElement.lang === "he" ? "he" : "en";
   var he = lang === "he";
 
@@ -109,14 +113,7 @@
     history: "גרסאות קודמות",
     historyTitle: "גרסאות קודמות של דף הבית",
     historyNote: "בחירה בגרסה טוענת אותה לדף כשינוי שלא נשמר. רק ״שמירה״ קובעת. אפשר לבטל עם ״ביטול פעולה״.",
-    historyLoading: "טוען גרסאות…",
-    historyEmpty: "לא נמצאו גרסאות קודמות.",
-    historyUse: "טעינת הגרסה הזאת",
     historyLoaded: "גרסה קודמת נטענה לדף. בדקו ולחצו ״שמירה״ כדי לקבוע אותה.",
-    msgPage: "עריכה על הדף",
-    msgAdmin: "כלי הניהול",
-    msgBuild: "עדכון אוטומטי",
-    msgOther: "שינוי",
     publishing: "נשמר ✓ אתר הבדיקה מתעדכן עכשיו (בדרך כלל עד כמה דקות). אפשר להמשיך לעבוד.",
     published: "האתר עודכן ✓",
     reload: "רעננו כדי לראות",
@@ -221,14 +218,7 @@
     history: "Earlier versions",
     historyTitle: "Earlier versions of the homepage",
     historyNote: "Choosing a version loads it onto the page as an unsaved change. Only \"Save\" makes it final. You can undo it.",
-    historyLoading: "Loading versions…",
-    historyEmpty: "No earlier versions found.",
-    historyUse: "Load this version",
     historyLoaded: "An earlier version is loaded on the page. Check it and press \"Save\" to keep it.",
-    msgPage: "Edited on the page",
-    msgAdmin: "Admin panel",
-    msgBuild: "Automatic update",
-    msgOther: "Change",
     publishing: "Saved ✓ The test site is updating now (usually a few minutes). You can keep working.",
     published: "The site is updated ✓",
     reload: "Reload to see it",
@@ -256,22 +246,6 @@
   };
 
   // ---------- small helpers ----------
-  function el(tag, attrs, kids) {
-    var n = document.createElement(tag);
-    Object.keys(attrs || {}).forEach(function (k) {
-      if (k === "text") n.textContent = attrs[k];
-      else if (k.slice(0, 2) === "on") n.addEventListener(k.slice(2), attrs[k]);
-      else n.setAttribute(k, attrs[k]);
-    });
-    (kids || []).forEach(function (c) { if (c) n.appendChild(c); });
-    return n;
-  }
-  function button(label, onClick, cls, title) {
-    // A name for screen readers only when the button shows a sign and no words.
-    var a = { type: "button", "class": cls || "pe-btn", text: label, title: title || label, onclick: onClick };
-    if (title && !/[A-Za-z\u0590-\u05FF]/.test(label)) a["aria-label"] = title;
-    return el("button", a);
-  }
   function select(label, value, options, onChange) {
     var s = el("select", { "aria-label": label, title: label, "class": "pe-select" });
     options.forEach(function (o) {
@@ -282,39 +256,7 @@
     s.addEventListener("change", function () { onChange(s.value); });
     return s;
   }
-  function token() {
-    try {
-      var u = JSON.parse(localStorage.getItem("sveltia-cms.user") || "null");
-      if (u && typeof u.token === "string" && u.token) return u.token;
-    } catch (e) { /* storage blocked */ }
-    return "";
-  }
-  function utf8ToB64(str) {
-    var bytes = new TextEncoder().encode(str), bin = "";
-    for (var i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-    return btoa(bin);
-  }
-  function b64ToUtf8(b64) {
-    var bin = atob(b64.replace(/\s/g, "")), bytes = new Uint8Array(bin.length);
-    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    return new TextDecoder().decode(bytes);
-  }
-  function api(path, opts) {
-    opts = opts || {};
-    var headers = { "Accept": "application/vnd.github+json", "Authorization": "token " + token() };
-    if (opts.body) headers["Content-Type"] = "application/json";
-    return fetch(API + path, { method: opts.method || "GET", headers: headers, body: opts.body ? JSON.stringify(opts.body) : undefined, cache: "no-store" })
-      .then(function (res) {
-        return res.text().then(function (txt) {
-          var data = null;
-          try { data = txt ? JSON.parse(txt) : null; } catch (e) { data = null; }
-          if (!res.ok) { var err = new Error("GitHub " + res.status); err.status = res.status; err.data = data; throw err; }
-          // Remember the newest saved version, to tell when the site shows it.
-          if (opts.method === "PUT" && data && data.commit && data.commit.sha) lastCommit = data.commit.sha;
-          return data;
-        });
-      });
-  }
+  var api = core.github(launcher, function (sha) { lastCommit = sha; }).api;
   var encPath = function (p) { return p.split("/").map(encodeURIComponent).join("/"); };
 
   // Where the site's files are (the page may live in a sub-folder).
@@ -514,17 +456,7 @@
       setStatus(err.status === 401 || err.status === 403 ? T.errAuth : T.errLoad, "error");
       saveBtn.disabled = true;
     });
-  function loadStyles() {
-    // Also: publishing the test site right after a save (js/preview-publish.js).
-    var pp = launcher.getAttribute("data-pp-src");
-    if (pp && !window.BubaPublish) { var ps = document.createElement("script"); ps.src = pp; document.head.appendChild(ps); }
-    var src = launcher.getAttribute("data-ts-src");
-    var go = function () { if (window.BubaStyle) window.BubaStyle.start({ onChange: refreshStatus }).catch(function () { /* styles stay as they are */ }); };
-    if (window.BubaStyle || !src) { go(); return; }
-    var sc = document.createElement("script");
-    sc.src = src; sc.onload = go;
-    document.head.appendChild(sc);
-  }
+  function loadStyles() { core.loadStyles(launcher, refreshStatus); }
 
   var leaving = false;
   window.addEventListener("beforeunload", function (e) {
@@ -1355,47 +1287,21 @@
 
   // ---------- earlier versions (like "site history" in website builders) ----------
   function historyPanel() {
-    var listBox = el("div", { "class": "pe-hist-list" }, [el("p", { "class": "pe-note", text: T.historyLoading })]);
-    var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": T.historyTitle }, [
-      el("div", { "class": "pe-modal-box pe-proj-box" }, [
-        el("div", { "class": "pe-modal-head" }, [el("strong", { text: T.historyTitle }), button(T.close, function () { close(); }, "pe-btn pe-ghost")]),
-        el("div", { "class": "pe-proj-scroll" }, [el("p", { "class": "pe-note", text: T.historyNote }), listBox]),
-      ]),
-    ]);
-    function close() { dialog.remove(); document.removeEventListener("keydown", onKey); }
-    function onKey(e) { if (e.key === "Escape") close(); }
-    document.addEventListener("keydown", onKey);
-    document.body.appendChild(dialog);
-    var fmt;
-    try { fmt = new Intl.DateTimeFormat(he ? "he-IL" : "en-GB", { dateStyle: "medium", timeStyle: "short" }); } catch (e) { fmt = null; }
-    api("/commits?path=" + encodeURIComponent(FILE) + "&sha=" + encodeURIComponent(BRANCH) + "&per_page=20")
-      .then(function (list) {
-        listBox.textContent = "";
-        if (!Array.isArray(list) || !list.length) { listBox.appendChild(el("p", { "class": "pe-note", text: T.historyEmpty })); return; }
-        list.forEach(function (c, i) {
-          var msg = (c.commit && c.commit.message || "").split("\n")[0];
-          var kind = /edited on the page/i.test(msg) ? T.msgPage : /^Update |^Create |^Delete |admin/i.test(msg) ? T.msgAdmin : /^Rebuild/i.test(msg) ? T.msgBuild : T.msgOther;
-          var when = c.commit && c.commit.author && c.commit.author.date ? new Date(c.commit.author.date) : null;
-          var row = el("div", { "class": "pe-hist-row" }, [
-            el("div", {}, [
-              el("strong", { text: when ? (fmt ? fmt.format(when) : when.toLocaleString()) : "" }),
-              el("span", { "class": "pe-note", text: " · " + kind + (i === 0 ? (he ? " (הנוכחית)" : " (current)") : "") }),
-            ]),
-            i === 0 ? null : button(T.historyUse, function () {
-              api("/contents/" + encPath(FILE) + "?ref=" + encodeURIComponent(c.sha)).then(function (res) {
-                var old = JSON.parse(b64ToUtf8(res.content));
-                if (!Array.isArray(old.gallery)) old.gallery = [];
-                data = old;
-                close();
-                changed(); syncPage();
-                setStatus(T.historyLoaded, "warn");
-              }).catch(function () { setStatus(T.errLoad, "error"); });
-            }),
-          ]);
-          listBox.appendChild(row);
+    core.history(launcher, {
+      api: api, path: FILE, branch: BRANCH, title: T.historyTitle, note: T.historyNote,
+      load: function (commitSha) {
+        return api("/contents/" + encPath(FILE) + "?ref=" + encodeURIComponent(commitSha)).then(function (res) {
+          var old = JSON.parse(b64ToUtf8(res.content));
+          if (!old || typeof old !== "object" || Array.isArray(old)) throw new Error("bad file");
+          if (!Array.isArray(old.gallery)) old.gallery = [];
+          data = old;
+          changed(); syncPage();
         });
-      })
-      .catch(function () { listBox.textContent = ""; listBox.appendChild(el("p", { "class": "pe-note", text: T.errLoad })); });
+      },
+      onLoaded: function () { setStatus(T.historyLoaded, "warn"); },
+      onError: function () { setStatus(T.errLoad, "error"); },
+      onMissing: function () { setStatus(T.errLoad, "error"); },
+    });
   }
 
   // ---------- first-time tips ----------
@@ -1417,40 +1323,9 @@
   // ---------- after saving: is the test site updated yet? ----------
   // The test site writes the work-branch version it shows into version.txt.
   // After a save we check it every 20 seconds and say when the change is live.
-  var siteWatch = { available: false, savedCommit: "", timer: 0, started: 0 };
-  function versionUrl() { return BASE + "version.txt"; }
-  function readVersion() {
-    return fetch(versionUrl() + "?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) { return /^[0-9a-f]{40}$/.test(t.trim()) ? t.trim() : ""; }).catch(function () { return ""; });
-  }
-  function watchSite() { readVersion().then(function (v) { siteWatch.available = !!v; }); }
-  function followSave(commitSha) {
-    if (window.BubaPublish && commitSha) window.BubaPublish.after(commitSha);
-    if (!siteWatch.available || !commitSha) { setStatus(T.saved + trNote(), trKind()); return; }
-    siteWatch.savedCommit = commitSha; siteWatch.started = Date.now();
-    setStatus(T.publishing + trNote(), trKind());
-    clearTimeout(siteWatch.timer);
-    var check = function () {
-      if (siteWatch.savedCommit !== commitSha) return;
-      readVersion().then(function (live) {
-        if (!live) return false;
-        if (live === commitSha) return true;
-        return api("/compare/" + commitSha + "..." + live).then(function (c) { return c && (c.status === "ahead" || c.status === "identical"); }).catch(function () { return false; });
-      }).then(function (done) {
-        if (siteWatch.savedCommit !== commitSha) return;
-        if (done) {
-          if (dirty()) { setStatus(T.published + " · " + T.unsaved, "warn"); return; }
-          status.textContent = "";
-          status.className = "pe-status is-ok";
-          status.appendChild(document.createTextNode(T.published + " "));
-          status.appendChild(button(T.reload, function () { original = JSON.stringify(data); location.reload(); }, "pe-btn"));
-          return;
-        }
-        if (Date.now() - siteWatch.started > 15 * 60 * 1000) { setStatus(T.slow, "warn"); return; }
-        siteWatch.timer = setTimeout(check, 20000);
-      });
-    };
-    siteWatch.timer = setTimeout(check, 20000);
-  }
+  var watcher = core.siteWatch({ base: BASE, api: api, T: T, status: status, setStatus: setStatus, dirty: dirty, beforeReload: function () { original = JSON.stringify(data); } });
+  function watchSite() { watcher.watch(); }
+  function followSave(commitSha) { watcher.follow(commitSha, trNote(), trKind()); }
 
   // ---------- save ----------
   var lastCommit = "";
@@ -1568,14 +1443,6 @@
         .then(function () { pageAdds[slug] = []; });
     });
     return chain;
-  }
-  function readB64(file) {
-    return new Promise(function (resolve, reject) {
-      var r = new FileReader();
-      r.onload = function () { resolve(String(r.result).split(",")[1] || ""); };
-      r.onerror = function () { reject(r.error); };
-      r.readAsDataURL(file);
-    });
   }
 
   function quit() {

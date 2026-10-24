@@ -23,8 +23,13 @@
  */
 (function () {
   "use strict";
+  // The parts all the editors share (js/editor-core.js, loaded first by js/main.js).
+  var core = window.BubaCore;
+  if (!core) return;
   if (window.__bubapixPageEditor) return;
   window.__bubapixPageEditor = true;
+  var el = core.el, button = core.button, token = core.token;
+  var utf8ToB64 = core.utf8ToB64, b64ToUtf8 = core.b64ToUtf8, readB64 = core.readB64;
 
   var launcher = document.querySelector("[data-page-editor]");
   var article = document.querySelector("article.project[data-slug]");
@@ -34,7 +39,6 @@
   var SLUG = article.getAttribute("data-slug");
   if (!/^[a-z0-9][a-z0-9-]*$/.test(SLUG || "")) return;
   var FILE = "content/projects/" + SLUG + ".json";
-  var API = "https://api.github.com/repos/" + REPO;
   var lang = document.documentElement.lang === "he" ? "he" : "en";
   var he = lang === "he";
 
@@ -249,55 +253,8 @@
   };
 
   // ---------- small helpers ----------
-  function el(tag, attrs, kids) {
-    var n = document.createElement(tag);
-    Object.keys(attrs || {}).forEach(function (k) {
-      if (k === "text") n.textContent = attrs[k];
-      else if (k.slice(0, 2) === "on") n.addEventListener(k.slice(2), attrs[k]);
-      else n.setAttribute(k, attrs[k]);
-    });
-    (kids || []).forEach(function (c) { if (c) n.appendChild(c); });
-    return n;
-  }
-  function button(label, onClick, cls, title) {
-    // A name for screen readers only when the button shows a sign and no words.
-    var a = { type: "button", "class": cls || "pe-btn", text: label, title: title || label, onclick: onClick };
-    if (title && !/[A-Za-z\u0590-\u05FF]/.test(label)) a["aria-label"] = title;
-    return el("button", a);
-  }
-  function token() {
-    try {
-      var u = JSON.parse(localStorage.getItem("sveltia-cms.user") || "null");
-      if (u && typeof u.token === "string" && u.token) return u.token;
-    } catch (e) { /* storage blocked */ }
-    return "";
-  }
-  function utf8ToB64(str) {
-    var bytes = new TextEncoder().encode(str), bin = "";
-    for (var i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-    return btoa(bin);
-  }
-  function b64ToUtf8(b64) {
-    var bin = atob(b64.replace(/\s/g, "")), bytes = new Uint8Array(bin.length);
-    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    return new TextDecoder().decode(bytes);
-  }
   var lastCommit = "";
-  function api(path, opts) {
-    opts = opts || {};
-    var headers = { "Accept": "application/vnd.github+json", "Authorization": "token " + token() };
-    if (opts.body) headers["Content-Type"] = "application/json";
-    return fetch(API + path, { method: opts.method || "GET", headers: headers, body: opts.body ? JSON.stringify(opts.body) : undefined, cache: "no-store" })
-      .then(function (res) {
-        return res.text().then(function (txt) {
-          var data = null;
-          try { data = txt ? JSON.parse(txt) : null; } catch (e) { data = null; }
-          if (!res.ok) { var err = new Error("GitHub " + res.status); err.status = res.status; err.data = data; throw err; }
-          if (opts.method === "PUT" && data && data.commit && data.commit.sha) lastCommit = data.commit.sha;
-          return data;
-        });
-      });
-  }
+  var api = core.github(launcher, function (sha) { lastCommit = sha; }).api;
   var encPath = function (p) { return p.split("/").map(encodeURIComponent).join("/"); };
   var ref = "?ref=" + encodeURIComponent(BRANCH);
 
@@ -355,19 +312,12 @@
   var histBtn = button(T.history, openHistory, "pe-btn pe-ghost");
   histBtn.disabled = true;
   function openHistory() {
-    var src = launcher.getAttribute("data-hist-src");
-    var go = function () {
-      if (!window.BubaHistory) { setStatus(T.historyFailed, "error"); return; }
-      window.BubaHistory.open({
-        api: api, path: FILE, branch: BRANCH, title: T.historyTitle, note: T.historyNote, load: loadVersion,
-        onLoaded: function () { setStatus(T.historyLoaded, "warn"); },
-        onError: function () { setStatus(T.historyFailed, "error"); },
-      });
-    };
-    if (window.BubaHistory || !src) { go(); return; }
-    var sc = document.createElement("script");
-    sc.src = src; sc.onload = sc.onerror = go;
-    document.head.appendChild(sc);
+    core.history(launcher, {
+      api: api, path: FILE, branch: BRANCH, title: T.historyTitle, note: T.historyNote, load: loadVersion,
+      onLoaded: function () { setStatus(T.historyLoaded, "warn"); },
+      onError: function () { setStatus(T.historyFailed, "error"); },
+      onMissing: function () { setStatus(T.historyFailed, "error"); },
+    });
   }
   // The project file as it was at an earlier save (the shared titles stay as they are now).
   function loadVersion(commitSha) {
@@ -471,17 +421,7 @@
     .catch(function (err) {
       setStatus(err.status === 401 || err.status === 403 ? T.errAuth : T.errLoad, "error");
     });
-  function loadStyles() {
-    // Also: publishing the test site right after a save (js/preview-publish.js).
-    var pp = launcher.getAttribute("data-pp-src");
-    if (pp && !window.BubaPublish) { var ps = document.createElement("script"); ps.src = pp; document.head.appendChild(ps); }
-    var src = launcher.getAttribute("data-ts-src");
-    var go = function () { if (window.BubaStyle) window.BubaStyle.start({ onChange: refreshStatus }).catch(function () { /* styles stay as they are */ }); };
-    if (window.BubaStyle || !src) { go(); return; }
-    var sc = document.createElement("script");
-    sc.src = src; sc.onload = go;
-    document.head.appendChild(sc);
-  }
+  function loadStyles() { core.loadStyles(launcher, refreshStatus); }
 
   var leaving = false;
   window.addEventListener("beforeunload", function (e) {
@@ -1260,49 +1200,11 @@
   }
 
   // ---------- after saving: is the test site updated yet? ----------
-  var siteWatch = { available: false, savedCommit: "", timer: 0, started: 0 };
-  function readVersion() {
-    return fetch(BASE + "version.txt?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) { return /^[0-9a-f]{40}$/.test(t.trim()) ? t.trim() : ""; }).catch(function () { return ""; });
-  }
-  function watchSite() { readVersion().then(function (v) { siteWatch.available = !!v; }); }
-  function followSave(commitSha) {
-    if (window.BubaPublish && commitSha) window.BubaPublish.after(commitSha);
-    if (!siteWatch.available || !commitSha) { setStatus(T.saved + trNote(), trKind()); return; }
-    siteWatch.savedCommit = commitSha; siteWatch.started = Date.now();
-    setStatus(T.publishing + trNote(), trKind());
-    clearTimeout(siteWatch.timer);
-    var check = function () {
-      if (siteWatch.savedCommit !== commitSha) return;
-      readVersion().then(function (live) {
-        if (!live) return false;
-        if (live === commitSha) return true;
-        return api("/compare/" + commitSha + "..." + live).then(function (c) { return c && (c.status === "ahead" || c.status === "identical"); }).catch(function () { return false; });
-      }).then(function (done) {
-        if (siteWatch.savedCommit !== commitSha) return;
-        if (done) {
-          if (dirty()) { setStatus(T.published + " · " + T.unsaved, "warn"); return; }
-          status.textContent = "";
-          status.className = "pe-status is-ok";
-          status.appendChild(document.createTextNode(T.published + " "));
-          status.appendChild(button(T.reload, function () { location.reload(); }, "pe-btn"));
-          return;
-        }
-        if (Date.now() - siteWatch.started > 15 * 60 * 1000) { setStatus(T.slow, "warn"); return; }
-        siteWatch.timer = setTimeout(check, 20000);
-      });
-    };
-    siteWatch.timer = setTimeout(check, 20000);
-  }
+  var watcher = core.siteWatch({ base: BASE, api: api, T: T, status: status, setStatus: setStatus, dirty: dirty });
+  function watchSite() { watcher.watch(); }
+  function followSave(commitSha) { watcher.follow(commitSha, trNote(), trKind()); }
 
   // ---------- save ----------
-  function readB64(file) {
-    return new Promise(function (resolve, reject) {
-      var r = new FileReader();
-      r.onload = function () { resolve(String(r.result).split(",")[1] || ""); };
-      r.onerror = function () { reject(r.error); };
-      r.readAsDataURL(file);
-    });
-  }
 
   // ---------- automatic translation on saving (js/auto-translate.js, owner only) ----------
   var trRes = { n: 0 }, translating = false;

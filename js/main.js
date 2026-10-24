@@ -325,10 +325,21 @@
       var details = b.closest("details");
       if (details) details.open = false;
       if (document.querySelector("script[data-page-editor-script]")) return;
-      var s = document.createElement("script");
-      s.src = b.getAttribute("data-src");
-      s.setAttribute("data-page-editor-script", "");
-      document.head.appendChild(s);
+      // First the parts all the editors share (js/editor-core.js), then this page's editor.
+      var add = function () {
+        var s = document.createElement("script");
+        s.src = b.getAttribute("data-src");
+        s.setAttribute("data-page-editor-script", "");
+        document.head.appendChild(s);
+      };
+      var core = b.getAttribute("data-core-src");
+      if (!core || window.BubaCore) { add(); return; }
+      var c = document.createElement("script");
+      c.src = core;
+      c.setAttribute("data-page-editor-script", "");
+      c.onload = add;
+      c.onerror = function () { c.remove(); };
+      document.head.appendChild(c);
     });
   });
 
