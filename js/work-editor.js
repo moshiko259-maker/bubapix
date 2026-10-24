@@ -48,7 +48,7 @@
     phoneNote: "בטלפון הגודל נקבע אוטומטית. שינוי גודל — במחשב.",
     frameTip: "לחצו על התמונה כדי לבחור אותה, גררו את הנקודות כדי לשנות גודל, או גררו את התמונה כדי להזיז",
     widthLabel: "רוחב",
-    earlier: "הזזה אחורה", later: "הזזה קדימה", drag: "גררו כדי לשנות את הסדר",
+    earlier: "הזזה למקום הקודם", later: "הזזה למקום הבא", prevBtn: "→ קודם", nextBtn: "הבא ←", more: "⋯ עוד", drag: "גררו כדי לשנות את הסדר",
     replace: "החלפת התמונה", describe: "תיאור לעיוורים", noAlt: "אין תיאור לעיוורים",
     coverNote: "התמונה כאן היא תמונת השער של הפרויקט: היא מתחלפת גם בדף הפרויקט ובפוסטר בדף הבית.",
     pickTitle: "בחירת תמונה", pickUpload: "העלאה מהמחשב", pickLoading: "טוען תמונות…",
@@ -73,6 +73,7 @@
     tip2: "סדר: גוררים תמונה למקום אחר, או חצים. גודל: לוחצים על תמונה וגוררים נקודה כחולה; לכל התמונות יחד — ״גודל כל התמונות במחשב״.",
     tip3: "״החלפת התמונה״ מחליפה את תמונת השער של הפרויקט (גם בדף הפרויקט ובדף הבית).",
     tip4: "שום דבר לא נשמר עד ״שמירה״. טעיתם? ״ביטול פעולה״.",
+    tipTouch: "בטלפון ובטאבלט: נוגעים בתמונה כדי לבחור אותה, והכלים (״→ קודם״, ״הבא ←״, החלפה, תיאור) מופיעים מתחתיה. נגיעה בתמונה לא משנה כלום בעצמה.",
     tipClose: "הבנתי", help: "עזרה",
   } : {
     title: "Editing the projects page",
@@ -91,7 +92,7 @@
     phoneNote: "On phones the size is automatic. Resize on a computer.",
     frameTip: "Click the picture to select it, drag the dots to resize, or drag the picture to move it",
     widthLabel: "Width",
-    earlier: "Move earlier", later: "Move later", drag: "Drag to change the order",
+    earlier: "Move to the previous place", later: "Move to the next place", prevBtn: "← Earlier", nextBtn: "Later →", more: "⋯ More", drag: "Drag to change the order",
     replace: "Replace the picture", describe: "Description for blind visitors", noAlt: "No description for blind visitors",
     coverNote: "The picture here is the project's cover: it also changes on the project page and on the homepage poster.",
     pickTitle: "Choose a picture", pickUpload: "Upload from this computer", pickLoading: "Loading pictures…",
@@ -116,6 +117,7 @@
     tip2: "Order: drag a picture to another place, or use the arrows. Size: click a picture and drag a blue dot; for all pictures at once, \"Size of all pictures on computers\".",
     tip3: "\"Replace the picture\" replaces the project's cover (also on the project page and the homepage).",
     tip4: "Nothing is saved until \"Save\". Made a mistake? \"Undo\".",
+    tipTouch: "On phones and tablets: tap a picture to choose it, and its tools (\"← Earlier\", \"Later →\", replace, description) appear below it. A tap on a picture changes nothing by itself.",
     tipClose: "Got it", help: "Help",
   };
 
@@ -131,7 +133,10 @@
     return n;
   }
   function button(label, onClick, cls, title) {
-    return el("button", { type: "button", "class": cls || "pe-btn", text: label, title: title || label, "aria-label": title || label, onclick: onClick });
+    // A name for screen readers only when the button shows a sign and no words.
+    var a = { type: "button", "class": cls || "pe-btn", text: label, title: title || label, onclick: onClick };
+    if (title && !/[A-Za-z\u0590-\u05FF]/.test(label)) a["aria-label"] = title;
+    return el("button", a);
   }
   function token() {
     try {
@@ -223,6 +228,15 @@
     status,
     el("span", { "class": "pe-bar-actions" }, [undoBtn, saveBtn, button(T.cancel, quit, "pe-btn pe-ghost")]),
   ]);
+  // Phones: one row of buttons; the other choices open with "More".
+  (function () {
+    var lay = bar.querySelector(".pe-bar-layout");
+    if (!lay) return;
+    lay.id = "pe-bar-more";
+    var more = button(T.more, function () { var o = bar.classList.toggle("pe-bar-open"); more.setAttribute("aria-expanded", String(o)); }, "pe-btn pe-more");
+    more.setAttribute("aria-expanded", "false"); more.setAttribute("aria-controls", "pe-bar-more");
+    bar.insertBefore(more, lay);
+  })();
   document.body.insertBefore(bar, document.body.firstChild);
   document.documentElement.classList.add("page-editing");
   setStatus(T.loading);
@@ -342,6 +356,21 @@
 
   // ---------- drawing ----------
   var narrow = window.matchMedia ? window.matchMedia("(max-width: 700px)") : { matches: false };
+  // Touch screens: a tap only chooses a picture; its tools then appear below it,
+  // so a tap on a picture never changes anything by itself (U5).
+  var touch = window.matchMedia ? window.matchMedia("(hover: none)") : { matches: false };
+  var pickedKey = null;
+  function touchPick(box, key) {
+    if (key && pickedKey === key) box.classList.add("pe-picked");
+    box.addEventListener("click", function (e) {
+      // A button that redrew its own tools is no longer inside the picture: not a tap on it.
+      if (!touch.matches || !box.contains(e.target) || (e.target.closest && e.target.closest(".pe-tools, .pe-dot, .pe-modal"))) return;
+      var on = !box.classList.contains("pe-picked");
+      Array.prototype.forEach.call(document.querySelectorAll(".pe-picked"), function (n) { n.classList.remove("pe-picked"); });
+      if (on) box.classList.add("pe-picked");
+      pickedKey = on ? key : null;
+    });
+  }
   if (narrow.addEventListener) narrow.addEventListener("change", function () { if (state) render(); });
   var selected = null, dragFrom = null;
   var widthOf = function (p) { var w = Number(p.data.list_w); return w >= 10 && w <= 100 ? w : 0; };
@@ -441,10 +470,10 @@
     if (uploads[norm(d.cover)]) fig.appendChild(el("span", { "class": "pe-badge", text: T.newBadge }));
     if (!d["cover_alt_" + lang]) fig.appendChild(el("span", { "class": "pe-missing", text: T.noAlt }));
     fig.appendChild(el("span", { "class": "pe-work-name", text: nameOf(p) }));
-    var back = he ? "›" : "‹", fwd = he ? "‹" : "›";
+    touchPick(fig, p);
     fig.appendChild(el("div", { "class": "pe-tools" }, [
-      button(back, function () { move(it.i, -1); }, "pe-icon", T.earlier),
-      button(fwd, function () { move(it.i, 1); }, "pe-icon", T.later),
+      button(T.prevBtn, function () { move(it.i, -1); }, "pe-btn pe-move", T.earlier),
+      button(T.nextBtn, function () { move(it.i, 1); }, "pe-btn pe-move", T.later),
       button(T.replace, function () {
         pick(p.slug, function (path, alts) { d.cover = "/" + path; d.cover_alt_he = alts.he; d.cover_alt_en = alts.en; changed(); }, T.altNew);
       }),
@@ -636,7 +665,7 @@
     if (old) old.remove();
     var box = el("div", { "class": "pe-tip", role: "note" }, [
       el("strong", { text: T.tipTitle }),
-      el("ol", {}, [T.tip1, T.tip2, T.tip3, T.tip4].map(function (t) { return el("li", { text: t }); })),
+      el("ol", {}, (touch.matches ? [T.tip1, T.tipTouch, T.tip3, T.tip4] : [T.tip1, T.tip2, T.tip3, T.tip4]).map(function (t) { return el("li", { text: t }); })),
       button(T.tipClose, function () { try { localStorage.setItem(TIP, "1"); } catch (e) { /* storage blocked */ } box.remove(); }, "pe-btn pe-primary"),
     ]);
     bar.parentNode.insertBefore(box, bar.nextSibling);
@@ -695,7 +724,7 @@
     s.src = src; s.onload = s.onerror = function () { resolve(); };
     document.head.appendChild(s);
   });
-  trReady.then(function () { if (window.BubaTranslate) bar.insertBefore(window.BubaTranslate.toggle(), status); });
+  trReady.then(function () { if (window.BubaTranslate) (bar.querySelector(".pe-bar-layout") || bar).appendChild(window.BubaTranslate.toggle()); });
   var trPairs = function () { return [{ now: state, before: JSON.parse(original) }]; };
   function trNote() { var n = window.BubaTranslate ? window.BubaTranslate.note(trRes) : ""; return n ? " " + n : ""; }
   function trKind() { return trRes.failed ? "warn" : "ok"; }

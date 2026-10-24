@@ -48,7 +48,7 @@
     sizeAuto: "אוטומטי", sizeLarge: "גדולה", sizeMedium: "בינונית", sizeSmall: "קטנה",
     frame: "צורה",
     frameNatural: "טבעית", frameWide: "קולנוע רחב", frameLandscape: "רוחבית", frameSquare: "ריבועית", framePortrait: "לאורך",
-    earlier: "הזזה אחורה", later: "הזזה קדימה", drag: "גררו כדי להזיז",
+    earlier: "הזזה למקום הקודם", later: "הזזה למקום הבא", prevBtn: "→ קודם", nextBtn: "הבא ←", more: "⋯ עוד", drag: "גררו כדי להזיז",
     replace: "החלפה", hide: "הסתרה", show: "הצגה", remove: "הסרה מהגלריה",
     add: "הוספת תמונה לגלריה",
     hiddenTitle: "תמונות מוסתרות (נשמרות, לא מוצגות)",
@@ -63,6 +63,7 @@
     textNoEmpty: "השם לא יכול להיות ריק. השם הקודם הוחזר.",
     servicesNote: "שמות השירותים והכותרת ״שירותים״ משתנים גם בדף השירותים ובתפריט. בשפת הדף בלבד.",
     posterSizeNote: "פוסטרים: גודל — לוחצים על פוסטר וגוררים נקודה כחולה (במחשב). סדר — גוררים פוסטר או חצים. הסדר הוא גם סדר הפרויקטים בעמוד הפרויקטים.",
+    posterTouchNote: "פוסטרים: נוגעים בפוסטר כדי לבחור אותו, ואז ״→ קודם״ או ״הבא ←״ לשינוי הסדר. הסדר הוא גם סדר הפרויקטים בעמוד הפרויקטים. גודל: גוררים נקודה כחולה (לא בטלפון).",
     posterAuto: "גודל אוטומטי לכל הפוסטרים",
     pickTitle: "בחירת תמונה",
     pickUpload: "העלאה מהמחשב",
@@ -122,6 +123,7 @@
     slow: "העדכון לוקח יותר מהרגיל. השינוי שמור; אפשר לבדוק שוב בעוד כמה דקות.",
     tipTitle: "איך עורכים",
     tip1: "גודל: לוחצים על תמונה (גם תמונות הפתיחה), ומופיעה מסגרת עם נקודות. גוררים נקודה — התמונה גדלה או קטנה, והשורה מסתדרת לבד בלי רווחים. הכלים (צורה, פרויקט, החלפה, הסתרה) מופיעים כשמעבירים עכבר על תמונה.",
+    tipTouch: "בטלפון ובטאבלט: נוגעים בתמונה או בפוסטר כדי לבחור אותם, והכלים מופיעים מתחתיהם. נגיעה נוספת מבטלת את הבחירה. נגיעה בתמונה לא משנה כלום בעצמה.",
     tip2: "גוררים תמונה כדי לשנות את הסדר, או משתמשים בחצים.",
     tip3: "כל טקסט בדף ניתן לעריכה: לוחצים עליו וכותבים (משפט הפתיחה, שירותים, ״לכל השירותים״, ״התחילו פרויקט״, השורה בתחתית). פוסטרים: גוררים נקודה לגודל, גוררים את הפוסטר או חצים לסדר.",
     tip4: "שום דבר לא נשמר עד ״שמירה״. טעיתם? ״ביטול פעולה״.",
@@ -158,7 +160,7 @@
     sizeAuto: "Automatic", sizeLarge: "Large", sizeMedium: "Medium", sizeSmall: "Small",
     frame: "Shape",
     frameNatural: "Natural", frameWide: "Cinema wide", frameLandscape: "Landscape", frameSquare: "Square", framePortrait: "Portrait",
-    earlier: "Move earlier", later: "Move later", drag: "Drag to move",
+    earlier: "Move to the previous place", later: "Move to the next place", prevBtn: "← Earlier", nextBtn: "Later →", more: "⋯ More", drag: "Drag to move",
     replace: "Replace", hide: "Hide", show: "Show", remove: "Remove from gallery",
     add: "Add a picture to the gallery",
     hiddenTitle: "Hidden pictures (kept, not shown)",
@@ -173,6 +175,7 @@
     textNoEmpty: "The name cannot be empty. The previous name is back.",
     servicesNote: "Service names and the \"Services\" heading also change on the services page and in the menu, in this language only.",
     posterSizeNote: "Posters: size — click a poster and drag a blue dot (on computers). Order — drag a poster or use the arrows. This is also the order of projects on the projects page.",
+    posterTouchNote: "Posters: tap a poster to choose it, then \"← Earlier\" or \"Later →\" to change the order. This is also the order of projects on the projects page. Size: drag a blue dot (not on phones).",
     posterAuto: "Automatic size for all posters",
     pickTitle: "Choose a picture",
     pickUpload: "Upload from this computer",
@@ -232,6 +235,7 @@
     slow: "The update is taking longer than usual. The change is saved; check again in a few minutes.",
     tipTitle: "How to edit",
     tip1: "Size: click a picture (the opening ones too) and a frame with dots appears. Drag a dot: the picture grows or shrinks and its row rearranges itself without gaps. Tools (shape, project, replace, hide) appear when you point at a picture.",
+    tipTouch: "On phones and tablets: tap a picture or a poster to choose it, and its tools appear below it. Tap again to unselect. A tap on a picture changes nothing by itself.",
     tip2: "Drag a picture to change the order, or use the arrows.",
     tip3: "Every text on the page can be edited: click it and write (opening sentence, services, \"All services\", \"Start a project\", the line at the bottom). Posters: drag a dot to resize, drag the poster or use the arrows to reorder.",
     tip4: "Nothing is saved until \"Save\". Made a mistake? \"Undo\".",
@@ -263,7 +267,10 @@
     return n;
   }
   function button(label, onClick, cls, title) {
-    return el("button", { type: "button", "class": cls || "pe-btn", text: label, title: title || label, "aria-label": title || label, onclick: onClick });
+    // A name for screen readers only when the button shows a sign and no words.
+    var a = { type: "button", "class": cls || "pe-btn", text: label, title: title || label, onclick: onClick };
+    if (title && !/[A-Za-z\u0590-\u05FF]/.test(label)) a["aria-label"] = title;
+    return el("button", a);
   }
   function select(label, value, options, onChange) {
     var s = el("select", { "aria-label": label, title: label, "class": "pe-select" });
@@ -427,6 +434,15 @@
     status,
     el("span", { "class": "pe-bar-actions" }, [undoBtn, saveBtn, button(T.cancel, quit, "pe-btn pe-ghost")]),
   ]);
+  // Phones: one row of buttons; the other choices open with "More".
+  (function () {
+    var lay = bar.querySelector(".pe-bar-layout");
+    if (!lay) return;
+    lay.id = "pe-bar-more";
+    var more = button(T.more, function () { var o = bar.classList.toggle("pe-bar-open"); more.setAttribute("aria-expanded", String(o)); }, "pe-btn pe-more");
+    more.setAttribute("aria-expanded", "false"); more.setAttribute("aria-controls", "pe-bar-more");
+    bar.insertBefore(more, lay);
+  })();
   document.body.insertBefore(bar, document.body.firstChild);
   document.documentElement.classList.add("page-editing");
   setStatus(T.loading);
@@ -688,7 +704,7 @@
       // The editing copy of the row: the same posters, arranged by the editor.
       posterBox = el("div", { "class": posterOrig.className.replace(/\s*is-small/, "") + " pe-poster-box" });
       posterOrig.parentNode.insertBefore(posterBox, posterOrig.nextSibling);
-      posterOrig.parentNode.insertBefore(el("p", { "class": "pe-note pe-poster-note", text: T.posterSizeNote }), posterBox);
+      posterOrig.parentNode.insertBefore(el("p", { "class": "pe-note pe-poster-note", text: touch.matches ? T.posterTouchNote : T.posterSizeNote }), posterBox);
     }
     Array.prototype.forEach.call(document.querySelectorAll(".home-posters [data-project]"), function (item) {
       var slug = item.getAttribute("data-project");
@@ -699,6 +715,7 @@
       item.classList.add("pe-holder", "pe-poster");
       // In editing the poster never opens its page; its buttons still work.
       item.addEventListener("click", function (e) { e.preventDefault(); }, true);
+      touchPick(item, "poster:" + slug);
       var tools = el("div", { "class": "pe-tools pe-tools-top" });
       item.appendChild(tools);
       posterEls[slug].tools = tools;
@@ -805,8 +822,7 @@
       }
       pe.el.classList.toggle("pe-off", p.in_posters === false);
       pe.tools.textContent = "";
-      var back = he ? "›" : "‹", fwd = he ? "‹" : "›";
-      pe.tools.appendChild(button(back, function () { movePoster(slug, -1); }, "pe-icon", T.earlier));
+      pe.tools.appendChild(button(T.prevBtn, function () { movePoster(slug, -1); }, "pe-btn pe-move", T.earlier));
       pe.tools.appendChild(el("span", { "class": "pe-tools-label", text: displayName(p) }));
       pe.tools.appendChild(button(T.posterReplace, function () {
         pick(function (path, alts) { p.cover = { path: path, alts: alts }; changed(); syncPage(); }, "", { noProject: true, note: T.posterNote });
@@ -816,7 +832,7 @@
         : button(T.posterHide, function () { p.in_posters = false; changed(); syncPage(); }, "pe-btn pe-danger"));
       if (p.in_posters === false) pe.tools.appendChild(el("span", { "class": "pe-tools-label", text: T.posterHiddenNote }));
       if (p.poster_w) pe.tools.appendChild(button(T.posterAuto, function () { projects.forEach(function (q) { q.poster_w = 0; }); changed(); syncPage(); }));
-      pe.tools.appendChild(button(fwd, function () { movePoster(slug, 1); }, "pe-icon", T.later));
+      pe.tools.appendChild(button(T.nextBtn, function () { movePoster(slug, 1); }, "pe-btn pe-move", T.later));
     });
     layoutPosters();
   }
@@ -874,6 +890,21 @@
     return out;
   }
   var phone = window.matchMedia("(max-width: 700px)");
+  // Touch screens: a tap only chooses a picture; its tools then appear below it,
+  // so a tap on a picture never changes anything by itself (U5).
+  var touch = window.matchMedia ? window.matchMedia("(hover: none)") : { matches: false };
+  var pickedKey = null;
+  function touchPick(box, key) {
+    if (key && pickedKey === key) box.classList.add("pe-picked");
+    box.addEventListener("click", function (e) {
+      // A button that redrew its own tools is no longer inside the picture: not a tap on it.
+      if (!touch.matches || !box.contains(e.target) || (e.target.closest && e.target.closest(".pe-tools, .pe-dot, .pe-modal"))) return;
+      var on = !box.classList.contains("pe-picked");
+      Array.prototype.forEach.call(document.querySelectorAll(".pe-picked"), function (n) { n.classList.remove("pe-picked"); });
+      if (on) box.classList.add("pe-picked");
+      pickedKey = on ? key : null;
+    });
+  }
   if (phone.addEventListener) phone.addEventListener("change", function () { if (data) { render(); layoutPosters(); } });
 
   // ---------- free sizes (computers): width in % of the page ----------
@@ -980,10 +1011,10 @@
       done: function (pct) { if (!isFree()) startFree(); g.fw = pct; selected = idx; changed(); },
       min: 10, max: 100, selectedNow: selected === idx,
     });
-    // Arrow shapes follow the reading direction: "earlier" points right in Hebrew.
-    var back = he ? "›" : "‹", fwd = he ? "‹" : "›";
+    touchPick(fig, g);
+    // Arrows follow the reading direction: "earlier" points right in Hebrew.
     fig.appendChild(el("div", { "class": "pe-tools" }, [
-      button(back, function () { move(idx, -1); }, "pe-icon", T.earlier),
+      button(T.prevBtn, function () { move(idx, -1); }, "pe-btn pe-move", T.earlier),
       select(T.frame, g.frame || "natural", [["natural", T.frame + ": " + T.frameNatural], ["wide", T.frame + ": " + T.frameWide], ["landscape", T.frame + ": " + T.frameLandscape], ["square", T.frame + ": " + T.frameSquare], ["portrait", T.frame + ": " + T.framePortrait]],
         function (v) { g.frame = v; changed(); }),
       projectSelect(g.project || "", function (v) { g.project = v; changed(); }),
@@ -996,7 +1027,7 @@
         }, g.project || "");
       }),
       button(T.hide, function () { g.visible = false; changed(); }),
-      button(fwd, function () { move(idx, 1); }, "pe-icon", T.later),
+      button(T.nextBtn, function () { move(idx, 1); }, "pe-btn pe-move", T.later),
     ]));
     fig.addEventListener("dragstart", function (e) { if (e.target && e.target.closest && e.target.closest(".pe-resize, .pe-tools")) { e.preventDefault(); return; } dragFrom = idx; fig.classList.add("is-dragging"); try { e.dataTransfer.setData("text/plain", String(idx)); e.dataTransfer.effectAllowed = "move"; } catch (x) { /* old browser */ } });
     fig.addEventListener("dragend", function () { fig.classList.remove("is-dragging"); dragFrom = -1; });
@@ -1364,7 +1395,7 @@
     if (old) old.remove();
     var box = el("div", { "class": "pe-tip", role: "note" }, [
       el("strong", { text: T.tipTitle }),
-      el("ol", {}, [T.tip1, T.tip2, T.tip3, T.tip4].map(function (t) { return el("li", { text: t }); })),
+      el("ol", {}, (touch.matches ? [T.tipTouch, T.tip2, T.tip3, T.tip4] : [T.tip1, T.tip2, T.tip3, T.tip4]).map(function (t) { return el("li", { text: t }); })),
       button(T.tipClose, function () { try { localStorage.setItem(TIP, "1"); } catch (e) { /* storage blocked */ } box.remove(); }, "pe-btn pe-primary"),
     ]);
     bar.parentNode.insertBefore(box, bar.nextSibling);
@@ -1419,7 +1450,7 @@
     s.src = src; s.onload = s.onerror = function () { resolve(); };
     document.head.appendChild(s);
   });
-  trReady.then(function () { if (window.BubaTranslate) bar.insertBefore(window.BubaTranslate.toggle(), status); });
+  trReady.then(function () { if (window.BubaTranslate) (bar.querySelector(".pe-bar-layout") || bar).appendChild(window.BubaTranslate.toggle()); });
   var trPairs = function () { var p = [{ now: data, before: JSON.parse(original) }]; if (textsOrig) p.push({ now: texts, before: JSON.parse(textsOrig) }); return p; };
   function trNote() { var n = window.BubaTranslate ? window.BubaTranslate.note(trRes) : ""; return n ? " " + n : ""; }
   function trKind() { return trRes.failed ? "warn" : "ok"; }

@@ -45,7 +45,7 @@
     emptyBack: "הטקסט ריק, ולכן יוצג הטקסט הרגיל.",
     nameEmpty: "פריט בלי שם לא מוצג באתר (בשפה הזו).",
     notShown: "לא מוצג בדף בשפה הזו — חסר שם",
-    add: "הוספה", remove: "מחיקה", earlier: "הזזה אחורה", later: "הזזה קדימה", drag: "גררו כדי לשנות את הסדר",
+    add: "הוספה", remove: "מחיקה", earlier: "הזזה למקום הקודם", later: "הזזה למקום הבא", prevBtn: "→ קודם", nextBtn: "הבא ←", more: "⋯ עוד", drag: "גררו כדי לשנות את הסדר",
     removed: "נמחק. אפשר לבטל עם ״ביטול פעולה״.",
     signIn: "כדי לערוך צריך להיכנס פעם אחת לכלי הניהול בדפדפן הזה (״כל הניהול״ ← ״פתיחת העריכה המתקדמת״), ואז לחזור לכאן.",
     openManage: "לכלי הניהול",
@@ -81,7 +81,7 @@
     emptyBack: "The text is empty, so the usual text will show.",
     nameEmpty: "An item without a name is not shown on the site (in this language).",
     notShown: "Not shown in this language — no name",
-    add: "Add", remove: "Delete", earlier: "Move earlier", later: "Move later", drag: "Drag to change the order",
+    add: "Add", remove: "Delete", earlier: "Move to the previous place", later: "Move to the next place", prevBtn: "← Earlier", nextBtn: "Later →", more: "⋯ More", drag: "Drag to change the order",
     removed: "Deleted. You can undo it.",
     signIn: "To edit, sign in once to the admin panel in this browser (\"All management\" → \"Open advanced editing\"), then come back here.",
     openManage: "Open the admin panel",
@@ -118,7 +118,10 @@
     return n;
   }
   function button(label, onClick, cls, title) {
-    return el("button", { type: "button", "class": cls || "pe-btn", text: label, title: title || label, "aria-label": title || label, onclick: onClick });
+    // A name for screen readers only when the button shows a sign and no words.
+    var a = { type: "button", "class": cls || "pe-btn", text: label, title: title || label, onclick: onClick };
+    if (title && !/[A-Za-z\u0590-\u05FF]/.test(label)) a["aria-label"] = title;
+    return el("button", a);
   }
   function token() {
     try { var u = JSON.parse(localStorage.getItem("sveltia-cms.user") || "null"); if (u && typeof u.token === "string" && u.token) return u.token; } catch (e) { /* storage blocked */ }
@@ -180,6 +183,15 @@
     status,
     el("span", { "class": "pe-bar-actions" }, [undoBtn, saveBtn, button(T.cancel, quit, "pe-btn pe-ghost")]),
   ]);
+  // Phones: one row of buttons; the other choices open with "More".
+  (function () {
+    var lay = bar.querySelector(".pe-bar-layout");
+    if (!lay) return;
+    lay.id = "pe-bar-more";
+    var more = button(T.more, function () { var o = bar.classList.toggle("pe-bar-open"); more.setAttribute("aria-expanded", String(o)); }, "pe-btn pe-more");
+    more.setAttribute("aria-expanded", "false"); more.setAttribute("aria-controls", "pe-bar-more");
+    bar.insertBefore(more, lay);
+  })();
   document.body.insertBefore(bar, document.body.firstChild);
   document.documentElement.classList.add("page-editing");
   setStatus(T.loading);
@@ -304,11 +316,10 @@
           editable(n, k === 0 ? T.nameHint : T.bodyHint, function (v) { it[key] = v; }, function () { if (k === 0 && !it[key]) setStatus(T.nameEmpty, "warn"); });
         });
         if (!it[L.subs[0] + "_" + lang]) li.appendChild(el("span", { "class": "pe-missing", text: T.notShown }));
-        var back = he ? "›" : "‹", fwd = he ? "‹" : "›";
         li.appendChild(el("div", { "class": "pe-tools pe-list-tools" }, [
-          button(back, function () { move(L, i, -1); }, "pe-icon", T.earlier),
+          button(T.prevBtn, function () { move(L, i, -1); }, "pe-btn pe-move", T.earlier),
           button(T.remove, function () { items.splice(i, 1); changed(); setStatus(T.removed, "warn"); }, "pe-btn pe-danger"),
-          button(fwd, function () { move(L, i, 1); }, "pe-icon", T.later),
+          button(T.nextBtn, function () { move(L, i, 1); }, "pe-btn pe-move", T.later),
         ]));
         // Dragging starts only from the item's frame, so selecting text with the mouse still works.
         li.addEventListener("mousedown", function (e) { li.draggable = !(e.target.isContentEditable || (e.target.closest && e.target.closest(".pe-tools"))); });
