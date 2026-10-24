@@ -50,7 +50,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 21
         },
         {
           "image": "/assets/work/new-ocean-poster-synopsis.jpg",
@@ -64,22 +65,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
-        },
-        {
-          "image": "/assets/uploads/the-new-ocean/img-20250319-wa0017-mvl2er9u.jpg",
-          "link": "",
-          "alt_en": "",
-          "alt_he": "",
-          "title_en": "",
-          "title_he": "",
-          "note_en": "",
-          "note_he": "",
-          "caption": "hidden",
-          "on_home": false,
-          "frame": "natural",
           "focus": "center",
-          "visible": false
+          "fw": 54
         },
         {
           "image": "/assets/work/new-ocean-shark-poster.png",
@@ -93,7 +80,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 21
         },
         {
           "image": "/assets/work/new-ocean-man-balcony.jpg",
@@ -107,7 +95,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/new-ocean-dog-closeup.jpg",
@@ -121,7 +110,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/new-ocean-research-vessel.jpg",
@@ -135,7 +125,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 41
         },
         {
           "image": "/assets/work/new-ocean-deck-festival.jpg",
@@ -149,7 +140,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 43
         },
         {
           "image": "/assets/work/new-ocean-deck.jpg",
@@ -163,7 +155,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/new-ocean-diver-descends.jpg",
@@ -177,7 +170,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/new-ocean-island-bar.jpg",
@@ -191,7 +185,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/new-ocean-yacht-party.jpg",
@@ -205,7 +200,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 41
         },
         {
           "image": "/assets/work/new-ocean-yacht-beach.jpg",
@@ -219,7 +215,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 43
         },
         {
           "image": "/assets/work/new-ocean-yacht-toast.jpg",
@@ -233,7 +230,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/new-ocean-yacht-transition.jpg",
@@ -247,7 +245,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/new-ocean-trash-sinking.jpg",
@@ -261,7 +260,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/new-ocean-cup-hull.jpg",
@@ -275,7 +275,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 27
         },
         {
           "image": "/assets/work/new-ocean-oil-barrel.jpg",
@@ -289,7 +290,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 53
         },
         {
           "image": "/assets/work/plastic-turtle.jpg",
@@ -303,7 +305,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 22
         },
         {
           "image": "/assets/work/plastic-bag-whale.jpg",
@@ -317,7 +320,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/new-ocean-bag-whale-wide.jpg",
@@ -331,7 +335,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/new-ocean-bag-jellyfish-diver.jpg",
@@ -345,7 +350,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 51
         }
       ]
     }
