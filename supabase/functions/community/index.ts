@@ -10,6 +10,11 @@
 // IP addresses are never stored: only a keyed hash (HMAC-SHA-256) is kept,
 // to limit floods and to allow one rating per project per visitor.
 // Secrets come from the function's environment, never from the site.
+//
+// New message → a short email to the studio (Resend), only when the secret
+// RESEND_API_KEY is set. The email says only the kind and the project, with
+// a link to the review page: the visitor's name, text and email are never
+// sent to the email service. A failed email never fails the visitor's send.
 
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
@@ -23,6 +28,17 @@ const ALLOWED_ORIGINS = [
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const db = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+
+// Notification email. Resend's free test sender can only write to the email
+// address of the Resend account itself, which is the studio's address.
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
+const NOTIFY_TO = Deno.env.get("NOTIFY_EMAIL") ?? "bubapix369@gmail.com";
+const RESEND_ENDPOINT = Deno.env.get("RESEND_ENDPOINT") ?? "https://api.resend.com/emails";
+const NOTIFY_FROM = Deno.env.get("NOTIFY_FROM") ?? "BubaPix <onboarding@resend.dev>";
+const REVIEW_URL = Deno.env.get("REVIEW_URL") ?? "https://moshiko259-maker.github.io/bubapix-preview/admin/community/index.html";
+// Hebrew wording with the right gender: "a new comment" etc.
+const KIND_HE: Record<string, string> = { comment: "תגובה חדשה", question: "שאלה חדשה", idea: "רעיון חדש", consult: "התייעצות פרטית חדשה" };
+const GOT_HE: Record<string, string> = { comment: "התקבלה", question: "התקבלה", idea: "התקבל", consult: "התקבלה" };
 
 const KINDS = ["comment", "question", "idea", "consult"];
 const SLUG = /^[a-z0-9][a-z0-9-]{0,79}$/;
@@ -81,6 +97,44 @@ async function countSince(column: string, value: string, minutes: number): Promi
   return count ?? 0;
 }
 
+// Sends the short notification. Never throws; never includes visitor text.
+async function notify(kind: string, project: string | null, lang: string): Promise<void> {
+  if (!RESEND_API_KEY) return;
+  const what = KIND_HE[kind] ?? kind;
+  const where = project ? ` — ${project}` : "";
+  const text = [
+    `${GOT_HE[kind] ?? "התקבלה"} ${what} באתר${where}.`,
+    `שפת הדף: ${lang === "he" ? "עברית" : "אנגלית"}.`,
+    "",
+    "הפרטים שמורים בשירות התגובות. כדי לקרוא ולענות:",
+    REVIEW_URL,
+    "",
+    "(מייל אוטומטי מהאתר. פרטי השולח לא נכללים בו בכוונה.)",
+  ].join("\n");
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const res = await fetch(RESEND_ENDPOINT, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: NOTIFY_FROM, to: [NOTIFY_TO], subject: `BubaPix: ${what}${where}`, text }),
+      signal: ctrl.signal,
+    });
+    if (!res.ok) console.error("notify failed", res.status, (await res.text()).slice(0, 300));
+  } catch (err) {
+    console.error("notify error", String(err));
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Runs a task after the reply is sent, when the platform allows it.
+function inBackground(task: Promise<void>): void {
+  // deno-lint-ignore no-explicit-any
+  const rt = (globalThis as any).EdgeRuntime;
+  if (rt && typeof rt.waitUntil === "function") rt.waitUntil(task);
+}
+
 async function handleSubmit(p: Record<string, unknown>, ipHash: string, origin: string | null): Promise<Response> {
   // Honeypot: a hidden field people never fill. Bots are told "ok" and ignored.
   if (typeof p.website === "string" && p.website.trim() !== "") return reply(origin, 200, { ok: true, status: "pending" });
@@ -121,6 +175,7 @@ async function handleSubmit(p: Record<string, unknown>, ipHash: string, origin: 
     const { error: e2 } = await db.from("submission_contacts").insert({ submission_id: data.id, email: email.toLowerCase() });
     if (e2) throw e2;
   }
+  inBackground(notify(kind, project, lang));
   return reply(origin, 200, { ok: true, status: "pending" });
 }
 

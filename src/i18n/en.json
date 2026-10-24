@@ -100,6 +100,7 @@
     "messageLabel": "Your message",
     "emailLabel": "Email (optional, only for a private reply)",
     "required": "(required)",
+    "writeDirect": "You can also email us directly:",
     "send": "Send",
     "sending": "Sending…",
     "sentPending": "Thank you. Your message will appear here after it is reviewed.",

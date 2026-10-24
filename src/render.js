@@ -139,6 +139,9 @@ function communityData(ctx) {
     url: c.url,
     key: c.anonKey,
     lang,
+    // Shown when sending fails (no connection, server down or paused), so
+    // the visitor can still reach the studio.
+    fallbackEmail: ctx.data.contact.email2 || ctx.data.contact.email || "",
     t: { ...t.community, ideaSent: t.ideas.sent, consultSent: t.consult.sent },
   }).replace(/</g, "\\u003c");
   return `<script type="application/json" id="community-data">${json}</script>`;

@@ -197,6 +197,21 @@
     return bad.length > 0;
   }
 
+  // When sending fails for a reason the visitor cannot fix (no connection,
+  // a fault or a paused service, too many messages), the message also offers
+  // the studio's email address, so nothing is lost.
+  var DIRECT = { network: 1, server: 1, busy: 1, rate_limited: 1 };
+  function showSendError(status, code) {
+    status.textContent = (code && t.errors[code]) || t.errors.server;
+    status.className = "form-status is-error";
+    if (!DIRECT[code] || !cfg.fallbackEmail) return;
+    status.appendChild(document.createTextNode(" " + t.writeDirect + " "));
+    var a = el("a", null, cfg.fallbackEmail);
+    a.href = "mailto:" + cfg.fallbackEmail;
+    a.setAttribute("dir", "ltr");
+    status.appendChild(a);
+  }
+
   // ---- Forms --------------------------------------------------------------
   function setupForm(form) {
     var opened = Date.now();
@@ -253,15 +268,14 @@
             status.textContent = kind === "idea" ? t.ideaSent : kind === "consult" ? t.consultSent : t.sentPending;
             status.className = "form-status is-ok";
           } else {
-            status.textContent = errorText(r);
-            status.className = "form-status is-error";
+            var code = r.json && t.errors[r.json.error] ? r.json.error : "server";
+            showSendError(status, code);
             // The server found a problem in a field: mark that field too.
-            showFieldErrors(form, r.json && r.json.error, body);
+            showFieldErrors(form, code, body);
           }
         })
         .catch(function () {
-          status.textContent = t.errors.network;
-          status.className = "form-status is-error";
+          showSendError(status, "network");
         })
         .then(function () {
           button.disabled = false;
