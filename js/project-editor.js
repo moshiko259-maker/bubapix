@@ -21,11 +21,25 @@
  * Everything else in the file (links, titles, frames, hidden sections,
  * video files, the other language) is kept exactly as it is.
  */
-(function () {
+(function boot() {
   "use strict";
   // The parts all the editors share (js/editor-core.js, loaded first by js/main.js).
+  // A page from before js/main.js did this (the browser can keep a page for
+  // a few minutes after an update) loads only the editor: then the editor
+  // loads the shared file itself and starts again.
   var core = window.BubaCore;
-  if (!core) return;
+  if (!core) {
+    var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
+    var coreSrc = (lb && lb.getAttribute("data-core-src")) || (me && me.src ? me.src.replace(/[^/]*$/, "editor-core.js?t=" + Date.now()) : "");
+    if (!coreSrc || window.__bubapixCoreLoading) return;
+    window.__bubapixCoreLoading = true;
+    var cs = document.createElement("script");
+    cs.src = coreSrc;
+    cs.onload = function () { window.__bubapixCoreLoading = false; boot(); };
+    cs.onerror = function () { window.__bubapixCoreLoading = false; cs.remove(); };
+    document.head.appendChild(cs);
+    return;
+  }
   if (window.__bubapixPageEditor) return;
   window.__bubapixPageEditor = true;
   var el = core.el, button = core.button, token = core.token;
