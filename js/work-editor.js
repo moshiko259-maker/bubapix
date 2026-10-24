@@ -75,6 +75,9 @@
     tip4: "שום דבר לא נשמר עד ״שמירה״. טעיתם? ״ביטול פעולה״.",
     tipTouch: "בטלפון ובטאבלט: נוגעים בתמונה כדי לבחור אותה, והכלים (״→ קודם״, ״הבא ←״, החלפה, תיאור) מופיעים מתחתיה. נגיעה בתמונה לא משנה כלום בעצמה.",
     tipClose: "הבנתי", help: "עזרה",
+    history: "גרסאות קודמות", historyLoaded: "גרסה קודמת נטענה לדף. בדקו ולחצו ״שמירה״ כדי לקבוע אותה.", historyFailed: "לא הצלחתי לטעון את הגרסה מ־GitHub.",
+    historyTitle: "גרסאות קודמות של דף הפרויקטים",
+    historyNote: "הרשימה כוללת כל שמירה של קובצי הפרויקטים. בחירה בגרסה מחזירה לדף את הסדר, הגדלים ותמונות השער (עם התיאורים שלהן) כפי שהיו, כשינוי שלא נשמר. רק ״שמירה״ קובעת. אפשר לבטל עם ״ביטול פעולה״. השם והתוכן של כל פרויקט, הכותרות וסגנונות הטקסט לא משתנים. פרויקט שלא היה קיים אז נשאר כמו שהוא.",
   } : {
     title: "Editing the projects page",
     loading: "Loading the projects page…",
@@ -119,6 +122,9 @@
     tip4: "Nothing is saved until \"Save\". Made a mistake? \"Undo\".",
     tipTouch: "On phones and tablets: tap a picture to choose it, and its tools (\"← Earlier\", \"Later →\", replace, description) appear below it. A tap on a picture changes nothing by itself.",
     tipClose: "Got it", help: "Help",
+    history: "Earlier versions", historyLoaded: "An earlier version is loaded on the page. Check it and press \"Save\" to keep it.", historyFailed: "Could not load the version from GitHub.",
+    historyTitle: "Earlier versions of the projects page",
+    historyNote: "The list includes every save of the project files. Choosing a version brings back the order, the sizes and the cover pictures (with their descriptions) as they were, as an unsaved change. Only \"Save\" makes it final. You can undo it. Each project's name and content, the titles and the text styles do not change. A project that did not exist then stays as it is.",
   };
 
   // ---------- small helpers ----------
@@ -218,6 +224,47 @@
   var dirty = function () { return !!state && (snap() !== original || !!(window.BubaStyle && window.BubaStyle.dirty())); };
   var TITLE = "nav_work_" + lang, HINT = "work_hint_" + lang;
 
+
+  // ---------- earlier versions (the shared js/history.js, loaded on first use) ----------
+  var histBtn = button(T.history, openHistory, "pe-btn pe-ghost");
+  histBtn.disabled = true;
+  function openHistory() {
+    var src = launcher.getAttribute("data-hist-src");
+    var go = function () {
+      if (!window.BubaHistory) { setStatus(T.historyFailed, "error"); return; }
+      window.BubaHistory.open({
+        api: api, path: "content/projects", branch: BRANCH, title: T.historyTitle, note: T.historyNote, load: loadVersion,
+        onLoaded: function () { setStatus(T.historyLoaded, "warn"); },
+        onError: function () { setStatus(T.historyFailed, "error"); },
+      });
+    };
+    if (window.BubaHistory || !src) { go(); return; }
+    var sc = document.createElement("script");
+    sc.src = src; sc.onload = sc.onerror = go;
+    document.head.appendChild(sc);
+  }
+  // What this page sets in each project file (the rest of the file stays as it is now).
+  var PAGE_FIELDS = ["order", "list_w", "cover", "cover_alt_he", "cover_alt_en"];
+  function loadVersion(commitSha) {
+    return Promise.all(state.list.map(function (p) {
+      var path = "content/projects/" + p.slug + ".json";
+      return api("/contents/" + encPath(path) + "?ref=" + encodeURIComponent(commitSha))
+        .then(function (res) { return JSON.parse(b64ToUtf8(res.content)); })
+        .catch(function (err) { if (err.status === 404) return null; throw err; });
+    })).then(function (olds) {
+      var at = {};
+      state.list.forEach(function (p, i) {
+        at[p.slug] = i;
+        var old = olds[i];
+        if (!old || typeof old !== "object") return; // the project did not exist then
+        PAGE_FIELDS.forEach(function (k) { if (old[k] === undefined) delete p.data[k]; else p.data[k] = old[k]; });
+      });
+      var num = function (p) { var n = Number(p.data.order); return isFinite(n) && n > 0 ? n : Infinity; };
+      state.list.sort(function (a, b) { return num(a) - num(b) || at[a.slug] - at[b.slug]; });
+      changed();
+    });
+  }
+
   // ---------- toolbar ----------
   var status = el("span", { "class": "pe-status", role: "status", "aria-live": "polite" });
   var saveBtn = button(T.save, save, "pe-btn pe-primary");
@@ -225,7 +272,7 @@
   undoBtn.disabled = true;
   var bar = el("div", { "class": "pe-bar", role: "region", "aria-label": T.title }, [
     el("strong", { "class": "pe-bar-title", text: T.title }),
-    el("span", { "class": "pe-bar-layout" }, [button("? " + T.help, function () { showTip(true); }, "pe-btn pe-ghost")]),
+    el("span", { "class": "pe-bar-layout" }, [button("? " + T.help, function () { showTip(true); }, "pe-btn pe-ghost"), histBtn]),
     status,
     el("span", { "class": "pe-bar-actions" }, [undoBtn, saveBtn, button(T.cancel, quit, "pe-btn pe-ghost")]),
   ]);
@@ -299,6 +346,7 @@
       state = { labels: r[0].data, list: r[1].map(function (p) { return { slug: p.slug, data: p.data }; }) };
       original = snap();
       start();
+      histBtn.disabled = false;
       last = snap();
       refreshStatus();
       watchSite();

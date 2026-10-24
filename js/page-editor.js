@@ -86,6 +86,9 @@
     tip3: "כל שינוי בסדר, הוספה או מחיקה — חל על שתי השפות.",
     tip4: "שום דבר לא נשמר עד ״שמירה״. טעיתם? ״ביטול פעולה״.",
     tipClose: "הבנתי", help: "עזרה",
+    history: "גרסאות קודמות", historyLoaded: "גרסה קודמת נטענה לדף. בדקו ולחצו ״שמירה״ כדי לקבוע אותה.", historyFailed: "לא הצלחתי לטעון את הגרסה מ־GitHub.",
+    historyTitle: "גרסאות קודמות של הדף",
+    historyNote: "בחירה בגרסה טוענת לדף את התוכן כפי שהיה כשינוי שלא נשמר. רק ״שמירה״ קובעת. אפשר לבטל עם ״ביטול פעולה״. כותרות הדף (שמשותפות גם לתפריט) וסגנונות הטקסט לא משתנים.",
     trDone: "תורגמו לאנגלית {n} טקסטים. לתיקון — פתחו את הדף באנגלית, וכבו שם את ״תרגום אוטומטי״ לפני השמירה.",
     trFail: "התרגום לאנגלית לא הצליח (אולי נגמרה המכסה היומית החינמית, או שאין אינטרנט). העברית נשמרה; האנגלית לא השתנתה.",
     tip5: "״תרגום אוטומטי״ מתרגם בשמירה כל טקסט ששיניתם לשפה השנייה (חינם). מתקנים תרגום? כבו אותו לפני השמירה.",
@@ -144,6 +147,9 @@
     tip3: "Reordering, adding or deleting applies to both languages.",
     tip4: "Nothing is saved until \"Save\". Made a mistake? \"Undo\".",
     tipClose: "Got it", help: "Help",
+    history: "Earlier versions", historyLoaded: "An earlier version is loaded on the page. Check it and press \"Save\" to keep it.", historyFailed: "Could not load the version from GitHub.",
+    historyTitle: "Earlier versions of this page",
+    historyNote: "Choosing a version loads the content as it was onto the page as an unsaved change. Only \"Save\" makes it final. You can undo it. The page titles (shared with the menu) and the text styles do not change.",
     trDone: "Translated to Hebrew: {n}. To fix it, open the page in Hebrew and turn off \"Auto-translate\" there before saving.",
     trFail: "Translating to Hebrew failed (maybe the free daily allowance ran out, or there is no internet). The English is saved; the Hebrew did not change.",
     tip5: "\"Auto-translate\" translates every text you changed into the other language when saving (free). Fixing a translation? Turn it off before saving.",
@@ -232,6 +238,35 @@
   var styleDirty = function () { return !!(window.BubaStyle && window.BubaStyle.dirty()); };
   var dirty = function () { return !!state && (snap() !== original || styleDirty()); };
 
+
+  // ---------- earlier versions (the shared js/history.js, loaded on first use) ----------
+  var histBtn = button(T.history, openHistory, "pe-btn pe-ghost");
+  histBtn.disabled = true;
+  function openHistory() {
+    var src = launcher.getAttribute("data-hist-src");
+    var go = function () {
+      if (!window.BubaHistory) { setStatus(T.historyFailed, "error"); return; }
+      window.BubaHistory.open({
+        api: api, path: FILE, branch: BRANCH, title: T.historyTitle, note: T.historyNote, load: loadVersion,
+        onLoaded: function () { setStatus(T.historyLoaded, "warn"); },
+        onError: function () { setStatus(T.historyFailed, "error"); },
+      });
+    };
+    if (window.BubaHistory || !src) { go(); return; }
+    var sc = document.createElement("script");
+    sc.src = src; sc.onload = sc.onerror = go;
+    document.head.appendChild(sc);
+  }
+  // The page's file as it was at an earlier save (the shared titles stay as they are now).
+  function loadVersion(commitSha) {
+    return api("/contents/" + encPath(FILE) + "?ref=" + encodeURIComponent(commitSha)).then(function (res) {
+      var old = JSON.parse(b64ToUtf8(res.content));
+      if (!old || typeof old !== "object" || Array.isArray(old)) throw new Error("bad file");
+      state.file = old;
+      commit(); fill(); drawLists(); refreshStatus();
+    });
+  }
+
   // ---------- toolbar ----------
   var status = el("span", { "class": "pe-status", role: "status", "aria-live": "polite" });
   var saveBtn = button(T.save, save, "pe-btn pe-primary");
@@ -250,6 +285,7 @@
     el("strong", { "class": "pe-bar-title", text: T.title }),
     el("span", { "class": "pe-bar-layout" }, [
       button("? " + T.help, function () { showTip(true); }, "pe-btn pe-ghost"),
+      histBtn,
     ]),
     status,
     el("span", { "class": "pe-bar-actions" }, [undoBtn, saveBtn, button(T.cancel, quit, "pe-btn pe-ghost")]),
@@ -313,6 +349,7 @@
       state = { file: r[0].data || {}, labels: r[1].data || {} };
       original = snap();
       start();
+      histBtn.disabled = false;
       last = snap();
       refreshStatus();
       watchSite();

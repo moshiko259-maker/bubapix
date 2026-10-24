@@ -118,6 +118,9 @@
     tipTouch: "בטלפון ובטאבלט: נוגעים בתמונה בגלריה כדי לבחור אותה, והכלים (״→ קודם״, ״הבא ←״, החלפה, הסתרה, הסרה, תיאור) מופיעים מתחתיה. נגיעה בתמונה לא משנה כלום בעצמה.",
     tipClose: "הבנתי",
     help: "עזרה",
+    history: "גרסאות קודמות", historyLoaded: "גרסה קודמת נטענה לדף. בדקו ולחצו ״שמירה״ כדי לקבוע אותה.", historyFailed: "לא הצלחתי לטעון את הגרסה מ־GitHub.",
+    historyTitle: "גרסאות קודמות של הפרויקט",
+    historyNote: "בחירה בגרסה טוענת לדף את הפרויקט כפי שהיה (שם, תקציר, תמונות וסדרן) כשינוי שלא נשמר. רק ״שמירה״ קובעת. אפשר לבטל עם ״ביטול פעולה״. הכותרות המשותפות לכל הפרויקטים וסגנונות הטקסט לא משתנים.",
     tipVideo: "״הוספת סרטון״ — מדביקים קישור מיוטיוב (כפתור ״שיתוף״ ← ״העתקה״). הסרטון נשאר ביוטיוב, ובאתר נשמר רק הקישור.",
     videos: "וידאו", addVideo: "הוספת סרטון", addVideos: "הוספת סרטון לדף",
     videoTitle: "כותרת לסרטון (לא חובה)", videoUrl: "קישור לסרטון ביוטיוב או ב־Vimeo",
@@ -219,6 +222,9 @@
     tipTouch: "On phones and tablets: tap a gallery picture to choose it, and its tools (\"← Earlier\", \"Later →\", replace, hide, remove, description) appear below it. A tap on a picture changes nothing by itself.",
     tipClose: "Got it",
     help: "Help",
+    history: "Earlier versions", historyLoaded: "An earlier version is loaded on the page. Check it and press \"Save\" to keep it.", historyFailed: "Could not load the version from GitHub.",
+    historyTitle: "Earlier versions of this project",
+    historyNote: "Choosing a version loads the project as it was (name, synopsis, pictures and their order) onto the page as an unsaved change. Only \"Save\" makes it final. You can undo it. The titles shared by all projects and the text styles do not change.",
     tipVideo: "\"Add a video\": paste a YouTube link (\"Share\" → \"Copy\"). The video stays on YouTube; the site keeps only the link.",
     videos: "Video", addVideo: "Add a video", addVideos: "Add a video to the page",
     videoTitle: "Title of the video (optional)", videoUrl: "Link to the video on YouTube or Vimeo",
@@ -344,6 +350,36 @@
   var dirty = function () { return !!data && (JSON.stringify(data) !== original || labelsDirty() || !!(window.BubaStyle && window.BubaStyle.dirty())); };
   var snapshot = function () { return JSON.stringify({ d: data, l: labels }); };
 
+
+  // ---------- earlier versions (the shared js/history.js, loaded on first use) ----------
+  var histBtn = button(T.history, openHistory, "pe-btn pe-ghost");
+  histBtn.disabled = true;
+  function openHistory() {
+    var src = launcher.getAttribute("data-hist-src");
+    var go = function () {
+      if (!window.BubaHistory) { setStatus(T.historyFailed, "error"); return; }
+      window.BubaHistory.open({
+        api: api, path: FILE, branch: BRANCH, title: T.historyTitle, note: T.historyNote, load: loadVersion,
+        onLoaded: function () { setStatus(T.historyLoaded, "warn"); },
+        onError: function () { setStatus(T.historyFailed, "error"); },
+      });
+    };
+    if (window.BubaHistory || !src) { go(); return; }
+    var sc = document.createElement("script");
+    sc.src = src; sc.onload = sc.onerror = go;
+    document.head.appendChild(sc);
+  }
+  // The project file as it was at an earlier save (the shared titles stay as they are now).
+  function loadVersion(commitSha) {
+    return api("/contents/" + encPath(FILE) + "?ref=" + encodeURIComponent(commitSha)).then(function (res) {
+      var old = JSON.parse(b64ToUtf8(res.content));
+      if (!old || typeof old !== "object") throw new Error("bad file");
+      if (!Array.isArray(old.sections)) old.sections = [];
+      data = old;
+      changed(); fillLede();
+    });
+  }
+
   // ---------- toolbar ----------
   var status = el("span", { "class": "pe-status", role: "status", "aria-live": "polite" });
   var saveBtn = button(T.save, save, "pe-btn pe-primary");
@@ -351,7 +387,7 @@
   undoBtn.disabled = true;
   var bar = el("div", { "class": "pe-bar", role: "region", "aria-label": T.title }, [
     el("strong", { "class": "pe-bar-title", text: T.title }),
-    el("span", { "class": "pe-bar-layout" }, [button("? " + T.help, function () { showTip(true); }, "pe-btn pe-ghost")]),
+    el("span", { "class": "pe-bar-layout" }, [button("? " + T.help, function () { showTip(true); }, "pe-btn pe-ghost"), histBtn]),
     status,
     el("span", { "class": "pe-bar-actions" }, [undoBtn, saveBtn, button(T.cancel, quit, "pe-btn pe-ghost")]),
   ]);
@@ -425,6 +461,7 @@
       if (r[1]) { labelsSha = r[1].sha; labels = JSON.parse(b64ToUtf8(r[1].content)) || {}; }
       labelsOrig = JSON.stringify(labels);
       start();
+      histBtn.disabled = false;
       last = snapshot();
       refreshStatus();
       watchSite();
