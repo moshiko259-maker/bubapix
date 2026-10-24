@@ -1077,30 +1077,43 @@ function testimonials(ctx) {
 function contact(ctx) {
   const { t, data } = ctx;
   const c = data.contact;
-  const rows = [
-    (c.email || c.email2) && [t.contact.email, [c.email, c.email2].filter(Boolean).map((m) => `<a class="contact-link" href="mailto:${e(m)}">${e(m)}</a>`).join("<br>")],
-    c.phone && [t.contact.phone, `<a class="contact-link" href="tel:${e(c.phone.replace(/[^\d+]/g, ""))}">${e(c.phone)}</a>`],
-    c.location && [t.contact.location, `<span>${e(c.location)}</span>`],
-  ].filter(Boolean);
+  // data-ed-* marks what the owner's page editor (js/page-editor.js) can
+  // change. A <template data-ed-missing> holds a place for a detail that is
+  // empty today (visitors never see it; the editor shows it to fill in).
+  const mail = (m, field) => `<a class="contact-link" href="mailto:${e(m)}" data-ed="${field}" data-ed-plain data-ed-kind="email" dir="ltr">${e(m)}</a>`;
+  const missing = (html) => `<template data-ed-missing>${html}</template>`;
+  const emptyMail = (field) => `<a class="contact-link" data-ed="${field}" data-ed-plain data-ed-kind="email" dir="ltr"></a>`;
+  const row = (label, dd) => `<div><dt data-ed-label="${label}">${e(t.contact[label.replace("contact_", "")])}</dt><dd>${dd}</dd></div>`;
+  const mails = c.email || c.email2
+    ? row("contact_email", [c.email ? mail(c.email, "email") : missing(emptyMail("email")), c.email2 ? mail(c.email2, "email_2") : missing(`<br>${emptyMail("email_2")}`)].join(c.email && c.email2 ? "<br>" : ""))
+    : missing(row("contact_email", `${emptyMail("email")}<br>${emptyMail("email_2")}`));
+  const phone = c.phone
+    ? row("contact_phone", `<a class="contact-link" href="tel:${e(c.phone.replace(/[^\d+]/g, ""))}" data-ed="phone" data-ed-plain data-ed-kind="phone" dir="ltr">${e(c.phone)}</a>`)
+    : missing(row("contact_phone", `<a class="contact-link" data-ed="phone" data-ed-plain data-ed-kind="phone" dir="ltr"></a>`));
+  const location = c.location
+    ? row("contact_location", `<span data-ed="location">${e(c.location)}</span>`)
+    : missing(row("contact_location", `<span data-ed="location"></span>`));
   const social = c.social.length
-    ? `<div><dt>${e(t.contact.social)}</dt><dd>${socialList(ctx, "social social-named", true)}</dd></div>`
+    ? `<div><dt data-ed-label="contact_social">${e(t.contact.social)}</dt><dd>${socialList(ctx, "social social-named", true)}</dd></div>`
     : "";
+  const any = c.email || c.email2 || c.phone || c.location || social;
   return layout(ctx, {
     edits: [[t.edit.contact, ed.contact], ...(data.participation.consult ? [[t.edit.comments, "", true]] : [])],
     title: pageTitle(ctx, t.contact.title),
     description: c.intro ? clip(c.intro) : clip(`${t.contact.title} — BubaPix: ${[c.email, c.email2].filter(Boolean).join(", ")}`),
     current: "contact",
     community: data.participation.consult,
+    pageEditor: "page",
     main: `
-    <div class="page">
-      <header class="page-head"><h1 class="page-title">${e(t.contact.title)}</h1>${c.intro ? `
-        <p class="lede">${e(c.intro)}</p>` : ""}</header>
-      ${rows.length || social
-        ? `<dl class="contact-list">${rows.map(([k, v]) => `<div><dt>${e(k)}</dt><dd>${v}</dd></div>`).join("")}${social}</dl>`
-        : data.participation.consult ? "" : `<p class="muted">${e(t.contact.pending)}</p>`}${data.participation.consult ? `
+    <div class="page" data-ed-file="content/contact.json">
+      <header class="page-head"><h1 class="page-title" data-ed-label="nav_contact">${e(t.contact.title)}</h1>${c.intro ? `
+        <p class="lede" data-ed="intro">${e(c.intro)}</p>` : ""}</header>
+      ${any || !data.participation.consult
+        ? `<dl class="contact-list">${mails}${phone}${location}${social}</dl>${any ? "" : `<p class="muted">${e(t.contact.pending)}</p>`}`
+        : ""}${data.participation.consult ? `
       <section class="section-inner community" aria-labelledby="consult-title">
-        <h2 id="consult-title" class="section-label">${e(t.consult.title)}</h2>
-        <p class="lede">${e(t.consult.intro)}</p>
+        <h2 id="consult-title" class="section-label" data-ed-label="consult_title">${e(t.consult.title)}</h2>
+        <p class="lede" data-ed-label="consult_intro">${e(t.consult.intro)}</p>
         ${noscript(ctx)}
         <div class="community-body" data-community hidden>
           ${participationForm(ctx, "consult")}

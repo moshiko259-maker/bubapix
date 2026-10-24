@@ -1092,6 +1092,7 @@ h1.pe-editable { min-width: 4ch; }
 [data-multiline].pe-editable { white-space: pre-wrap; min-height: 6em; }
 .pe-list-item .pe-badge.pe-new { position: static; display: inline-block; margin-bottom: 0.4rem; }
 .pe-list-tools { flex-wrap: wrap; gap: 0.35rem; }
+.pe-plain-note { margin-block-end: 1.25rem; }
 .manage-projects-title { margin: 1rem 0 0.4rem; font-weight: 600; }
 .manage-projects { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0; padding: 0; list-style: none; }
 .manage-projects a { color: var(--ink); }

@@ -16,6 +16,11 @@
  *                                   other language gets the same text
  *     data-ed-photo="photo"         (optional) each item has a picture in this field
  *   data-multiline (on a data-ed)   a text of several paragraphs (Enter = new line)
+ *   data-ed-plain (on a data-ed)    one value for both languages ("field", not "field_<lang>");
+ *                                   never translated
+ *   data-ed-kind="email"|"phone"    checked when leaving the text; a wrong value is not kept
+ *   <template data-ed-missing>      a place for a detail that is empty today: shown only
+ *                                   while editing, so it can be filled in
  * Texts are saved in the page's language only; everything else in the files
  * is kept exactly as it is. Saving writes to the work branch with the
  * owner's own GitHub sign-in, and never over a file changed elsewhere.
@@ -78,6 +83,9 @@
     pickTitle: "בחירת תמונה", pickLoading: "טוען תמונות…", pickUpload: "העלאה מהמחשב או מהטלפון:", uploadNote: "(תישמר באתר רק בלחיצה על ״שמירה״)",
     choose: "בחירה", close: "סגירה", newBadge: "חדשה — תישמר בשמירה",
     bodyHint2: "טקסט (לחצו כדי לכתוב; Enter = שורה חדשה, שורה ריקה = פסקה חדשה)",
+    hint_email: "כתובת מייל (לחצו כדי לכתוב)", hint_email_2: "מייל נוסף (לא חובה)", hint_phone: "טלפון או וואטסאפ (לא חובה)", hint_location: "אזור (לא חובה), למשל: צפון וכל הארץ",
+    badEmail: "זו לא כתובת מייל תקינה. הכתובת הקודמת נשארה.", badPhone: "מספר טלפון יכול לכלול ספרות, רווחים, מקפים, סוגריים ו־+ בהתחלה. המספר הקודם נשאר.",
+    plainNote: "מייל וטלפון — אותו ערך בשתי השפות. הם מופיעים גם בתחתית כל דף ובהזמנות מהחנות.",
     hint_role: "תפקיד (לחצו כדי לכתוב)", hint_bio: "כמה שורות על היוצר (לחצו כדי לכתוב)",
     nameShared: "שם של אדם לא מתורגם. אם אין לו שם בשפה השנייה, יישמר שם אותו שם.",
   } : {
@@ -120,6 +128,9 @@
     pickTitle: "Choose a picture", pickLoading: "Loading pictures…", pickUpload: "Upload from your computer or phone:", uploadNote: "(saved on the site only when you press \"Save\")",
     choose: "Choose", close: "Close", newBadge: "New — saved when you save",
     bodyHint2: "Text (click to write; Enter = new line, an empty line = new paragraph)",
+    hint_email: "Email address (click to write)", hint_email_2: "Another email (optional)", hint_phone: "Phone or WhatsApp (optional)", hint_location: "Area (optional), e.g. North and all of Israel",
+    badEmail: "That is not a valid email address. The previous address was kept.", badPhone: "A phone number can have digits, spaces, dashes, brackets and a + at the start. The previous number was kept.",
+    plainNote: "Email and phone are the same in both languages. They also show at the bottom of every page and in shop orders.",
     hint_role: "Role (click to write)", hint_bio: "A few lines about them (click to write)",
     nameShared: "A person's name is not translated. If there is no name in the other language, the same name is saved there.",
   };
@@ -281,12 +292,30 @@
     node.addEventListener("blur", function () { if (onBlur) onBlur(); commit(); });
     node.addEventListener("click", function (e) { e.preventDefault(); }, true);
   }
+  var KINDS = {
+    email: { re: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, msg: "badEmail", href: function (v) { return "mailto:" + v; } },
+    phone: { re: /^\+?[\d\s\-()]{6,20}$/, msg: "badPhone", href: function (v) { return "tel:" + v.replace(/[^\d+]/g, ""); } },
+  };
   function fieldPart(node) {
-    var key = node.getAttribute("data-ed") + "_" + lang;
+    var plain = node.hasAttribute("data-ed-plain");
+    var key = node.getAttribute("data-ed") + (plain ? "" : "_" + lang);
+    var kind = KINDS[node.getAttribute("data-ed-kind") || ""];
+    if (kind) {
+      // Checked when leaving the text: an empty value is allowed (no detail), a wrong one is not kept.
+      var before = state.file[key] || "";
+      parts.push({ node: node, get: function () { return state.file[key] || ""; } });
+      editable(node, T["hint_" + node.getAttribute("data-ed")] || T.textHint, function (v) { state.file[key] = v; }, function () {
+        var v = state.file[key] || "";
+        if (v && !kind.re.test(v)) { state.file[key] = before; node.textContent = before; setStatus(T[kind.msg], "warn"); return; }
+        before = v;
+        if (node.tagName === "A") { if (v) node.setAttribute("href", kind.href(v)); else node.removeAttribute("href"); }
+      });
+      return;
+    }
     parts.push({ node: node, get: function () { return state.file[key] || ""; } });
     // A text of several paragraphs is shown as written (blank line = new paragraph).
     if (node.hasAttribute("data-multiline")) node.textContent = state.file[key] || "";
-    editable(node, node.hasAttribute("data-multiline") ? T.bodyHint2 : node.classList.contains("lede") ? T.introHint : T.textHint, function (v) { state.file[key] = v; });
+    editable(node, node.hasAttribute("data-multiline") ? T.bodyHint2 : node.classList.contains("lede") ? T.introHint : T["hint_" + node.getAttribute("data-ed")] || T.textHint, function (v) { state.file[key] = v; });
   }
   function labelPart(node) {
     var key = node.getAttribute("data-ed-label") + "_" + lang, usual = node.textContent;
@@ -301,6 +330,15 @@
   // ---------- lists ----------
   var lists = []; // { node, field, subs, tpl }
   function start() {
+    // Places for details that are empty today come out of their <template>.
+    Array.prototype.forEach.call(box.querySelectorAll("template[data-ed-missing]"), function (tp) {
+      tp.parentNode.insertBefore(tp.content.cloneNode(true), tp);
+      tp.remove();
+    });
+    if (box.querySelector("[data-ed-plain]")) {
+      var first = box.querySelector("[data-ed-plain]").closest("dl") || box.querySelector("[data-ed-plain]");
+      first.parentNode.insertBefore(el("p", { "class": "pe-note pe-plain-note", text: T.plainNote }), first);
+    }
     Array.prototype.forEach.call(box.querySelectorAll("[data-ed-label]"), labelPart);
     // An opening line that is empty today still gets a place to write it.
     if (!box.querySelector('[data-ed="intro"]')) {

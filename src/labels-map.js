@@ -38,6 +38,7 @@ module.exports = [
   ["contact_location", [["contact", "location"]], "Contact: Location heading", "יצירת קשר: כותרת מיקום"],
   ["contact_social", [["contact", "social"]], "Contact: Follow us heading", "יצירת קשר: כותרת עקבו אחרינו"],
   ["consult_title", [["consult", "title"]], "Contact: Private consultation heading", "יצירת קשר: כותרת התייעצות פרטית"],
+  ["consult_intro", [["consult", "intro"]], "Contact: Private consultation opening line", "יצירת קשר: משפט פתיחה להתייעצות"],
   // Shop
   ["shop_all", [["shop", "all"]], "Shop: All category", "חנות: קטגוריה הכול"],
   ["shop_empty", [["shop", "empty"]], "Shop: no products yet", "חנות: הודעה כשאין מוצרים"],

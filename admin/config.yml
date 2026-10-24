@@ -892,6 +892,8 @@ collections:
           - { name: contact_social_he, label: "Contact: Follow us heading, Hebrew (usual: עקבו אחרינו) / יצירת קשר: כותרת עקבו אחרינו, עברית", widget: string, required: false }
           - { name: consult_title_en, label: "Contact: Private consultation heading, English (usual: Private consultation) / יצירת קשר: כותרת התייעצות פרטית, אנגלית", widget: string, required: false }
           - { name: consult_title_he, label: "Contact: Private consultation heading, Hebrew (usual: התייעצות פרטית) / יצירת קשר: כותרת התייעצות פרטית, עברית", widget: string, required: false }
+          - { name: consult_intro_en, label: "Contact: Private consultation opening line, English (usual: Ask a question or tell us about a project. Your message goes only to the studio and is never published.) / יצירת קשר: משפט פתיחה להתייעצות, אנגלית", widget: string, required: false }
+          - { name: consult_intro_he, label: "Contact: Private consultation opening line, Hebrew (usual: שאלו שאלה או ספרו לנו על פרויקט. ההודעה מגיעה רק לסטודיו ולעולם לא מתפרסמת.) / יצירת קשר: משפט פתיחה להתייעצות, עברית", widget: string, required: false }
           - { name: shop_all_en, label: "Shop: All category, English (usual: All) / חנות: קטגוריה הכול, אנגלית", widget: string, required: false }
           - { name: shop_all_he, label: "Shop: All category, Hebrew (usual: הכול) / חנות: קטגוריה הכול, עברית", widget: string, required: false }
           - { name: shop_empty_en, label: "Shop: no products yet, English (usual: Products are on the way.) / חנות: הודעה כשאין מוצרים, אנגלית", widget: string, required: false }
