@@ -66,7 +66,7 @@
     lede: "משפט קצר על הפרויקט (לחצו כדי לכתוב)",
     synopsisTitle: "תקציר",
     synopsis: "טקסט על הפרויקט (לחצו כדי לכתוב). שורה ריקה מתחילה פסקה חדשה.",
-    langNote: "הטקסטים נשמרים בעברית בלבד. לטקסט באנגלית — פתחו את הדף באנגלית.",
+    langNote: "כותבים כאן בעברית. עם ״תרגום אוטומטי לאנגלית״ (למעלה) האנגלית מתעדכנת בשמירה. לתיקון התרגום — פתחו את הדף באנגלית.",
     coverTitle: "תמונת השער",
     coverNote: "תמונת השער מופיעה גם כפוסטר של הפרויקט בדף הבית ובעמוד הפרויקטים.",
     replaceCover: "החלפת תמונת השער",
@@ -125,6 +125,11 @@
     capHidden: "לא להציג (נשמר)", capProject: "מתחת לתמונה, בדף הפרויקט", capEverywhere: "מתחת לתמונה, גם בגלריה של דף הבית",
     captionNoteHelp: "הכותרת והתיאור מתורגמים לאנגלית בשמירה. תיאור לעיוורים — בכפתור ״תיאור לעיוורים״.",
     galHeading: "כותרת לגלריה, למשל ״דמויות״ (ריק = ״תמונות״)", galHeadingBehind: "כותרת לאזור (ריק = ״מאחורי הקלעים״)",
+    addDetails: "הוספת פרטים לדף", addDetail: "הוספת שורה", detailsHeading: "כותרת לאזור (ריק = ״פרטים״)",
+    detailLabel: "כותרת, למשל ״שנה״", detailValue: "ערך, למשל ״2026״",
+    detailsNote: "למשל: שנה, אורך, כלים, בימוי. מידע אמיתי בלבד. שורה בלי כותרת או בלי ערך לא מוצגת. שמות ומספרים מתורגמים גם הם — אם התרגום שינה אותם, תקנו בדף באנגלית.",
+    detailRemoved: "השורה הוסרה. אפשר לבטל עם ״ביטול פעולה״.", detailsRemoved: "אזור הפרטים הוסר מהדף. אפשר לבטל עם ״ביטול פעולה״.",
+    areaUpTip: "הזזת האזור מעל האזור שלפניו", areaDownTip: "הזזת האזור מתחת לאזור שאחריו",
     newArea: "אזור סרטונים חדש", newAreaTip: "אזור נוסף עם כותרת משלו, למשל ״טריילר״, ״הסרט המלא״ או ״מאחורי הקלעים״",
     removeArea: "מחיקת האזור", areaRemoved: "אזור הסרטונים הוסר מהדף (ביוטיוב שום דבר לא נמחק). אפשר לבטל עם ״ביטול פעולה״.",
     videoHeading2: "כותרת לאזור, למשל ״טריילר״ או ״הסרט המלא״ (ריק = ״וידאו״)",
@@ -156,7 +161,7 @@
     lede: "A short sentence about the project (click to write)",
     synopsisTitle: "Synopsis",
     synopsis: "Text about the project (click to write). An empty line starts a new paragraph.",
-    langNote: "Texts are saved in English only. For the Hebrew text, open the page in Hebrew.",
+    langNote: "You write in English here. With \"Auto-translate to Hebrew\" (above) the Hebrew updates on saving. To fix the translation, open the page in Hebrew.",
     coverTitle: "Cover picture",
     coverNote: "The cover is also the project's poster on the homepage and on the projects page.",
     replaceCover: "Replace the cover",
@@ -215,6 +220,11 @@
     capHidden: "Not shown (kept)", capProject: "Under the picture, on the project page", capEverywhere: "Under the picture, also in the homepage gallery",
     captionNoteHelp: "The title and text are translated to Hebrew on saving. The description for blind visitors is under \"Description for blind visitors\".",
     galHeading: "Heading for this gallery, e.g. \"Characters\" (empty = \"Images\")", galHeadingBehind: "Heading for this area (empty = \"Behind the scenes\")",
+    addDetails: "Add details to the page", addDetail: "Add a line", detailsHeading: "Heading for this area (empty = \"Details\")",
+    detailLabel: "Label, e.g. \"Year\"", detailValue: "Value, e.g. \"2026\"",
+    detailsNote: "For example: year, length, tools, director. Real information only. A line without a label or a value is not shown. Names and numbers are translated too: if the translation changed them, fix them on the Hebrew page.",
+    detailRemoved: "The line was removed. You can undo it.", detailsRemoved: "The details area was removed from the page. You can undo it.",
+    areaUpTip: "Move the area above the one before it", areaDownTip: "Move the area below the one after it",
     newArea: "New videos area", newAreaTip: "Another area with its own heading, e.g. \"Trailer\", \"Full film\" or \"Behind the scenes\"",
     removeArea: "Delete the area", areaRemoved: "The videos area was removed from the page (nothing is deleted on YouTube). You can undo it.",
     videoHeading2: "Heading for this area, e.g. \"Trailer\" or \"Full film\" (empty = \"Video\")",
@@ -447,7 +457,7 @@
     var firstGallery = null;
     Array.prototype.forEach.call(article.querySelectorAll(".project-section"), function (s) {
       if (s.querySelector(".jg-project")) { if (!firstGallery) firstGallery = s; s.hidden = true; }
-      else if (s.classList.contains("videos")) s.hidden = true;
+      else if (s.classList.contains("videos") || s.querySelector("dl.details")) s.hidden = true;
     });
     // The project name: the field the page shows (a name without a Hebrew
     // version is shared by both languages, as on the site).
@@ -499,13 +509,20 @@
     area.textContent = "";
     area.appendChild(coverBlock());
     area.appendChild(synopsisBlock());
-    // A page without videos: "Add a video to the page" sits where the new videos area will go (above the pictures).
+    // A page without videos or details: "Add a video to the page" and "Add details"
+    // sit where the new areas will go (above the pictures).
     var videoSlot = el("div", { "class": "pe-add pe-video-slot" });
     area.appendChild(videoSlot);
-    var shown = 0, hiddenGroups = 0, videoAreas = 0;
+    var shown = 0, hiddenGroups = 0, videoAreas = 0, detailAreas = 0;
     data.sections.forEach(function (sec, s) {
-      if (!sec || (sec.type !== "gallery" && sec.type !== "behind" && sec.type !== "videos")) return;
-      if (sec.hidden === true) { if (sec.type !== "videos") hiddenGroups++; return; }
+      if (!sec || (sec.type !== "gallery" && sec.type !== "behind" && sec.type !== "videos" && sec.type !== "details")) return;
+      if (sec.hidden === true) { if (sec.type === "gallery" || sec.type === "behind") hiddenGroups++; return; }
+      if (sec.type === "details") {
+        if (!Array.isArray(sec.items)) sec.items = [];
+        area.appendChild(detailsBlock(sec, s));
+        detailAreas++;
+        return;
+      }
       if (sec.type === "videos") {
         if (!Array.isArray(sec.items)) sec.items = [];
         area.appendChild(videosBlock(sec, s));
@@ -523,8 +540,15 @@
         changed();
       }));
     }
-    if (videoAreas) videoSlot.remove();
-    else {
+    if (!detailAreas) {
+      videoSlot.appendChild(button("+ " + T.addDetails, function () {
+        data.sections.unshift({ type: "details", hidden: false, heading_en: "", heading_he: "", items: [{ label_en: "", label_he: "", value_en: "", value_he: "" }] });
+        changed();
+        var first = area.querySelector(".pe-details-sec dt");
+        if (first) first.focus();
+      }, "pe-btn pe-add-details"));
+    }
+    if (!videoAreas) {
       videoSlot.appendChild(button("+ " + T.addVideos, function () {
         askVideo(null, function (item) {
           var first = -1;
@@ -535,6 +559,7 @@
         });
       }, "pe-btn pe-add-video"));
     }
+    if (!videoSlot.childNodes.length) videoSlot.remove();
     if (adds.length) area.appendChild(el("div", { "class": "pe-add" }, adds));
     if (hiddenGroups) area.appendChild(el("p", { "class": "pe-note pe-proj-note", text: T.hiddenSections.replace("{n}", hiddenGroups) }));
   }
@@ -701,10 +726,54 @@
   // The videos area moves past the next shown area (pictures or videos) before or after it.
   function moveSection(s, dir) {
     var j = s + dir;
-    while (j >= 0 && j < data.sections.length && !(data.sections[j] && data.sections[j].hidden !== true && /^(gallery|behind|videos)$/.test(data.sections[j].type))) j += dir;
+    while (j >= 0 && j < data.sections.length && !(data.sections[j] && data.sections[j].hidden !== true && /^(gallery|behind|videos|details)$/.test(data.sections[j].type))) j += dir;
     if (j < 0 || j >= data.sections.length) return;
     var tmp = data.sections[s]; data.sections[s] = data.sections[j]; data.sections[j] = tmp;
     changed();
+  }
+  // ---------- details (a "details" area: rows of a label and a value) ----------
+  function detailsBlock(sec, s) {
+    var box = el("section", { "class": "project-section pe-details-sec" });
+    var head = el("h2", { "class": "section-label", "data-ts": "project/section-title" });
+    head.textContent = sec["heading_" + lang] || "";
+    editable(head, T.detailsHeading, function (txt) { sec["heading_" + lang] = clean(txt).replace(/\n+/g, " "); });
+    head.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); head.blur(); } });
+    box.appendChild(head);
+    box.appendChild(el("div", { "class": "pe-gal-tools" }, [
+      button(T.sectionUp, function () { moveSection(s, -1); }, "pe-btn pe-sec-up", T.areaUpTip),
+      button(T.sectionDown, function () { moveSection(s, 1); }, "pe-btn pe-sec-down", T.areaDownTip),
+      button(T.removeArea, function () { data.sections.splice(s, 1); changed(); setStatus(T.detailsRemoved, "warn"); }, "pe-btn pe-danger pe-sec-remove"),
+      el("span", { "class": "pe-note", text: T.detailsNote }),
+    ]));
+    var list = el("dl", { "class": "details pe-details-list" });
+    sec.items.forEach(function (d, i) {
+      if (!d) return;
+      var line = function (tag, key, hint) {
+        var n = el(tag);
+        n.textContent = d[key + "_" + lang] || "";
+        editable(n, hint, function (txt) { d[key + "_" + lang] = clean(txt).replace(/\n+/g, " "); });
+        n.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); n.blur(); } });
+        return n;
+      };
+      var row = el("div", { "class": "pe-detail", "data-detail": String(i) }, [
+        line("dt", "label", T.detailLabel),
+        line("dd", "value", T.detailValue),
+        el("div", { "class": "pe-tools pe-detail-tools" }, [
+          button(T.prevBtn, function () { if (i > 0) { sec.items.splice(i - 1, 0, sec.items.splice(i, 1)[0]); changed(); } }, "pe-btn pe-move", T.earlier),
+          button(T.nextBtn, function () { if (i < sec.items.length - 1) { sec.items.splice(i + 1, 0, sec.items.splice(i, 1)[0]); changed(); } }, "pe-btn pe-move", T.later),
+          button(T.remove.split(" ")[0], function () { sec.items.splice(i, 1); changed(); setStatus(T.detailRemoved, "warn"); }, "pe-btn pe-danger"),
+        ]),
+      ]);
+      list.appendChild(row);
+    });
+    box.appendChild(list);
+    box.appendChild(el("div", { "class": "pe-add" }, [button("+ " + T.addDetail, function () {
+      sec.items.push({ label_en: "", label_he: "", value_en: "", value_he: "" });
+      changed();
+      var rows = box.parentNode ? area.querySelectorAll('.pe-details-sec .pe-detail dt') : [];
+      if (rows.length) rows[rows.length - 1].focus();
+    }, "pe-btn pe-add-detail")]));
+    return box;
   }
   function videosBlock(sec, s) {
     var box = el("section", { "class": "project-section pe-videos-sec", "data-videos": String(s) });
