@@ -97,17 +97,39 @@ module.exports = function createImages(root) {
     return { ...rec };
   }
 
+  // A sharing picture (Facebook, WhatsApp, X…): 1200×630 JPEG, the whole
+  // picture on the site's paper colour (never cropped), about 100–300 KB
+  // instead of a 2–3 MB original. Without sharp: null (the original is used).
+  const shares = new Map();
+  function share(rec) {
+    if (!sharp || !rec || !rec.src) return null;
+    if (shares.has(rec.src)) return shares.get(rec.src);
+    const file = path.join(root, rec.src);
+    if (!fs.existsSync(file) || !/\.(jpe?g|png|webp)$/i.test(rec.src)) return null;
+    const hash = crypto.createHash("sha1").update(fs.readFileSync(file)).digest("hex").slice(0, 10);
+    const outRel = `assets/share/${path.basename(rec.src).replace(/\.[^.]+$/, "")}-${hash}.jpg`;
+    jobs.push({ file, out: path.join(root, outRel), share: true });
+    const out = { src: outRel, w: 1200, h: 630, alt: rec.alt || "" };
+    shares.set(rec.src, out);
+    return out;
+  }
+
   async function runJobs() {
     if (!jobs.length) return 0;
     fs.mkdirSync(path.join(root, "assets/resized"), { recursive: true });
+    fs.mkdirSync(path.join(root, "assets/share"), { recursive: true });
     let made = 0;
     for (const j of jobs) {
       if (fs.existsSync(j.out)) continue;
-      await sharp(j.file).resize({ width: j.w, withoutEnlargement: true }).webp({ quality: 82 }).toFile(j.out);
+      if (j.share) {
+        await sharp(j.file).resize(1200, 630, { fit: "contain", background: "#f7f6ef" }).flatten({ background: "#f7f6ef" }).jpeg({ quality: 82, mozjpeg: true }).toFile(j.out);
+      } else {
+        await sharp(j.file).resize({ width: j.w, withoutEnlargement: true }).webp({ quality: 82 }).toFile(j.out);
+      }
       made++;
     }
     return made;
   }
 
-  return { image, runJobs, warnings, hasSharp: !!sharp };
+  return { image, share, runJobs, warnings, hasSharp: !!sharp };
 };

@@ -325,6 +325,11 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
   margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
 }
 .filters[hidden] { display: none; } /* buttons need JavaScript; hidden without it */
+/* Filter rows that need JavaScript take their place from the first paint
+   (the "js" class is set in the page head), so nothing below them jumps. */
+.needs-js { display: none; }
+.js .needs-js { display: flex; }
+.js .needs-js[hidden] { display: none; }
 .filter {
   min-height: 40px;
   padding: 0 1rem;

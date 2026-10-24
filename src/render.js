@@ -29,6 +29,19 @@ function makeLink(ctx) {
   };
 }
 
+// A short search/sharing description made only from the site's own texts:
+// plain text, cut at a word near 155 characters.
+function clip(text, max = 155) {
+  const s = String(text || "").replace(/\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/[*_#>`]/g, "").replace(/\s+/g, " ").trim();
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max);
+  return cut.slice(0, Math.max(cut.lastIndexOf(" "), max - 20)).replace(/[\s,.;:–—-]+$/, "") + "…";
+}
+
+// A picture as wide as the page: the page is at most 1440px wide with side
+// margins of about 4% of the screen (--gutter in css/styles.css).
+const FULL = "(max-width: 1440px) 92vw, 1328px";
+
 function img(ctx, im, { sizes = "100vw", attrs = 'loading="lazy" decoding="async"', cls = "" } = {}) {
   const srcset = im.srcset
     ? ` srcset="${im.srcset.split(", ").map((p) => ctx.assetBase + e(p)).join(", ")}" sizes="${sizes}"`
@@ -65,11 +78,13 @@ function ratioClass(im) {
 // Address for a picture's own link (see build.js picture()).
 const linkOf = (ctx, ln) => (ln.external ? e(ln.href) : makeLink(ctx)(ln.path));
 
-function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = false, eager = false, viewer = false, external = false, sizes, extraClass = "" } = {}) {
+// eager: the main picture of the first screen (loaded first). soon: also on the
+// first screen, loaded at once (never "lazy", which delays the first view).
+function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = false, eager = false, soon = false, viewer = false, external = false, sizes, extraClass = "" } = {}) {
   const { cls, ratio } = ratioClass(im);
   const isLead = lead && ratio >= 1.2;
-  const sz = sizes || (isLead ? "(max-width: 1440px) 100vw, 1440px" : "(max-width: 560px) 100vw, (max-width: 1100px) 50vw, 40vw");
-  const picture = `<span class="jg-media">${img(ctx, im, { sizes: sz, attrs: eager ? 'fetchpriority="high" decoding="async"' : 'loading="lazy" decoding="async"' })}</span>`;
+  const sz = sizes || (isLead ? FULL : "(max-width: 560px) 92vw, (max-width: 1100px) 46vw, 40vw");
+  const picture = `<span class="jg-media">${img(ctx, im, { sizes: sz, attrs: eager ? 'fetchpriority="high" decoding="async"' : soon ? 'decoding="async"' : 'loading="lazy" decoding="async"' })}</span>`;
   const capInner = caption && (caption.title || caption.note)
     ? `${caption.title ? `<span class="jg-title">${e(caption.title)}</span>` : ""}${caption.note ? `<span class="jg-note">${e(caption.note)}</span>` : ""}`
     : "";
@@ -147,14 +162,17 @@ function shopData(ctx) {
   return `<script type="application/json" id="shop-data">${json}</script>`;
 }
 
-function layout(ctx, { title, description, image, main, current = "", community = false, viewer = false, shopScript = false, noindex = false, edits = [], pageEditor = false, githubCheck = false }) {
+function layout(ctx, { title, description, image, main, current = "", community = false, viewer = false, shopScript = false, noindex = false, edits = [], pageEditor = false, githubCheck = false, jsonld = null }) {
   const { t, lang, dir, site, data } = ctx;
   const link = makeLink(ctx);
   const otherHref = ctx.otherBase + ctx.path + (ctx.preview ? "index.html" : "") + (lang === "he" ? "?lang=en" : "");
   const otherLang = lang === "he" ? "en" : "he";
   const absUrl = (l) => site.url + (l === "he" ? "he/" : "") + ctx.path;
   const firstHome = data.homeGallery[0] && data.homeGallery[0].image;
-  const ogImage = image ? site.url + image.src : data.hero ? site.url + data.hero.src : firstHome ? site.url + firstHome.src : site.url + "assets/brand/bubapix-logo.jpg";
+  const ogPick = image || data.hero || firstHome || null;
+  const ogShare = ogPick && ctx.share ? ctx.share(ogPick) : null;
+  const ogImage = site.url + (ogShare ? ogShare.src : ogPick ? ogPick.src : "assets/brand/bubapix-logo.jpg");
+  const ogAlt = (ogPick && ogPick.alt) || "BubaPix";
 
   const nav = [
     ["work/", t.nav.work, "work"],
@@ -201,17 +219,23 @@ function layout(ctx, { title, description, image, main, current = "", community 
   <meta property="og:title" content="${e(title)}">
   <meta property="og:description" content="${e(description)}">
   <meta property="og:url" content="${absUrl(lang)}">
-  <meta property="og:image" content="${e(ogImage)}">
+  <meta property="og:image" content="${e(ogImage)}">${ogShare ? `
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">` : ""}
+  <meta property="og:image:alt" content="${e(ogAlt)}">
   <meta property="og:locale" content="${t.meta.ogLocale}">
   <meta property="og:locale:alternate" content="${ctx.otherT.meta.ogLocale}">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image:alt" content="${e(ogAlt)}">
+  <link rel="icon" href="${ctx.assetBase}assets/brand/icons/favicon-48.png" type="image/png" sizes="48x48">${jsonld ? `
+  <script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>` : ""}
   <link rel="icon" href="${ctx.assetBase}favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="${ctx.assetBase}manifest${lang === "he" ? ".he" : ""}.webmanifest">
   <link rel="apple-touch-icon" href="${ctx.assetBase}assets/brand/icons/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-title" content="BubaPix">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="preload" href="${ctx.assetBase}assets/fonts/${lang === "he" ? "heebo-hebrew" : "heebo-latin"}-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+${(lang === "he" ? ["heebo-hebrew", "rubik-hebrew", "heebo-latin", "rubik-latin"] : ["heebo-latin", "rubik-latin"]).map((f) => `  <link rel="preload" href="${ctx.assetBase}assets/fonts/${f}-wght-normal.woff2" as="font" type="font/woff2" crossorigin>`).join("\n")}
   <link rel="stylesheet" href="${ctx.assetBase}css/fonts.css?v=${ctx.v.fonts}">
   <script>${jsFlag}</script>
   <link rel="stylesheet" href="${ctx.assetBase}css/styles.css?v=${ctx.v.styles}">
@@ -512,7 +536,14 @@ function home(ctx) {
   }
   // Phones: at most two pictures side by side, in the same tight style.
   const rowsSmall = lay.phone ? buildRows([lay.phone], 1.4, lay.phone, false) : buildRows([2, 1, 2, 2], 1.4, 2, false);
-  const cell = (n, rowLen) => {
+  // Each picture's share of its row's width (computers), so the browser
+  // downloads a file that fits the width it is really shown at.
+  const shareOf = (n, row) => {
+    if (row.length === 1) return free ? Math.min(100, data.homeGallery[n].image.fw || 100) / 100 : 1;
+    const part = (i) => (free ? data.homeGallery[i].image.fw || 33 : ratioOf(data.homeGallery[i]));
+    return part(n) / row.reduce((a, i) => a + part(i), 0);
+  };
+  const cell = (n, rowLen, share = 1 / rowLen) => {
     const g = data.homeGallery[n];
     const own = !linked(g) && g.image.link;
     return galleryItem(ctx, g.image, {
@@ -524,7 +555,7 @@ function home(ctx) {
       label: linked(g) ? `${g.project.name} — ${t.home.openProject}` : own ? g.image.alt : `${t.work.openImage}: ${g.image.alt}`,
       external: !!(own && g.image.link.external),
       viewer: !linked(g) && !own,
-      sizes: rowLen === 1 ? "(max-width: 1440px) 100vw, 1440px" : `(max-width: 700px) ${rowLen > 2 ? 50 : 60}vw, ${Math.round(100 / rowLen) + 10}vw`,
+      sizes: rowLen === 1 && share === 1 ? FULL : `(max-width: 700px) ${phoneLen(n) > 1 ? 46 : 92}vw, (max-width: 1440px) ${Math.ceil(92 * share)}vw, ${Math.ceil(1328 * share)}px`,
       extraClass: freeClass.get(n) || "",
     });
   };
@@ -539,12 +570,15 @@ function home(ctx) {
   // rowsSmall); js/main.js moves the pictures into those rows on phones.
   const smallRowOf = new Map();
   rowsSmall.forEach((row, r) => row.forEach((n) => smallRowOf.set(n, `${r}:${row.length}`)));
+  function phoneLen(n) { const v = smallRowOf.get(n); return v ? Number(v.split(":")[1]) : 2; }
   const feature = data.feature
     ? galleryItem(ctx, data.feature.image, {
         href: data.feature.project ? link(`work/${data.feature.project.slug}/`) : ctx.assetBase + e(data.feature.image.full || data.feature.image.src),
         label: data.feature.project ? `${data.feature.project.name} — ${t.home.openProject}` : `${t.work.openImage}: ${data.feature.image.alt}`,
         viewer: !data.feature.project,
-        sizes: lay.feature === "full" ? "(max-width: 1440px) 100vw, 1440px" : "(max-width: 700px) 92vw, 960px",
+        // On phones this picture fills the first screen: load it first.
+        eager: true,
+        sizes: lay.feature === "full" ? FULL : `(max-width: 700px) 92vw, ${{ medium: 900, large: 1120 }[lay.feature] || 640}px`,
       })
     : "";
   // One short line saying what a click on a picture does, at the bottom of
@@ -593,11 +627,11 @@ function home(ctx) {
     <section class="section home-posters" aria-labelledby="posters-title">
       <h2 id="posters-title" class="visually-hidden">${e(t.nav.work)}</h2>
       <div class="mosaic poster-rows${lay.gap ? ` gap-${lay.gap}` : ""}" data-mosaic>${posterLayout.rows.map((row) => `
-        <div class="mrow n${row.length}">${row.map((p) => galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${p.name} — ${t.home.openProject}`, sizes: `(max-width: 700px) 50vw, ${Math.round(100 / row.length) + 5}vw`, extraClass: `poster${posterLayout.cls.get(p) ? " " + posterLayout.cls.get(p) : ""}` }).replace(/^<(a|figure) /, `<$1 data-project="${e(p.slug)}" data-srow="${posterPhoneRow(posterProjects, p)}" `)).join("")}</div>`).join("")}
+        <div class="mrow n${row.length}">${row.map((p) => galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${p.name} — ${t.home.openProject}`, sizes: `(max-width: 700px) 46vw, (max-width: 1440px) ${Math.ceil(92 / row.length * 1.1)}vw, ${Math.ceil(1328 / row.length * 1.1)}px`, extraClass: `poster${posterLayout.cls.get(p) ? " " + posterLayout.cls.get(p) : ""}` }).replace(/^<(a|figure) /, `<$1 data-project="${e(p.slug)}" data-srow="${posterPhoneRow(posterProjects, p)}" `)).join("")}</div>`).join("")}
       </div>
     </section>`
     : "";
-  const items = rows.map((row) => `<div class="mrow n${row.length}">${row.map((n) => cell(n, row.length).replace(/^<(a|figure) /, `<$1 data-srow="${smallRowOf.get(n)}" `)).join("")}</div>`);
+  const items = rows.map((row) => `<div class="mrow n${row.length}">${row.map((n) => cell(n, row.length, shareOf(n, row)).replace(/^<(a|figure) /, `<$1 data-srow="${smallRowOf.get(n)}" `)).join("")}</div>`);
   const work = items.length
     ? `
     <section class="section section-work" aria-labelledby="work-title">
@@ -651,6 +685,17 @@ function home(ctx) {
     pageEditor: true,
     title: t.meta.homeTitle,
     viewer: true,
+    // Who BubaPix is, for search engines (read as data, never run as code).
+    jsonld: {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "BubaPix",
+      url: ctx.site.url + (ctx.lang === "he" ? "he/" : ""),
+      logo: ctx.site.url + "assets/brand/icons/icon-512.png",
+      description: data.seoDescription || undefined,
+      email: (data.contact && data.contact.email) || undefined,
+      sameAs: ((data.contact && data.contact.social) || []).map((x) => x.url),
+    },
     description: data.seoDescription || data.intro,
     main: `    <h1 class="visually-hidden">BubaPix</h1>${openingBlock}${tagline}${posters}${showreel}${work}${services}${intro}${start}${hint ? `
     <p class="page-hint bottom-hint">${e(hint)}</p>` : ""}`,
@@ -663,7 +708,7 @@ function work(ctx) {
   const used = data.categories.filter((c) => data.projects.some((p) => p.categories.some((pc) => pc.slug === c.slug)));
   const filters = used.length > 1 || (used.length === 1 && data.projects.some((p) => !p.categories.length))
     ? `
-      <div class="filters" role="group" aria-label="${e(t.a11y.filterLabel)}" hidden>
+      <div class="filters needs-js" role="group" aria-label="${e(t.a11y.filterLabel)}">
         <button type="button" class="filter" data-filter="" aria-pressed="true">${e(t.work.all)}</button>${used.map((c) => `
         <button type="button" class="filter" data-filter="${e(c.slug)}" aria-pressed="false">${e(c.name)}</button>`).join("")}
       </div>`
@@ -674,6 +719,9 @@ function work(ctx) {
     galleryItem(ctx, p.thumb, {
       href: link(`work/${p.slug}/`),
       label: p.title,
+      // The first pictures are on the first screen.
+      eager: i === 0,
+      soon: i > 0 && i < 4,
       caption: p.titleInGallery ? { title: p.name, note: p.categories.map((c) => c.name).join(", ") } : null,
       extraClass: free ? free.classes[i] : "",
     }).replace(/<a class="jg-item/, `<a data-categories="${e(p.categories.map((c) => c.slug).join(" "))}" class="jg-item`)
@@ -688,7 +736,7 @@ function work(ctx) {
   return layout(ctx, {
     edits: [...data.projects.map((p) => [t.edit.project.replace("{name}", p.title), ed.project(p.slug)]), [t.edit.newProject, ed.newProject]],
     title: pageTitle(ctx, t.work.title),
-    description: data.seoDescription,
+    description: data.projects.length ? clip(`${t.work.title} — BubaPix: ${data.projects.map((p) => p.name).join(", ")}.`) : data.seoDescription,
     current: "work",
     pageEditor: "work",
     main: `
@@ -896,7 +944,7 @@ function project(ctx, p, prev, next) {
   }
   const cover = p.cover
     ? `
-      <figure class="project-cover${coverCls}"><a href="${ctx.assetBase}${e(p.cover.full || p.cover.src)}" data-viewer aria-label="${e(`${t.work.openImage}: ${p.cover.alt}`)}">${img(ctx, p.cover, { sizes: "(max-width: 1440px) 100vw, 1440px", attrs: 'fetchpriority="high" decoding="async"' })}</a></figure>`
+      <figure class="project-cover${coverCls}"><a href="${ctx.assetBase}${e(p.cover.full || p.cover.src)}" data-viewer aria-label="${e(`${t.work.openImage}: ${p.cover.alt}`)}">${img(ctx, p.cover, { sizes: FULL, attrs: 'fetchpriority="high" decoding="async"' })}</a></figure>`
     : "";
   const synopsis = p.description
     ? `
@@ -911,7 +959,7 @@ function project(ctx, p, prev, next) {
   return layout(ctx, {
     edits: [[t.edit.thisProject, ed.project(p.slug)], ...(ctx.data.participation.comments ? [[t.edit.comments, "", true]] : []), [t.edit.newProject, ed.newProject]],
     title: p.seoTitle || pageTitle(ctx, p.title),
-    description: p.seoDescription || p.text || ctx.data.seoDescription,
+    description: p.seoDescription || clip(p.text) || clip(p.description) || clip(`${p.name} — ${ctx.data.seoDescription}`),
     image: p.thumb,
     current: "work",
     community: !!community,
@@ -945,7 +993,7 @@ function services(ctx) {
   return layout(ctx, {
     edits: [[t.edit.services, ed.services]],
     title: pageTitle(ctx, t.services.title),
-    description: s.intro || data.seoDescription,
+    description: s.intro ? clip(s.intro) : s.items.length ? clip(`${t.services.title} — BubaPix: ${s.items.map((x) => x.name).join(", ")}.`) : data.seoDescription,
     current: "services",
     pageEditor: "page",
     main: `
@@ -971,7 +1019,7 @@ function about(ctx) {
   return layout(ctx, {
     edits: [[t.edit.about, ed.about]],
     title: pageTitle(ctx, t.about.title),
-    description: data.seoDescription,
+    description: clip(a.body) || data.seoDescription,
     current: "about",
     main: `
     <div class="page">
@@ -1020,7 +1068,7 @@ function contact(ctx) {
   return layout(ctx, {
     edits: [[t.edit.contact, ed.contact], ...(data.participation.consult ? [[t.edit.comments, "", true]] : [])],
     title: pageTitle(ctx, t.contact.title),
-    description: c.intro || data.seoDescription,
+    description: c.intro ? clip(c.intro) : clip(`${t.contact.title} — BubaPix: ${[c.email, c.email2].filter(Boolean).join(", ")}`),
     current: "contact",
     community: data.participation.consult,
     main: `
@@ -1202,7 +1250,7 @@ function shop(ctx) {
         </button>`;
   const filters = cats.length
     ? `
-      <div class="filters cat-strip" role="group" aria-label="${e(t.shop.categoriesLabel)}" hidden>${tile("", t.shop.all, `<span class="cat-letter">${icon("grid")}</span>`, data.products.length, true)}${cats.filter((c) => !c.parent).map((c) => tile(c.slug, c.name, c.image ? img(ctx, c.image, { sizes: "120px" }) : `<span class="cat-letter">${e([...c.name][0] || "")}</span>`, c.count, false)).join("")}
+      <div class="filters cat-strip needs-js" role="group" aria-label="${e(t.shop.categoriesLabel)}">${tile("", t.shop.all, `<span class="cat-letter">${icon("grid")}</span>`, data.products.length, true)}${cats.filter((c) => !c.parent).map((c) => tile(c.slug, c.name, c.image ? img(ctx, c.image, { sizes: "120px" }) : `<span class="cat-letter">${e([...c.name][0] || "")}</span>`, c.count, false)).join("")}
       </div>${cats.filter((c) => c.subs && c.subs.length).map((c) => `
       <div class="filters sub-strip" role="group" aria-label="${e(c.name)}" data-parent="${e(c.slug)}" hidden>
         <button type="button" class="filter sub-chip" data-filter="${e(c.slug)}" aria-pressed="false">${e(t.shop.all)}</button>${c.subs.map((s) => `
@@ -1220,7 +1268,7 @@ function shop(ctx) {
   return layout(ctx, {
     edits: [[t.edit.newProduct, ed.newProduct], [t.edit.shopSettings, ed.shop], ...data.products.map((x) => [t.edit.product.replace("{name}", x.title), ed.product(x.slug)])],
     title: pageTitle(ctx, t.shop.title),
-    description: data.shop.intro || data.seoDescription,
+    description: data.shop.intro ? clip(data.shop.intro) : clip(`${t.shop.title} — ${data.seoDescription}`),
     current: "shop",
     main: `
     <div class="page">

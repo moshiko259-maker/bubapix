@@ -690,6 +690,7 @@ function contextFor(lang, pagePath, data) {
     preview,
     v: assetVersion,
     data,
+    share: images.share,
   };
 }
 
@@ -854,13 +855,29 @@ self.addEventListener("fetch", (e) => {
     return;
   }
   if (!/\\.(css|js|webp|jpe?g|png|svg|woff2|webmanifest)$/.test(url.pathname)) return;
-  e.respondWith(
-    caches.match(req).then((m) => m || fetch(req).then((res) => {
-      if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
-      return res;
-    }))
-  );
+  const save = (res) => {
+    if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy).then(() => trim(c))); }
+    return res;
+  };
+  // Files with a version in the address (?v=…) never change: saved copy first.
+  // Files without one (pictures, the logo, the app manifest) can be replaced
+  // at the same address: show the saved copy at once, and refresh it in the
+  // background so the next visit has the new one.
+  if (url.search) { e.respondWith(caches.match(req).then((m) => m || fetch(req).then(save))); return; }
+  e.respondWith(caches.match(req).then((m) => {
+    const fresh = fetch(req).then(save).catch(() => m || Response.error());
+    if (m) { e.waitUntil(fresh); return m; }
+    return fresh;
+  }));
 });
+// Keep the saved copies small: at most MAX files, the oldest go first.
+const MAX = 150;
+function trim(c) {
+  return c.keys().then((keys) => {
+    const extra = keys.filter((k) => k.mode !== "navigate" && !/\\.html$|\\/$/.test(new URL(k.url).pathname)).slice(0, Math.max(0, keys.length - MAX));
+    return Promise.all(extra.map((k) => c.delete(k)));
+  });
+}
 `
 );
 
