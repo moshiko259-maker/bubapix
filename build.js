@@ -145,6 +145,15 @@ for (const list of [raw.projects, raw.pages, raw.products]) {
 
 // Text for one language, falling back to the other language so a missing
 // translation never leaves a blank.
+// A title and short text the owner wrote for one picture (page editor, "Title and text"):
+// <pre>title_<lang>, <pre>note_<lang>, and where to show them (<pre>caption). null when
+// nothing is written or it is not shown anywhere.
+const captionOf = (obj, pre, lang, shown) => {
+  const where = String(obj[`${pre}caption`] || "hidden");
+  if (!shown.includes(where)) return null;
+  const title = pick(obj, `${pre}title`, lang), note = pick(obj, `${pre}note`, lang);
+  return title || note ? { title, note, where } : null;
+};
 const pick = (obj, key, lang) => {
   const own = String(obj[`${key}_${lang}`] || "").trim();
   const other = String(obj[`${key}_${lang === "he" ? "en" : "he"}`] || "").trim();
@@ -392,6 +401,8 @@ function contentFor(lang) {
         name,
         showTitle: p.show_title !== false && !!name,
         titleInGallery: p.title_in_gallery === true && !!name,
+        // "Title and text" of the cover: under it on the projects page ("work"), on the project page ("project"), or both.
+        coverCaption: captionOf(p, "cover_", lang, ["work", "project", "both"]),
         text: pick(p, "text", lang),
         description: pick(p, "description", lang),
         seoTitle: pick(p, "seo_title", lang),
@@ -439,7 +450,7 @@ function contentFor(lang) {
     const project = slug ? projects.find((p) => p.slug === slug) || null : null;
     if (slug && !project) images.warnings.push(`second opening picture: project "${slug}" is not shown, so the picture has no link`);
     seen.add(im.src);
-    return { image: im, project };
+    return { image: im, project, caption: captionOf(s, "feature_", lang, ["everywhere"]) };
   })();
   const pictureCaption = (im) => (im.caption === "everywhere" && (im.title || im.note) ? { title: im.title, note: im.note } : null);
   // Homepage projects row: one poster per project, shown from two projects
@@ -472,7 +483,7 @@ function contentFor(lang) {
       addHome(im, p, pictureCaption(im));
     }
   }
-  if (hero && !seen.has(hero.src)) homeGallery.unshift({ image: hero, project: null, caption: null });
+  if (hero && !seen.has(hero.src)) homeGallery.unshift({ image: hero, project: null, caption: captionOf(s, "hero_", lang, ["everywhere"]) });
   else if (hero) {
     // Put the opening image first.
     const i = homeGallery.findIndex((x) => x.image.src === hero.src);

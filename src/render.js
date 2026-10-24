@@ -581,6 +581,7 @@ function home(ctx) {
         viewer: !data.feature.project,
         // On phones this picture fills the first screen: load it first.
         eager: true,
+        caption: data.feature.caption,
         sizes: lay.feature === "full" ? FULL : `(max-width: 700px) 92vw, ${{ medium: 900, large: 1120 }[lay.feature] || 640}px`,
       })
     : "";
@@ -732,7 +733,8 @@ function work(ctx) {
       // The first pictures are on the first screen.
       eager: i === 0,
       soon: i > 0 && i < 4,
-      caption: p.titleInGallery ? { title: p.name, note: p.categories.map((c) => c.name).join(", ") } : null,
+      // The cover's own title and text when the owner chose to show them here; otherwise the project's name if chosen.
+      caption: p.coverCaption && ["work", "both"].includes(p.coverCaption.where) ? p.coverCaption : p.titleInGallery ? { title: p.name, note: p.categories.map((c) => c.name).join(", ") } : null,
       extraClass: free ? free.classes[i] : "",
     }).replace(/<a class="jg-item/, `<a data-categories="${e(p.categories.map((c) => c.slug).join(" "))}" class="jg-item`)
   );
@@ -968,7 +970,7 @@ function project(ctx, p, prev, next) {
   }
   const cover = p.cover
     ? `
-      <figure class="project-cover${coverCls}"><a href="${ctx.assetBase}${e(p.cover.full || p.cover.src)}" data-viewer aria-label="${e(`${t.work.openImage}: ${p.cover.alt}`)}">${img(ctx, p.cover, { sizes: FULL, attrs: 'fetchpriority="high" decoding="async"' })}</a></figure>`
+      <figure class="project-cover${coverCls}"><a href="${ctx.assetBase}${e(p.cover.full || p.cover.src)}" data-viewer aria-label="${e(`${t.work.openImage}: ${p.cover.alt}`)}">${img(ctx, p.cover, { sizes: FULL, attrs: 'fetchpriority="high" decoding="async"' })}</a>${p.coverCaption && ["project", "both"].includes(p.coverCaption.where) ? `<figcaption class="jg-caption">${p.coverCaption.title ? `<span class="jg-title">${e(p.coverCaption.title)}</span>` : ""}${p.coverCaption.note ? `<span class="jg-note">${e(p.coverCaption.note)}</span>` : ""}</figcaption>` : ""}</figure>`
     : "";
   const synopsis = p.description
     ? `

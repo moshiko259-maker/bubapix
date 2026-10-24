@@ -72,7 +72,7 @@
     describe: "תיאור לעיוורים", noAlt: "אין תיאור לעיוורים", ok: "אישור",
     altEdit: "כתבו בקצרה מה רואים בתמונה. קוראי מסך מקריאים את זה לגולשים עיוורים.",
     caption: "כותרת ותיאור", captionTitle: "כותרת לתמונה (לא חובה)", captionNote: "תיאור קצר (לא חובה)", captionWhere: "איפה להציג",
-    capHidden: "לא להציג (נשמר)", capHome: "מתחת לתמונה, בגלריה של דף הבית",
+    capHidden: "לא להציג (נשמר)", capHome: "מתחת לתמונה, בגלריה של דף הבית", capShow: "מתחת לתמונה",
     captionNoteHelp: "הכותרת והתיאור מתורגמים לאנגלית בשמירה. תיאור לעיוורים — בכפתור ״תיאור לעיוורים״.",
     hiddenTitle: "תמונות מוסתרות (נשמרות, לא מוצגות)",
     elsewhereTitle: "מוצגות במקום אחר בדף (פתיחה או שורת הפוסטרים), ולכן לא בגלריה",
@@ -182,7 +182,7 @@
     describe: "Description for blind visitors", noAlt: "No description for blind visitors", ok: "OK",
     altEdit: "Say briefly what the picture shows. Screen readers read it to blind visitors.",
     caption: "Title and text", captionTitle: "Picture title (optional)", captionNote: "Short text (optional)", captionWhere: "Where to show it",
-    capHidden: "Not shown (kept)", capHome: "Under the picture, in the homepage gallery",
+    capHidden: "Not shown (kept)", capHome: "Under the picture, in the homepage gallery", capShow: "Under the picture",
     captionNoteHelp: "The title and text are translated to Hebrew on saving. The description for blind visitors is under \"Description for blind visitors\".",
     hiddenTitle: "Hidden pictures (kept, not shown)",
     elsewhereTitle: "Shown elsewhere on the page (opening or posters row), so not in the gallery",
@@ -613,6 +613,13 @@
         button(T.describe, function () {
           core.describe(T, data.hero_alt_he, data.hero_alt_en, function (alts) { data.hero_alt_he = alts.he; data.hero_alt_en = alts.en; changed(); syncPage(); });
         }, "pe-btn pe-describe-btn"),
+        button(T.caption, function () {
+          // When the opening picture is also a gallery picture, the site shows that picture's title
+          // and text; otherwise the opening picture's own (hero_title_*, hero_note_*).
+          var g = heroInGallery();
+          if (g) core.captionDialog(T, g, lang, [["hidden", T.capHidden], ["everywhere", T.capShow]], function () { changed(); syncPage(); });
+          else core.captionDialog(T, data, lang, [["hidden", T.capHidden], ["everywhere", T.capShow]], function () { changed(); syncPage(); }, "hero_");
+        }, "pe-btn pe-caption-btn"),
       ]));
     }
     featureTools = el("div", { "class": "pe-tools pe-tools-top" });
@@ -633,6 +640,9 @@
       if (data.feature_image) featureTools.appendChild(button(T.describe, function () {
         core.describe(T, data.feature_alt_he, data.feature_alt_en, function (alts) { data.feature_alt_he = alts.he; data.feature_alt_en = alts.en; changed(); syncPage(); });
       }, "pe-btn pe-describe-btn"));
+      if (data.feature_image) featureTools.appendChild(button(T.caption, function () {
+        core.captionDialog(T, data, lang, [["hidden", T.capHidden], ["everywhere", T.capShow]], function () { changed(); syncPage(); }, "feature_");
+      }, "pe-btn pe-caption-btn"));
       if (data.feature_image) featureTools.appendChild(button(T.removeFeature, function () {
         data.feature_image = ""; data.feature_alt_he = ""; data.feature_alt_en = "";
         changed(); syncPage();
@@ -814,6 +824,26 @@
 
   // Brings the opening and the toolbar in line with the state (after undo
   // or after loading an earlier version).
+  // The gallery picture that is also the opening picture (the site shows its title and text).
+  function heroInGallery() {
+    var h = norm(data.hero_image);
+    if (!h || !Array.isArray(data.gallery)) return null;
+    for (var i = 0; i < data.gallery.length; i++) { var g = data.gallery[i]; if (g && g.visible !== false && norm(g.image) === h) return g; }
+    return null;
+  }
+  // The title and text under an opening picture, as visitors will see them.
+  function showCap(box, o, pre) {
+    if (!box) return;
+    var old = box.querySelector(":scope > .pe-caption, :scope > figure > .pe-caption");
+    if (old) old.remove();
+    var t1 = o[pre + "title_" + lang] || "", t2 = o[pre + "note_" + lang] || "";
+    if (o[pre + "caption"] !== "everywhere" || !(t1 || t2)) return;
+    var fig = box.querySelector("figure") || box;
+    fig.appendChild(el("figcaption", { "class": "jg-caption pe-caption" }, [
+      t1 ? el("span", { "class": "jg-title", text: t1 }) : null,
+      t2 ? el("span", { "class": "jg-note", text: t2 }) : null,
+    ]));
+  }
   function syncPage() {
     if (heroBox) { heroBox.style.maxWidth = data.hero_w ? data.hero_w + "%" : ""; heroBox.style.marginInline = data.hero_w ? "auto" : ""; }
     if (featureBox) featureBox.style.maxWidth = data.feature_w ? data.feature_w + "%" : "";
@@ -830,6 +860,9 @@
       if (featureTools) (data.feature_image ? featureBox : opening).appendChild(featureTools);
       drawFeatureTools();
     }
+    var hg = heroInGallery();
+    showCap(heroBox, hg || data, hg ? "" : "hero_");
+    if (data.feature_image) showCap(featureBox, data, "feature_");
     if (taglineEl && document.activeElement !== taglineEl) {
       var tl = data["tagline_" + lang];
       if (tl) taglineEl.textContent = tl;

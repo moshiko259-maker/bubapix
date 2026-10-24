@@ -150,6 +150,7 @@
     videoRemoved: "הסרטון הוסר מהדף (ביוטיוב הוא לא נמחק). אפשר לבטל עם ״ביטול פעולה״.",
     caption: "כותרת ותיאור", captionTitle: "כותרת לתמונה (לא חובה)", captionNote: "תיאור קצר (לא חובה)", captionWhere: "איפה להציג",
     capHidden: "לא להציג (נשמר)", capProject: "מתחת לתמונה, בדף הפרויקט", capEverywhere: "מתחת לתמונה, גם בגלריה של דף הבית",
+    capCoverWork: "מתחת לתמונה, בעמוד הפרויקטים", capCoverProject: "מתחת לתמונת השער, בדף הפרויקט", capCoverBoth: "בשניהם (עמוד הפרויקטים ודף הפרויקט)",
     captionNoteHelp: "הכותרת והתיאור מתורגמים לאנגלית בשמירה. תיאור לעיוורים — בכפתור ״תיאור לעיוורים״.",
     galHeading: "כותרת לגלריה, למשל ״דמויות״ (ריק = ״תמונות״)", galHeadingBehind: "כותרת לאזור (ריק = ״מאחורי הקלעים״)",
     addDetails: "הוספת פרטים לדף", addDetail: "הוספת שורה", detailsHeading: "כותרת לאזור (ריק = ״פרטים״)",
@@ -254,6 +255,7 @@
     videoRemoved: "The video was removed from the page (it is not deleted on YouTube). You can undo it.",
     caption: "Title and text", captionTitle: "Picture title (optional)", captionNote: "Short text (optional)", captionWhere: "Where to show it",
     capHidden: "Not shown (kept)", capProject: "Under the picture, on the project page", capEverywhere: "Under the picture, also in the homepage gallery",
+    capCoverWork: "Under the picture, on the projects page", capCoverProject: "Under the cover, on the project page", capCoverBoth: "Both (projects page and project page)",
     captionNoteHelp: "The title and text are translated to Hebrew on saving. The description for blind visitors is under \"Description for blind visitors\".",
     galHeading: "Heading for this gallery, e.g. \"Characters\" (empty = \"Images\")", galHeadingBehind: "Heading for this area (empty = \"Behind the scenes\")",
     addDetails: "Add details to the page", addDetail: "Add a line", detailsHeading: "Heading for this area (empty = \"Details\")",
@@ -620,6 +622,8 @@
       data.cover ? button(T.describe, function () {
         describe(data.cover_alt_he, data.cover_alt_en, function (alts) { data.cover_alt_he = alts.he; data.cover_alt_en = alts.en; changed(); });
       }, "pe-btn") : null,
+      // The cover's title and text (shared with the projects page).
+      data.cover ? button(T.caption, function () { core.captionDialog(T, data, lang, [["hidden", T.capHidden], ["work", T.capCoverWork], ["project", T.capCoverProject], ["both", T.capCoverBoth]], changed, "cover_"); }, "pe-btn pe-caption-btn") : null,
     ]);
     if (data.cover) {
       var r = ratioOf({ image: data.cover });
@@ -641,6 +645,10 @@
       });
       if (uploads[norm(data.cover)]) fig.appendChild(el("span", { "class": "pe-badge", text: T.newBadge }));
       if (!data["cover_alt_" + lang]) fig.appendChild(el("span", { "class": "pe-missing", text: T.noAlt }));
+      var ct = data["cover_title_" + lang] || "", cn = data["cover_note_" + lang] || "";
+      if ((data.cover_caption === "project" || data.cover_caption === "both") && (ct || cn)) {
+        fig.insertBefore(el("figcaption", { "class": "jg-caption pe-caption" }, [ct ? el("span", { "class": "jg-title", text: ct }) : null, cn ? el("span", { "class": "jg-note", text: cn }) : null]), media.nextSibling);
+      }
       box.appendChild(fig);
     } else {
       box.appendChild(tools);

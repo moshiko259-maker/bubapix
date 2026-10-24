@@ -69,6 +69,9 @@
     earlier: "הזזה למקום הקודם", later: "הזזה למקום הבא", prevBtn: "→ קודם", nextBtn: "הבא ←", more: "⋯ עוד", drag: "גררו כדי לשנות את הסדר",
     replace: "החלפת התמונה", describe: "תיאור לעיוורים", noAlt: "אין תיאור לעיוורים",
     nameOn: "השם מתחת לתמונה: מוצג", nameOff: "השם מתחת לתמונה: לא מוצג",
+    caption: "כותרת ותיאור", captionTitle: "כותרת לתמונה (לא חובה)", captionNote: "תיאור קצר (לא חובה)", captionWhere: "איפה להציג", capHidden: "לא להציג (נשמר)",
+    captionNoteHelp: "הכותרת והתיאור מתורגמים לאנגלית בשמירה. תיאור לעיוורים — בכפתור ״תיאור לעיוורים״.",
+    capCoverWork: "מתחת לתמונה, בעמוד הפרויקטים", capCoverProject: "מתחת לתמונת השער, בדף הפרויקט", capCoverBoth: "בשניהם (עמוד הפרויקטים ודף הפרויקט)",
     coverNote: "התמונה כאן היא תמונת השער של הפרויקט: היא מתחלפת גם בדף הפרויקט ובפוסטר בדף הבית.",
     pickTitle: "בחירת תמונה", pickUpload: "העלאה מהמחשב", pickLoading: "טוען תמונות…",
     altHe: "תיאור התמונה לעיוורים, עברית", altEn: "תיאור התמונה לעיוורים, אנגלית",
@@ -117,6 +120,9 @@
     earlier: "Move to the previous place", later: "Move to the next place", prevBtn: "← Earlier", nextBtn: "Later →", more: "⋯ More", drag: "Drag to change the order",
     replace: "Replace the picture", describe: "Description for blind visitors", noAlt: "No description for blind visitors",
     nameOn: "Name under the picture: shown", nameOff: "Name under the picture: not shown",
+    caption: "Title and text", captionTitle: "Picture title (optional)", captionNote: "Short text (optional)", captionWhere: "Where to show it", capHidden: "Not shown (kept)",
+    captionNoteHelp: "The title and text are translated to Hebrew on saving. The description for blind visitors is under \"Description for blind visitors\".",
+    capCoverWork: "Under the picture, on the projects page", capCoverProject: "Under the cover, on the project page", capCoverBoth: "Both (projects page and project page)",
     coverNote: "The picture here is the project's cover: it also changes on the project page and on the homepage poster.",
     pickTitle: "Choose a picture", pickUpload: "Upload from this computer", pickLoading: "Loading pictures…",
     altHe: "Description for blind visitors, Hebrew", altEn: "Description for blind visitors, English",
@@ -210,7 +216,7 @@
     });
   }
   // What this page sets in each project file (the rest of the file stays as it is now).
-  var PAGE_FIELDS = ["order", "list_w", "cover", "cover_alt_he", "cover_alt_en", "title_in_gallery"];
+  var PAGE_FIELDS = ["order", "list_w", "cover", "cover_alt_he", "cover_alt_en", "title_in_gallery", "cover_title_he", "cover_title_en", "cover_note_he", "cover_note_en", "cover_caption"];
   function loadVersion(commitSha) {
     return Promise.all(state.list.map(function (p) {
       var path = "content/projects/" + p.slug + ".json";
@@ -503,8 +509,14 @@
         if (d.title_in_gallery === true) delete d.title_in_gallery; else d.title_in_gallery = true;
         changed();
       }, "pe-btn pe-name-btn"),
+      // The cover's own title and text (cover_title_*, cover_note_*, cover_caption) — shared with the project page's cover.
+      button(T.caption, function () { core.captionDialog(T, d, lang, [["hidden", T.capHidden], ["work", T.capCoverWork], ["project", T.capCoverProject], ["both", T.capCoverBoth]], changed, "cover_"); }, "pe-btn pe-caption-btn"),
     ]));
-    if (d.title_in_gallery === true && nameOf(p)) fig.insertBefore(el("figcaption", { "class": "jg-caption pe-caption" }, [el("span", { "class": "jg-title", text: nameOf(p) })]), media.nextSibling);
+    // Under the picture as visitors will see it: the cover's own title and text when shown here, otherwise the name if chosen.
+    var ct = d["cover_title_" + lang] || "", cn = d["cover_note_" + lang] || "";
+    var ownCap = (d.cover_caption === "work" || d.cover_caption === "both") && (ct || cn);
+    if (ownCap) fig.insertBefore(el("figcaption", { "class": "jg-caption pe-caption" }, [ct ? el("span", { "class": "jg-title", text: ct }) : null, cn ? el("span", { "class": "jg-note", text: cn }) : null]), media.nextSibling);
+    else if (d.title_in_gallery === true && nameOf(p)) fig.insertBefore(el("figcaption", { "class": "jg-caption pe-caption" }, [el("span", { "class": "jg-title", text: nameOf(p) })]), media.nextSibling);
     fig.addEventListener("dragstart", function (e) {
       if (e.target && e.target.closest && e.target.closest(".pe-tools, .pe-dot")) { e.preventDefault(); return; }
       dragFrom = p; fig.classList.add("is-dragging");

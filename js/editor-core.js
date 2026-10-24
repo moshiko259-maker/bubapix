@@ -15,7 +15,7 @@
  *   BubaCore.history(launcher, opts)         "Earlier versions" (js/history.js)
  *   BubaCore.siteWatch(opts)                 "the site is updated ✓" after a save
  *   BubaCore.describe(T, he, en, done)       "Description for blind visitors" window
- *   BubaCore.captionDialog(T, g, lang, choices, done)  "Title and text" window for a picture
+ *   BubaCore.captionDialog(T, g, lang, choices, done, pre)  "Title and text" window for a picture
  */
 (function () {
   "use strict";
@@ -201,18 +201,21 @@
     ] }, he ? altHe : altEn);
   }
   function cleanText(text) { return String(text || "").replace(/\r/g, "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim(); }
-  // "Title and text" for one picture (title_<lang>, note_<lang>, caption), in the page's language.
+  // "Title and text" for one picture (<pre>title_<lang>, <pre>note_<lang>, <pre>caption), in the
+  // page's language. pre: "" for a gallery picture, "hero_" / "feature_" / "cover_" for the others.
   // choices: [[value, label], ...] for "Where to show it"; the first one is "not shown".
   // T: caption, captionTitle, captionNote, captionWhere, captionNoteHelp, ok, close.
-  function captionDialog(T, g, lang, choices, done) {
+  function captionDialog(T, g, lang, choices, done, pre) {
+    pre = pre || "";
     var dir = lang === "he" ? "rtl" : "ltr";
-    var title = el("input", { type: "text", dir: dir, "class": "pe-input", "data-cap-title": "", value: g["title_" + lang] || "" });
+    var title = el("input", { type: "text", dir: dir, "class": "pe-input", "data-cap-title": "", value: g[pre + "title_" + lang] || "" });
     var note = el("textarea", { dir: dir, "class": "pe-input pe-textarea", rows: "3", "data-cap-note": "" });
-    note.value = g["note_" + lang] || "";
+    note.value = g[pre + "note_" + lang] || "";
     var where = el("select", { "class": "pe-input", "data-cap-where": "" }, choices.map(function (o) { return el("option", { value: o[0], text: o[1] }); }));
     var values = choices.map(function (o) { return o[0]; });
     // A picture that has no title yet: what is written will most likely be shown.
-    where.value = g.caption && g.caption !== values[0] && values.indexOf(g.caption) >= 0 ? g.caption : (g["title_" + lang] || g["note_" + lang] ? values[0] : values[1] || values[0]);
+    var cur = g[pre + "caption"];
+    where.value = cur && cur !== values[0] && values.indexOf(cur) >= 0 ? cur : (g[pre + "title_" + lang] || g[pre + "note_" + lang] ? values[0] : values[1] || values[0]);
     var close = modal(T.caption, { closeText: T.close, body: [
       el("label", {}, [document.createTextNode(T.captionTitle), title]),
       el("label", {}, [document.createTextNode(T.captionNote), note]),
@@ -220,9 +223,9 @@
       el("p", { "class": "pe-note", text: T.captionNoteHelp }),
       button(T.ok, function () {
         close();
-        g["title_" + lang] = title.value.replace(/\s+/g, " ").trim();
-        g["note_" + lang] = cleanText(note.value);
-        g.caption = where.value;
+        g[pre + "title_" + lang] = title.value.replace(/\s+/g, " ").trim();
+        g[pre + "note_" + lang] = cleanText(note.value);
+        g[pre + "caption"] = where.value;
         done();
       }, "pe-btn pe-primary"),
     ] }, title);
