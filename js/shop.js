@@ -166,39 +166,69 @@
     var ostatus = orderForm.querySelector(".form-status");
     var dest = function () { var c = orderForm.querySelector("input[name=dest]:checked"); return c ? c.value : "israel"; };
 
-    var render = function () {
+    // Draws the list of items. A change of quantity does not redraw the list
+    // (only that item's price and the summary), so the focus stays in the
+    // quantity box. After "Remove" the focus moves to the next item's
+    // "Remove" (or the previous one, or the "empty" message).
+    var render = function (after) {
       var items = load();
       list.textContent = "";
       empty.hidden = items.length > 0;
       orderForm.hidden = items.length === 0;
-      var totals = {};
       items.forEach(function (item, idx) {
         var li = el("li", "order-item");
         var info = el("div", "order-info");
-        info.appendChild(el("p", "order-name", item.title));
+        var nameEl = el("p", "order-name", item.title);
+        nameEl.id = "order-item-" + idx;
+        info.appendChild(nameEl);
         var opts = optionsText(item);
         if (opts) info.appendChild(el("p", "order-options", opts));
         if (dest() === "abroad" && item.ships === "israel") info.appendChild(el("p", "order-warn", t.shipsTo.israel));
         var lp = linePrice(item, dest());
+        var priceEl = null;
         if (lp) {
-          info.appendChild(el("p", "order-price", money(lp.amount * item.qty, lp.currency)));
-          totals[lp.currency] = (totals[lp.currency] || 0) + lp.amount * item.qty;
+          priceEl = el("p", "order-price", money(lp.amount * item.qty, lp.currency));
+          info.appendChild(priceEl);
         }
         li.appendChild(info);
         var qtyLabel = el("label", "field field-qty");
         qtyLabel.appendChild(el("span", null, t.quantity));
         var q = el("input");
         q.type = "number"; q.min = "1"; q.max = "99"; q.value = String(item.qty); q.inputMode = "numeric";
+        // Screen readers hear which item the quantity and "Remove" belong to.
+        q.setAttribute("aria-describedby", nameEl.id);
         q.addEventListener("change", function () {
-          var all = load(); all[idx].qty = Math.max(1, Math.min(99, parseInt(q.value, 10) || 1)); save(all); render();
+          var n = Math.max(1, Math.min(99, parseInt(q.value, 10) || 1));
+          q.value = String(n);
+          var all = load();
+          if (!all[idx]) return;
+          all[idx].qty = n;
+          save(all);
+          if (priceEl) priceEl.textContent = money(lp.amount * n, lp.currency);
+          summary(all);
         });
         qtyLabel.appendChild(q);
         li.appendChild(qtyLabel);
         var rm = el("button", "link-button", t.remove);
         rm.type = "button";
-        rm.addEventListener("click", function () { var all = load(); all.splice(idx, 1); save(all); render(); });
+        rm.setAttribute("aria-describedby", nameEl.id);
+        rm.addEventListener("click", function () { var all = load(); all.splice(idx, 1); save(all); render({ removed: idx }); });
         li.appendChild(rm);
         list.appendChild(li);
+      });
+      summary(items);
+      if (after && typeof after.removed === "number") {
+        var buttons = list.querySelectorAll(".link-button");
+        if (buttons.length) buttons[Math.min(after.removed, buttons.length - 1)].focus();
+        else empty.focus();
+      }
+    };
+
+    var summary = function (items) {
+      var totals = {};
+      items.forEach(function (item) {
+        var lp = linePrice(item, dest());
+        if (lp) totals[lp.currency] = (totals[lp.currency] || 0) + lp.amount * item.qty;
       });
       var codes = Object.keys(totals);
       // Summary: products, VAT (when added), shipping to the chosen
@@ -237,7 +267,22 @@
     renderOrder = render;
     var lastTotals = {};
 
-    Array.prototype.forEach.call(orderForm.querySelectorAll("input[name=dest]"), function (r) { r.addEventListener("change", render); });
+    Array.prototype.forEach.call(orderForm.querySelectorAll("input[name=dest]"), function (r) { r.addEventListener("change", function () { render(); }); });
+
+    // The name field: its own error line, linked for screen readers.
+    var nameInput = orderForm.elements.name;
+    var nameError = document.getElementById("err-order-name");
+    var nameMark = function (text) {
+      if (text) {
+        nameInput.setAttribute("aria-invalid", "true");
+        if (nameError) { nameError.textContent = text; nameError.hidden = false; nameInput.setAttribute("aria-describedby", nameError.id); }
+      } else {
+        nameInput.removeAttribute("aria-invalid");
+        nameInput.removeAttribute("aria-describedby");
+        if (nameError) { nameError.textContent = ""; nameError.hidden = true; }
+      }
+    };
+    nameInput.addEventListener("input", function () { if (nameInput.getAttribute("aria-invalid")) nameMark(""); });
 
     // How an order is sent. Only email exists now (no online payment).
     var SENDERS = {
@@ -307,7 +352,14 @@
     orderForm.addEventListener("submit", function (ev) {
       ev.preventDefault();
       var name = orderForm.elements.name.value.trim();
-      if (!name) { ostatus.textContent = t.missing; ostatus.className = "form-status is-error"; return; }
+      if (!name) {
+        ostatus.textContent = t.missing;
+        ostatus.className = "form-status is-error";
+        nameMark(t.missing);
+        nameInput.focus();
+        return;
+      }
+      nameMark("");
       var items = load();
       if (!items.length || !cfg.emails.length) return;
       SENDERS.email({ items: items, dest: dest(), name: name, notes: orderForm.elements.notes.value.trim() });

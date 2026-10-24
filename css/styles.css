@@ -638,6 +638,13 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .form-status { margin: 0; min-height: 1.6em; }
 .form-status.is-ok { color: #1d6b3a; }
 .form-status.is-error { color: #a1271b; }
+/* A field that failed a check: red frame and its own message right below it. */
+.field .req { color: var(--ink-2); }
+.field input[aria-invalid="true"],
+.field textarea[aria-invalid="true"] { border-color: #a1271b; box-shadow: inset 0 0 0 1px #a1271b; }
+.field-error { margin: -0.4rem 0 0; font-size: 0.9375rem; color: #a1271b; }
+.shop-empty:focus { outline: none; }
+.shop-empty:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
 .community .lede { margin-bottom: 1.5rem; }
 .community > p:last-child { margin-top: 1.5rem; }
 

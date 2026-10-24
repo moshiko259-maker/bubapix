@@ -138,12 +138,75 @@
     });
   }
 
+  // ---- Field errors (for everyone, including screen-reader users) ----------
+  // Each field has its own error line right after it. A field that failed a
+  // check gets aria-invalid and is linked to its line (aria-describedby), so
+  // a screen reader reads the problem when the field is focused.
+  function errorLine(input) {
+    var label = input.closest("label");
+    var next = label && label.nextElementSibling;
+    return next && next.classList.contains("field-error") ? next : null;
+  }
+  function describedBy(input, id, on) {
+    var ids = (input.getAttribute("aria-describedby") || "").split(/\s+/).filter(function (x) { return x && x !== id; });
+    if (on) ids.push(id);
+    if (ids.length) input.setAttribute("aria-describedby", ids.join(" "));
+    else input.removeAttribute("aria-describedby");
+  }
+  function setFieldError(input, text) {
+    var line = errorLine(input);
+    input.setAttribute("aria-invalid", "true");
+    if (!line) return;
+    line.textContent = text;
+    line.hidden = false;
+    describedBy(input, line.id, true);
+  }
+  function clearFieldError(input) {
+    var line = errorLine(input);
+    input.removeAttribute("aria-invalid");
+    if (!line) return;
+    line.textContent = "";
+    line.hidden = true;
+    describedBy(input, line.id, false);
+  }
+  function clearFieldErrors(form) {
+    Array.prototype.forEach.call(form.querySelectorAll("[aria-invalid]"), clearFieldError);
+  }
+  // Which fields a problem points to, in page order.
+  function badFields(form, problem, body) {
+    var f = form.elements, out = [];
+    if (problem === "missing") {
+      if (!body.name) out.push([f.name, t.errors.required]);
+      if (body.message.length < 2) out.push([f.message, t.errors.required]);
+    } else if (problem === "too_long") {
+      if (body.name.length > 60) out.push([f.name, t.errors.too_long]);
+      if (body.message.length > 2000) out.push([f.message, t.errors.too_long]);
+    } else if (problem === "links") {
+      out.push([f.message, t.errors.links]);
+    } else if (problem === "email" || problem === "email_required") {
+      out.push([f.email, t.errors[problem]]);
+    }
+    return out;
+  }
+  // Marks the fields and moves the focus to the first one. Returns true if
+  // any field was marked.
+  function showFieldErrors(form, problem, body) {
+    var bad = badFields(form, problem, body);
+    bad.forEach(function (b) { setFieldError(b[0], b[1]); });
+    if (bad.length) bad[0][0].focus();
+    return bad.length > 0;
+  }
+
   // ---- Forms --------------------------------------------------------------
   function setupForm(form) {
     var opened = Date.now();
     var status = form.querySelector(".form-status");
     var button = form.querySelector("button[type=submit]");
     var kind = form.getAttribute("data-form");
+    // Typing in a marked field removes its mark.
+    form.addEventListener("input", function (ev) {
+      if (ev.target.getAttribute && ev.target.getAttribute("aria-invalid")) clearFieldError(ev.target);
+    });
 
     form.addEventListener("submit", function (ev) {
       ev.preventDefault();
@@ -170,9 +233,11 @@
         kind === "consult" && !body.email ? "email_required" :
         body.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(body.email) ? "email" :
         (body.message.match(/https?:\/\/|www\./gi) || []).length > 2 ? "links" : "";
+      clearFieldErrors(form);
       if (problem) {
         status.textContent = t.errors[problem];
         status.className = "form-status is-error";
+        showFieldErrors(form, problem, body);
         return;
       }
 
@@ -190,6 +255,8 @@
           } else {
             status.textContent = errorText(r);
             status.className = "form-status is-error";
+            // The server found a problem in a field: mark that field too.
+            showFieldErrors(form, r.json && r.json.error, body);
           }
         })
         .catch(function () {

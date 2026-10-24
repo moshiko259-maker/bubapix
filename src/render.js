@@ -869,6 +869,11 @@ function projectSection(ctx, p, sec, i) {
 // note is shown instead. Visitor text is always inserted as plain text.
 // ---------------------------------------------------------------------------
 
+// The visible "(required)" after a field's name.
+function requiredMark(ctx) {
+  return ` <span class="req" aria-hidden="true">${e(ctx.t.community.required)}</span>`;
+}
+
 function participationForm(ctx, kind, { project = "" } = {}) {
   const { t } = ctx;
   const link = makeLink(ctx);
@@ -885,10 +890,19 @@ function participationForm(ctx, kind, { project = "" } = {}) {
           </fieldset>`
     : `
           <input type="hidden" name="kind" value="${kind}">`;
+  // Each field has an error line right after it (empty until a check fails);
+  // js/community.js fills it and links it to the field (aria-describedby).
+  // "(required)" is shown on screen; screen readers already announce
+  // "required" from the attribute, so the visible word is hidden from them.
+  // The email label already says whether it is required, so no mark there.
+  const id = `${kind}${project ? `-${project}` : ""}`;
   return `<form class="cform" data-form="${kind}"${project ? ` data-project="${e(project)}"` : ""} novalidate>${type}
-          <label class="field"><span>${e(c.nameLabel)}</span><input name="name" maxlength="60" required autocomplete="nickname"></label>
-          <label class="field"><span>${e(messageLabel)}</span><textarea name="message" maxlength="2000" rows="5" required></textarea></label>
+          <label class="field"><span>${e(c.nameLabel)}${requiredMark(ctx)}</span><input name="name" maxlength="60" required autocomplete="nickname"></label>
+          <p class="field-error" id="err-${e(id)}-name" hidden></p>
+          <label class="field"><span>${e(messageLabel)}${requiredMark(ctx)}</span><textarea name="message" maxlength="2000" rows="5" required></textarea></label>
+          <p class="field-error" id="err-${e(id)}-message" hidden></p>
           <label class="field"><span>${e(emailLabel)}</span><input type="email" name="email" maxlength="254" autocomplete="email" dir="ltr"${emailRequired ? " required" : ""}></label>
+          <p class="field-error" id="err-${e(id)}-email" hidden></p>
           <div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div>${kind === "idea" ? `
           <label class="check"><input type="checkbox" name="publicOk"> <span>${e(t.ideas.publicOk)}</span></label>` : ""}
           <p class="form-note">${e(c.privacy)} <a href="${link("privacy/")}">${e(c.privacyLink)}</a></p>
@@ -1398,7 +1412,7 @@ function order(ctx) {
       <header class="page-head"><h1 class="page-title">${e(t.shop.orderTitle)}</h1></header>
       <noscript><p class="muted">${e(t.community.noscript)}</p></noscript>
       <div data-order hidden>
-        <p class="shop-empty" data-order-empty hidden>${e(t.shop.orderEmpty)}</p>
+        <p class="shop-empty" data-order-empty tabindex="-1" hidden>${e(t.shop.orderEmpty)}</p>
         <ol class="order-items" data-order-items></ol>
         <form class="cform order-form" data-order-form novalidate hidden>
           <div class="order-summary" aria-labelledby="summary-title">
@@ -1411,7 +1425,8 @@ function order(ctx) {
             <label><input type="radio" name="dest" value="israel" checked> ${e(t.shop.israel)}</label>
             <label><input type="radio" name="dest" value="abroad"> ${e(t.shop.abroad)}</label>
           </fieldset>
-          <label class="field"><span>${e(t.shop.nameLabel)}</span><input name="name" maxlength="80" autocomplete="name" required></label>
+          <label class="field"><span>${e(t.shop.nameLabel)}${requiredMark(ctx)}</span><input name="name" maxlength="80" autocomplete="name" required></label>
+          <p class="field-error" id="err-order-name" hidden></p>
           <label class="field"><span>${e(t.shop.notesLabel)}</span><textarea name="notes" rows="3" maxlength="1000"></textarea></label>
           <p class="form-note">${e(t.shop.sendNote)}</p>
           <button type="submit" class="button button-large"${emails.length ? "" : " disabled"}>${e(t.shop.sendOrder)}</button>

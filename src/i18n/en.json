@@ -99,6 +99,7 @@
     "nameLabel": "Name to display",
     "messageLabel": "Your message",
     "emailLabel": "Email (optional, only for a private reply)",
+    "required": "(required)",
     "send": "Send",
     "sending": "Sending…",
     "sentPending": "Thank you. Your message will appear here after it is reviewed.",
@@ -111,6 +112,7 @@
     "errors": {
       "too_fast": "Please take a moment to fill in the form, then send again.",
       "missing": "Please fill in your name and message.",
+      "required": "This field is required.",
       "too_long": "The text is too long.",
       "email": "Please check the email address.",
       "email_required": "Please add an email address so we can reply.",
