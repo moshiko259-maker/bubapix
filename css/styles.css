@@ -11,6 +11,8 @@
   --ink: #16161d;         /* text */
   --ink-2: #4b4b57;       /* secondary text */
   --line: rgba(22, 22, 29, 0.14);
+  --field-line: #8a8a94;  /* borders of form fields: 3.16:1 on the page, 3.27:1 on a field (WCAG 1.4.11 asks 3:1) */
+  --star-off: #767680;    /* a rating star not chosen: 4.15:1 on the page */
   --accent: #2f3de0;      /* focus outline and active filter only */
   --logo-paper: var(--paper);
 
@@ -575,16 +577,15 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
   background: none;
   border: 0;
   border-radius: var(--radius);
-  color: var(--ink-2);
-  opacity: 0.45;
+  color: var(--star-off);
   cursor: pointer;
-  transition: opacity 0.15s, color 0.15s;
+  transition: color 0.15s;
 }
 /* Highlight the star under the pointer and every star before it. */
 .stars:hover .star,
-.stars:focus-within .star { opacity: 1; color: var(--ink); }
+.stars:focus-within .star { color: var(--ink); }
 .stars .star:hover ~ .star,
-.stars .star:focus-visible ~ .star { opacity: 0.45; color: var(--ink-2); }
+.stars .star:focus-visible ~ .star { color: var(--star-off); }
 
 .comments { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.25rem; }
 .comment { padding-block-end: 1.25rem; border-block-end: 1px solid var(--line); }
@@ -609,7 +610,7 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
   font: inherit;
   color: var(--ink);
   background: #fbfaf5;
-  border: 1px solid var(--line);
+  border: 1px solid var(--field-line);
   border-radius: var(--radius);
   padding: 0.7rem 0.85rem;
 }
@@ -752,7 +753,7 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .add-form { display: grid; gap: 0.9rem; }
 .add-form .button { justify-content: center; }
 .add-form[hidden], .product-variants[hidden] { display: none; }
-.field select { width: 100%; font: inherit; color: var(--ink); background: #fbfaf5; border: 1px solid var(--line); border-radius: var(--radius); padding: 0.65rem 0.75rem; }
+.field select { width: 100%; font: inherit; color: var(--ink); background: #fbfaf5; border: 1px solid var(--field-line); border-radius: var(--radius); padding: 0.65rem 0.75rem; }
 .field-qty input { max-width: 7rem; }
 .order-items { list-style: none; margin: 0 0 2rem; padding: 0; display: grid; gap: 1rem; max-width: 46rem; }
 .order-item { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0.75rem 1.25rem; align-items: end; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
@@ -818,7 +819,7 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .currency-pick[hidden], .pay-box[hidden] { display: none; }
 .currency-pick { margin: 0 0 1.5rem; font-size: 0.9375rem; color: var(--ink-2); }
 .currency-pick label { display: inline-flex; align-items: center; gap: 0.5rem; }
-.currency-pick select { font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.35rem 0.6rem; }
+.currency-pick select { font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--field-line); border-radius: var(--radius); padding: 0.35rem 0.6rem; }
 .currency-note { margin: 0.5rem 0 0; font-size: 0.8125rem; }
 .pay-box { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
 .pay-amount { font-family: var(--font-display); font-size: 1.25rem; margin: 0.5rem 0 1rem; }
@@ -906,7 +907,7 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 /* Subcategories: a row of small chips under the main categories. */
 .sub-strip { margin: -0.5rem 0 1.5rem; }
 .sub-chip { min-height: 36px; padding: 0 0.85rem; font-size: 0.875rem; }
-.sub-count { font-size: 0.75rem; opacity: 0.7; margin-inline-start: 0.25rem; }
+.sub-count { font-size: 0.75rem; margin-inline-start: 0.25rem; }
 .cat-wrap { position: relative; }
 .cat-arrow { position: absolute; top: calc(50% - 1.6rem); z-index: 2; display: none; width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-size: 1.5rem; line-height: 1; cursor: pointer; box-shadow: 0 4px 14px rgba(22, 22, 29, 0.12); }
 .cat-prev { inset-inline-start: -0.75rem; }

@@ -705,6 +705,13 @@ function home(ctx) {
   });
 }
 
+// After a filter is chosen, screen readers hear how many are shown (WCAG 4.1.3):
+// js/main.js writes the text into this line, which is hidden on screen.
+function filterStatus(one, many, none) {
+  return `
+      <p class="visually-hidden" role="status" data-filter-status data-one="${e(one)}" data-many="${e(many)}" data-none="${e(none)}"></p>`;
+}
+
 function work(ctx) {
   const { t, data } = ctx;
   const link = makeLink(ctx);
@@ -714,7 +721,7 @@ function work(ctx) {
       <div class="filters needs-js" role="group" aria-label="${e(t.a11y.filterLabel)}">
         <button type="button" class="filter" data-filter="" aria-pressed="true">${e(t.work.all)}</button>${used.map((c) => `
         <button type="button" class="filter" data-filter="${e(c.slug)}" aria-pressed="false">${e(c.name)}</button>`).join("")}
-      </div>`
+      </div>${filterStatus(t.work.countOne, t.work.count, t.work.empty)}`
     : "";
   // Free sizes from the page editor (computers): same rows rule as project galleries.
   const free = data.projects.some((p) => p.listW) ? freeClasses(data.projects.map((p) => ({ ...p.thumb, fw: p.listW }))) : null;
@@ -1283,13 +1290,13 @@ function shop(ctx) {
         </button>`;
   const filters = cats.length
     ? `
-      <div class="filters cat-strip needs-js" data-ed-hide role="group" aria-label="${e(t.shop.categoriesLabel)}">${tile("", t.shop.all, `<span class="cat-letter">${icon("grid")}</span>`, data.products.length, true)}${cats.filter((c) => !c.parent).map((c) => tile(c.slug, c.name, c.image ? img(ctx, c.image, { sizes: "120px" }) : `<span class="cat-letter">${e([...c.name][0] || "")}</span>`, c.count, false)).join("")}
+      <div class="filters cat-strip needs-js" data-ed-hide role="group" aria-label="${e(t.shop.categoriesLabel)}">${tile("", t.shop.all, `<span class="cat-letter" aria-hidden="true">${icon("grid")}</span>`, data.products.length, true)}${cats.filter((c) => !c.parent).map((c) => tile(c.slug, c.name, c.image ? img(ctx, c.image, { sizes: "120px" }) : `<span class="cat-letter" aria-hidden="true">${e([...c.name][0] || "")}</span>`, c.count, false)).join("")}
       </div>${cats.filter((c) => c.subs && c.subs.length).map((c) => `
       <div class="filters sub-strip" data-ed-hide role="group" aria-label="${e(c.name)}" data-parent="${e(c.slug)}" hidden>
         <button type="button" class="filter sub-chip" data-filter="${e(c.slug)}" aria-pressed="false">${e(t.shop.all)}</button>${c.subs.map((s) => `
         <button type="button" class="filter sub-chip" data-filter="${e(s.slug)}" aria-pressed="false">${e(s.name)} <span class="sub-count">${e(s.count ? String(s.count) : t.shop.comingSoon)}</span></button>`).join("")}
       </div>`).join("")}
-      <p class="shop-empty cat-empty" data-filter-empty hidden>${e(t.shop.categoryEmpty)}</p>`
+      <p class="shop-empty cat-empty" data-filter-empty hidden>${e(t.shop.categoryEmpty)}</p>${filterStatus(t.shop.itemsOne, t.shop.items, t.shop.categoryEmpty)}`
     : "";
   const grid = data.products.length
     ? `

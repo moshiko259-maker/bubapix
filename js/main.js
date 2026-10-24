@@ -88,10 +88,21 @@
       var none = document.querySelector("[data-filter-empty]");
       if (none) none.hidden = shown > 0;
     };
+    // Screen readers hear how many are shown after a choice (not on page load).
+    var status = document.querySelector("[data-filter-status]");
+    var say = function () {
+      if (!status) return;
+      var n = 0;
+      each(tiles, function (tile) { if (!tile.hidden) n++; });
+      var text = n === 0 ? status.getAttribute("data-none") : n === 1 ? status.getAttribute("data-one") : (status.getAttribute("data-many") || "").replace("{n}", n);
+      status.textContent = "";
+      setTimeout(function () { status.textContent = text; }, 50);
+    };
     each(buttons, function (b) {
       b.addEventListener("click", function () {
         var slug = b.getAttribute("data-filter");
         apply(slug);
+        say();
         if (history.replaceState) {
           history.replaceState(null, "", location.pathname + location.search + (slug ? "#" + slug : ""));
         }

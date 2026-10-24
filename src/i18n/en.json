@@ -42,6 +42,8 @@
   "work": {
     "title": "Projects",
     "all": "All",
+    "count": "{n} projects",
+    "countOne": "1 project",
     "imageComing": "Image coming soon",
     "empty": "Projects will appear here soon.",
     "back": "All projects",
