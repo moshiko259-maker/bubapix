@@ -21,6 +21,16 @@
  *   data-ed-kind="email"|"phone"    checked when leaving the text; a wrong value is not kept
  *   <template data-ed-missing>      a place for a detail that is empty today: shown only
  *                                   while editing, so it can be filled in
+ *   data-ed-hide                    hidden while editing (the editor shows its own version)
+ *   on a list, also:
+ *     data-ed-photo-main            an item is its picture: "Add" opens the pictures, and
+ *                                   the texts (e.g. a description for blind visitors) are optional
+ *     data-ed-multi="text"          these texts have several paragraphs (Enter = new line)
+ *     data-ed-slug="slug"           each item needs a fixed English name (made when saving)
+ * A product's file (content/products/<name>.json) also gets a panel for its
+ * price, availability, category and showing in the shop; the shop's file
+ * (content/shop.json) gets "New product", which writes a new product's file.
+ * Money settings (currencies, VAT, shipping, payment) stay in the admin panel.
  * Texts are saved in the page's language only; everything else in the files
  * is kept exactly as it is. Saving writes to the work branch with the
  * owner's own GitHub sign-in, and never over a file changed elsewhere.
@@ -38,7 +48,8 @@
   var API = "https://api.github.com/repos/" + REPO;
   var FILE = box.getAttribute("data-ed-file");
   var LABELS = "content/labels.json";
-  if (!/^content\/[a-z0-9-]+\.json$/.test(FILE || "")) return;
+  if (!/^content\/(products\/)?[a-z0-9-]+\.json$/.test(FILE || "")) return;
+  var PRODUCT = /^content\/products\//.test(FILE), SHOP = FILE === "content/shop.json";
   var lang = document.documentElement.lang === "he" ? "he" : "en";
   var other = lang === "he" ? "en" : "he";
   var he = lang === "he";
@@ -88,6 +99,20 @@
     plainNote: "מייל וטלפון — אותו ערך בשתי השפות. הם מופיעים גם בתחתית כל דף ובהזמנות מהחנות.",
     hint_role: "תפקיד (לחצו כדי לכתוב)", hint_bio: "כמה שורות על היוצר (לחצו כדי לכתוב)",
     nameShared: "שם של אדם לא מתורגם. אם אין לו שם בשפה השנייה, יישמר שם אותו שם.",
+    hint_title: "שם המוצר (לחצו כדי לכתוב)",
+    hint_images_alt: "תיאור התמונה לעיוורים (לא חובה)", hint_details_title: "כותרת, למשל: חומרים, מידות, טיפול", hint_details_text: "הטקסט (Enter = שורה חדשה)", hint_categories_name: "שם הקטגוריה (לחצו כדי לכתוב)",
+    list_categories: "קטגוריות בחנות", note_categories: "שם ותמונה לכל קטגוריה. קטגוריה מוצגת בחנות רק כשיש בה מוצר. מחיקת קטגוריה לא מוחקת מוצרים: הם יוצגו תחת ״הכול״.",
+    list_images: "תמונות המוצר", note_images: "הראשונה היא התמונה הראשית, והיא מופיעה גם בחנות. את הסדר משנים בגרירה או בחצים.",
+    list_details: "פרטים נוספים (נפתחים בלחיצה)", note_details: "למשל חומרים, מידות או הוראות טיפול. משלוח והחזרות — בכלי הניהול.",
+    photoNeeded: "מוצר בלי תמונה לא מוצג בחנות.",
+    panelTitle: "פרטי המוצר", price: "מחיר", priceAbroad: "מחיר לחו״ל (לא חובה)", priceHint: "ריק = בלי מחיר", availability: "זמינות", category: "קטגוריה", noCategory: "בלי קטגוריה", visible: "להציג בחנות",
+    moneyNote: "מטבע, מע״מ, משלוח ודרכי תשלום — בכלי הניהול (״הגדרות החנות״).",
+    badPrice: "מחיר הוא מספר, למשל 120 או 49.90. המחיר הקודם נשאר.", hiddenNote: "המוצר מוסתר: אחרי השמירה הוא לא יוצג בחנות.",
+    newProduct: "מוצר חדש", newTitle: "מוצר חדש בחנות", newName: "שם המוצר", newPrice: "מחיר בשקלים (לא חובה)", newCategory: "קטגוריה (לא חובה)", newPhoto: "תמונה ראשית (חובה)", choosePhoto: "בחירת תמונה", create: "יצירת המוצר", creating: "יוצר את המוצר…",
+    needName: "כתבו שם למוצר.", needPhoto: "בחרו תמונה. מוצר בלי תמונה לא מוצג בחנות.",
+    newNote: "המוצר יוצג בחנות עם התמונה, השם והמחיר. תיאור, עוד תמונות וזמינות — בדף המוצר, ב״עריכה על הדף״. כשנוסף המוצר האמיתי הראשון, מוצרי הדוגמה נעלמים מהחנות.",
+    created: "המוצר נוצר ✓ הוא יופיע בחנות כשאתר הבדיקה יתעדכן (בדרך כלל 2–3 דקות).", openProduct: "לדף המוצר",
+    errCreate: "יצירת המוצר נכשלה, והמוצר לא נוסף לחנות. בדקו את החיבור ונסו שוב.", priceNumber: "מחיר הוא מספר, למשל 120 או 49.90.",
   } : {
     title: "Editing the page", loading: "Loading the page…",
     save: "Save", saving: "Saving…", cancel: "Leave without saving",
@@ -133,6 +158,20 @@
     plainNote: "Email and phone are the same in both languages. They also show at the bottom of every page and in shop orders.",
     hint_role: "Role (click to write)", hint_bio: "A few lines about them (click to write)",
     nameShared: "A person's name is not translated. If there is no name in the other language, the same name is saved there.",
+    hint_title: "Product name (click to write)",
+    hint_images_alt: "Picture description for blind visitors (optional)", hint_details_title: "Heading, e.g. Materials, Size, Care", hint_details_text: "The text (Enter = new line)", hint_categories_name: "Category name (click to write)",
+    list_categories: "Shop categories", note_categories: "A name and a picture for each category. A category shows in the shop only when it has a product. Deleting a category does not delete products: they show under \"All\".",
+    list_images: "Product pictures", note_images: "The first is the main picture, also shown in the shop. Drag or use the arrows to change the order.",
+    list_details: "More details (open on click)", note_details: "For example materials, size or care. Shipping and returns are in the admin panel.",
+    photoNeeded: "A product without a picture is not shown in the shop.",
+    panelTitle: "Product details", price: "Price", priceAbroad: "Price abroad (optional)", priceHint: "Empty = no price", availability: "Availability", category: "Category", noCategory: "No category", visible: "Show in the shop",
+    moneyNote: "Currency, VAT, shipping and payment methods are in the admin panel (\"Shop settings\").",
+    badPrice: "A price is a number, for example 120 or 49.90. The previous price was kept.", hiddenNote: "The product is hidden: after saving it will not show in the shop.",
+    newProduct: "New product", newTitle: "A new product in the shop", newName: "Product name", newPrice: "Price in shekels (optional)", newCategory: "Category (optional)", newPhoto: "Main picture (required)", choosePhoto: "Choose a picture", create: "Create the product", creating: "Creating the product…",
+    needName: "Write a name for the product.", needPhoto: "Choose a picture. A product without a picture is not shown in the shop.",
+    newNote: "The product shows in the shop with its picture, name and price. Description, more pictures and availability: on the product's page, with \"Edit on the page\". When the first real product is added, the example products leave the shop.",
+    created: "The product was created ✓ It will show in the shop when the test site updates (usually 2–3 minutes).", openProduct: "Open the product page",
+    errCreate: "Creating the product failed, and it was not added to the shop. Check the connection and try again.", priceNumber: "A price is a number, for example 120 or 49.90.",
   };
 
   // ---------- small helpers ----------
@@ -263,9 +302,10 @@
       .then(function (res) { return { sha: res.sha, data: JSON.parse(b64ToUtf8(res.content) || "{}") }; })
       .catch(function (err) { if (err.status === 404) return { sha: "", data: {} }; throw err; });
   };
-  Promise.all([getFile(FILE), getFile(LABELS)])
+  Promise.all([getFile(FILE), getFile(LABELS), PRODUCT ? getFile("content/shop.json") : null])
     .then(function (r) {
       sha = r[0].sha; labelsSha = r[1].sha;
+      if (r[2] && Array.isArray(r[2].data.categories)) shopCats = r[2].data.categories;
       state = { file: r[0].data || {}, labels: r[1].data || {} };
       original = snap();
       start();
@@ -325,7 +365,11 @@
     });
     if (node.tagName === "H1") node.parentNode.insertBefore(el("p", { "class": "pe-note pe-title-note", text: T.titleNote }), node.nextSibling);
   }
-  function fill() { parts.forEach(function (p) { if (document.activeElement !== p.node) p.node.textContent = p.get(); }); }
+  var refreshers = []; // panels with fields (a product's price…): redrawn after undo
+  function fill() {
+    parts.forEach(function (p) { if (document.activeElement !== p.node) p.node.textContent = p.get(); });
+    refreshers.forEach(function (r) { r(); });
+  }
 
   // ---------- lists ----------
   var lists = []; // { node, field, subs, tpl }
@@ -349,11 +393,21 @@
     Array.prototype.forEach.call(box.querySelectorAll("[data-ed-list]"), function (n) {
       var tpl = n.querySelector("[data-ed-item]");
       var words = function (a) { return (n.getAttribute(a) || "").split(",").filter(Boolean); };
-      lists.push({ node: n, field: n.getAttribute("data-ed-list"), subs: (n.getAttribute("data-ed-subs") || "name").split(","), tpl: tpl ? tpl.cloneNode(true) : el("li"),
-        tags: words("data-ed-tags"), bare: words("data-ed-bare-en"), notr: words("data-ed-notr"), photo: n.getAttribute("data-ed-photo") || "" });
+      var field = n.getAttribute("data-ed-list");
+      lists.push({ node: n, field: field, subs: (n.getAttribute("data-ed-subs") || "name").split(","), tpl: tpl ? tpl.cloneNode(true) : el("li"),
+        tags: words("data-ed-tags"), bare: words("data-ed-bare-en"), notr: words("data-ed-notr"), photo: n.getAttribute("data-ed-photo") || "",
+        photoMain: n.hasAttribute("data-ed-photo-main"), multi: words("data-ed-multi"), slug: n.getAttribute("data-ed-slug") || "" });
+      // A list shown only while editing gets its own heading and a short explanation.
+      if (T["list_" + field]) {
+        n.parentNode.insertBefore(el("h2", { "class": "section-label pe-list-title", text: T["list_" + field] }), n);
+        if (T["note_" + field]) n.parentNode.insertBefore(el("p", { "class": "pe-note pe-list-note", text: T["note_" + field] }), n);
+      }
     });
-    var hd = box.querySelector(".page-head");
-    if (hd) hd.parentNode.insertBefore(el("p", { "class": "pe-note pe-proj-note", text: T.langNote }), hd.nextSibling);
+    var hd = box.querySelector(".page-head") || (PRODUCT && box.querySelector(".product-info"));
+    if (hd && hd.classList.contains("product-info")) hd.insertBefore(el("p", { "class": "pe-note pe-proj-note", text: T.langNote }), hd.firstChild);
+    else if (hd) hd.parentNode.insertBefore(el("p", { "class": "pe-note pe-proj-note", text: T.langNote }), hd.nextSibling);
+    if (PRODUCT) productPanel();
+    if (SHOP) newProductButton();
     drawLists();
   }
   // The key of a list text in a language ("name_he", "name_en", or "name" for English when bare).
@@ -390,9 +444,18 @@
           var key = keyOf(L, sub, lang);
           n.textContent = it[key] || "";
           var shared = L.notr.indexOf(sub) >= 0;
-          editable(n, T["hint_" + sub] || (k === 0 ? T.nameHint : T.bodyHint), function (v) { it[key] = v; }, function () { if (k === 0 && !it[key]) setStatus(T.nameEmpty, "warn"); else if (shared && it[key] && !it[keyOf(L, sub, other)]) setStatus(T.nameShared); });
+          if (L.multi.indexOf(sub) >= 0) n.setAttribute("data-multiline", "");
+          editable(n, T["hint_" + L.field + "_" + sub] || T["hint_" + sub] || (k === 0 ? T.nameHint : T.bodyHint), function (v) { it[key] = v; }, function () {
+            if (k === 0 && !L.photoMain) {
+              // The "no name" mark follows the name as it is written.
+              var miss = li.querySelector(".pe-missing");
+              if (it[key] && miss) miss.remove();
+              else if (!it[key] && !miss) li.insertBefore(el("span", { "class": "pe-missing", text: T.notShown }), li.querySelector(".pe-list-tools"));
+            }
+            if (k === 0 && !it[key] && !L.photoMain) setStatus(T.nameEmpty, "warn"); else if (shared && it[key] && !it[keyOf(L, sub, other)]) setStatus(T.nameShared);
+          });
         });
-        if (!it[keyOf(L, L.subs[0], lang)]) li.appendChild(el("span", { "class": "pe-missing", text: T.notShown }));
+        if (L.photoMain ? !it[L.photo] : !it[keyOf(L, L.subs[0], lang)]) li.appendChild(el("span", { "class": "pe-missing", text: L.photoMain ? T.photoNeeded : T.notShown }));
         var tools = [
           button(T.prevBtn, function () { move(L, i, -1); }, "pe-btn pe-move", T.earlier),
           button(T.remove, function () { items.splice(i, 1); changed(); setStatus(T.removed, "warn"); }, "pe-btn pe-danger"),
@@ -402,7 +465,7 @@
           tools.push(button(it[L.photo] ? T.photoChange : T.photoAdd, function () {
             pickPicture(function (path) { it[L.photo] = "/" + path; changed(); });
           }, "pe-btn"));
-          if (it[L.photo]) tools.push(button(T.photoRemove, function () { it[L.photo] = ""; changed(); setStatus(T.photoRemoved, "warn"); }, "pe-btn"));
+          if (it[L.photo] && !L.photoMain) tools.push(button(T.photoRemove, function () { it[L.photo] = ""; changed(); setStatus(T.photoRemoved, "warn"); }, "pe-btn"));
         }
         li.appendChild(el("div", { "class": "pe-tools pe-list-tools" }, tools));
         // Dragging starts only from the item's frame, so selecting text with the mouse still works.
@@ -427,14 +490,19 @@
       });
       var addBox = L.node.nextElementSibling && L.node.nextElementSibling.classList.contains("pe-add") ? L.node.nextElementSibling : null;
       if (!addBox) {
-        addBox = el("div", { "class": "pe-add" }, [button("+ " + T.add, function () {
+        addBox = el("div", { "class": "pe-add" }, [button("+ " + (L.photoMain ? T.photoAdd : T.add), function () {
           var blank = {};
           L.subs.forEach(function (sub) { blank[keyOf(L, sub, "he")] = ""; blank[keyOf(L, sub, "en")] = ""; });
           if (L.photo) blank[L.photo] = "";
-          (Array.isArray(state.file[L.field]) ? state.file[L.field] : (state.file[L.field] = [])).push(blank);
-          changed();
-          var last = L.node.lastElementChild && L.node.lastElementChild.querySelector("[data-ed-sub]");
-          if (last) last.focus();
+          var push = function () {
+            (Array.isArray(state.file[L.field]) ? state.file[L.field] : (state.file[L.field] = [])).push(blank);
+            changed();
+            var last = L.node.lastElementChild && L.node.lastElementChild.querySelector("[data-ed-sub]");
+            if (last && !L.photoMain) last.focus();
+          };
+          // A list of pictures: the new item starts with choosing its picture.
+          if (L.photoMain) pickPicture(function (path) { blank[L.photo] = "/" + path; push(); });
+          else push();
         }, "pe-btn pe-primary")]);
         L.node.parentNode.insertBefore(addBox, L.node.nextSibling);
       }
@@ -447,11 +515,181 @@
     changed();
   }
 
+  // ---------- fixed English names (data-ed-slug) ----------
+  function slugify(t) {
+    return String(t || "").toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50).replace(/-+$/, "");
+  }
+  // A new item (a new category…) gets a fixed name from its English name, once.
+  function giveSlugs() {
+    lists.forEach(function (L) {
+      if (!L.slug) return;
+      var items = state.file[L.field] || [], taken = {};
+      items.forEach(function (it) { if (it[L.slug]) taken[it[L.slug]] = true; });
+      items.forEach(function (it) {
+        if (it[L.slug]) return;
+        var base = slugify(it[keyOf(L, L.subs[0], "en")]) || (L.field === "categories" ? "category" : "item") + "-" + Date.now().toString(36);
+        var sl = base, n = 2;
+        while (taken[sl]) sl = base + "-" + n++;
+        taken[sl] = true;
+        it[L.slug] = sl;
+      });
+    });
+  }
+
+  // ---------- a product: price, availability, category, showing ----------
+  var shopCats = [];
+  var SYM = { ILS: "₪", USD: "$", EUR: "€" };
+  var PRICE = /^\d{1,7}(\.\d{1,2})?$/;
+  function catName(c) { return String(c["name_" + lang] || c["name_" + other] || c.slug || ""); }
+  function productPanel() {
+    var at = box.querySelector(".buy-box");
+    if (!at) return;
+    var choices = {};
+    try { choices = JSON.parse(box.getAttribute("data-ed-choices") || "{}"); } catch (e) { choices = {}; }
+    function priceField(key, curKey, curDefault, label) {
+      var input = el("input", { type: "text", inputmode: "decimal", "class": "pe-input pe-price", "data-ed-price": key, placeholder: T.priceHint, dir: "ltr", autocomplete: "off" });
+      var cur = el("span", { "class": "pe-cur", dir: "ltr" });
+      function show() {
+        var v = state.file[key], c = state.file[curKey] || curDefault;
+        if (document.activeElement !== input) input.value = typeof v === "number" ? String(v) : "";
+        cur.textContent = (SYM[c] ? SYM[c] + " " : "") + c;
+      }
+      input.addEventListener("change", function () {
+        var raw = input.value.trim().replace(",", ".");
+        if (!raw) delete state.file[key];
+        else if (!PRICE.test(raw)) { input.value = typeof state.file[key] === "number" ? String(state.file[key]) : ""; setStatus(T.badPrice, "warn"); return; }
+        else state.file[key] = Number(raw);
+        changed();
+      });
+      refreshers.push(show); show();
+      return el("label", { "class": "pe-field" }, [el("span", { text: label }), el("span", { "class": "pe-price-row" }, [input, cur])]);
+    }
+    function select(key, options, fallback, label) {
+      var sel = el("select", { "class": "pe-input", "data-ed-select": key }, options.map(function (o) { return el("option", { value: o[0], text: o[1] }); }));
+      function show() {
+        var v = state.file[key] || fallback;
+        if (!options.some(function (o) { return o[0] === v; })) sel.appendChild(el("option", { value: v, text: v }));
+        sel.value = v;
+      }
+      sel.addEventListener("change", function () { if (sel.value) state.file[key] = sel.value; else delete state.file[key]; changed(); });
+      refreshers.push(show); show();
+      return el("label", { "class": "pe-field" }, [el("span", { text: label }), sel]);
+    }
+    var avail = choices.availability || {};
+    var visible = el("input", { type: "checkbox", "data-ed-visible": "" });
+    function showVisible() { visible.checked = state.file.visible !== false; }
+    visible.addEventListener("change", function () { state.file.visible = visible.checked; changed(); if (!visible.checked) setStatus(T.hiddenNote, "warn"); });
+    refreshers.push(showVisible); showVisible();
+    var panel = el("fieldset", { "class": "pe-panel" }, [
+      el("legend", { text: T.panelTitle }),
+      priceField("price", "currency", "ILS", T.price),
+      priceField("price_abroad", "currency_abroad", "USD", T.priceAbroad),
+      select("availability", Object.keys(avail).map(function (k) { return [k, avail[k]]; }), "available", T.availability),
+      select("category", [["", T.noCategory]].concat(shopCats.filter(function (c) { return c && c.slug; }).map(function (c) { return [c.slug, catName(c)]; })), "", T.category),
+      el("label", { "class": "pe-check" }, [visible, el("span", { text: T.visible })]),
+      el("p", { "class": "pe-note", text: T.moneyNote }),
+    ]);
+    at.parentNode.insertBefore(panel, at);
+  }
+
+  // ---------- the shop: a new product ----------
+  function newProductButton() {
+    var note = box.querySelector(".pe-proj-note") || box.querySelector(".page-head");
+    var wrap = el("div", { "class": "pe-add pe-new-product" }, [button("+ " + T.newProduct, newProductDialog, "pe-btn pe-primary")]);
+    note.parentNode.insertBefore(wrap, note.nextSibling);
+  }
+  function freeSlug(base, n) {
+    var sl = n > 1 ? base + "-" + n : base;
+    return api("/contents/" + encPath("content/products/" + sl + ".json") + ref).then(function () {
+      if (n > 20) throw new Error("name");
+      return freeSlug(base, n + 1);
+    }, function (err) { if (err.status === 404) return sl; throw err; });
+  }
+  function newProductDialog() {
+    var photo = "";
+    var name = el("input", { type: "text", "class": "pe-input", maxlength: "120", "data-new": "name" });
+    var price = el("input", { type: "text", inputmode: "decimal", "class": "pe-input", dir: "ltr", "data-new": "price", autocomplete: "off" });
+    var cats = (state.file.categories || []).filter(function (c) { return c && c.slug; });
+    var cat = el("select", { "class": "pe-input", "data-new": "category" }, [el("option", { value: "", text: T.noCategory })].concat(cats.map(function (c) { return el("option", { value: c.slug, text: catName(c) }); })));
+    var preview = el("div", { "class": "pe-new-photo" });
+    var msg = el("p", { "class": "pe-note pe-new-msg", role: "status", "aria-live": "polite" });
+    var pickBtn = button(T.choosePhoto, function () {
+      pickPicture(function (path) { photo = path; preview.textContent = ""; preview.appendChild(picture(path)); pickBtn.textContent = T.photoChange; msg.textContent = ""; });
+    }, "pe-btn");
+    var createBtn = button(T.create, go, "pe-btn pe-primary");
+    var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": T.newTitle }, [
+      el("div", { "class": "pe-modal-box pe-new-box" }, [
+        el("div", { "class": "pe-modal-head" }, [el("strong", { text: T.newTitle }), button(T.close, function () { close(); }, "pe-btn pe-ghost")]),
+        el("label", { "class": "pe-field" }, [el("span", { text: T.newName }), name]),
+        el("label", { "class": "pe-field" }, [el("span", { text: T.newPrice }), price]),
+        el("label", { "class": "pe-field" }, [el("span", { text: T.newCategory }), cat]),
+        el("div", { "class": "pe-field" }, [el("span", { text: T.newPhoto }), preview, pickBtn]),
+        el("p", { "class": "pe-note", text: T.newNote }),
+        el("div", { "class": "pe-modal-foot" }, [msg, createBtn]),
+      ]),
+    ]);
+    function close() { dialog.remove(); document.removeEventListener("keydown", onKey); }
+    // Escape closes the picture chooser first, when it is open on top.
+    function onKey(e) { if (e.key === "Escape" && document.querySelectorAll(".pe-modal").length === 1) close(); }
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(dialog);
+    name.focus();
+    function go() {
+      var n = clean(name.value), raw = price.value.trim().replace(",", ".");
+      if (!n) { msg.textContent = T.needName; name.focus(); return; }
+      if (raw && !PRICE.test(raw)) { msg.textContent = T.priceNumber; price.focus(); return; }
+      if (!photo) { msg.textContent = T.needPhoto; pickBtn.focus(); return; }
+      createBtn.disabled = true; msg.textContent = T.creating;
+      lastCommit = "";
+      var titles = {};
+      titles["title_" + lang] = n;
+      var path = norm(photo);
+      (trBox.checked ? translate(n).catch(function () { return ""; }) : Promise.resolve(""))
+        .then(function (o) {
+          titles["title_" + other] = o;
+          var base = slugify(lang === "en" ? n : o) || "product-" + Date.now().toString(36);
+          if (base === "order" || /^example-/.test(base)) base = "product-" + base;
+          return freeSlug(base, 1);
+        })
+        .then(function (slug) {
+          var up = uploads[path] && !uploads[path].done
+            ? readB64(uploads[path].file)
+              .then(function (b64) { return api("/contents/" + encPath(path), { method: "PUT", body: { message: "Upload picture (shop, new product)", content: b64, branch: BRANCH } }); })
+              .then(function () { uploads[path].done = true; })
+            : Promise.resolve();
+          return up.then(function () {
+            // The same starting values as "New" in the admin panel.
+            var data = { title_en: titles.title_en, title_he: titles.title_he, visible: true, order: 10 };
+            if (cat.value) data.category = cat.value;
+            data.type = "physical";
+            data.images = [{ image: "/" + path, alt_en: "", alt_he: "" }];
+            if (raw) data.price = Number(raw);
+            data.currency = "ILS";
+            data.ships_to = "worldwide";
+            data.price_from = false;
+            data.availability = "available";
+            data.description_en = ""; data.description_he = "";
+            return api("/contents/" + encPath("content/products/" + slug + ".json"), { method: "PUT", body: { message: "New product " + slug + " (added on the shop page)", content: utf8ToB64(JSON.stringify(data, null, 2) + "\n"), branch: BRANCH } });
+          }).then(function () { return slug; });
+        })
+        .then(function (slug) {
+          close();
+          var here = location.pathname;
+          var url = here.replace(/shop\/(index\.html)?$/, "shop/" + slug + "/" + (/index\.html$/.test(here) ? "index.html" : ""));
+          var done = el("p", { "class": "pe-note pe-created", "data-created": slug }, [document.createTextNode(T.created + " "), el("a", { href: url, text: T.openProduct })]);
+          var w = box.querySelector(".pe-new-product");
+          w.parentNode.insertBefore(done, w.nextSibling);
+          followSave(lastCommit, "", false);
+        })
+        .catch(function () { createBtn.disabled = false; msg.textContent = T.errCreate; });
+    }
+  }
+
   // ---------- pictures (lists with data-ed-photo) ----------
   // A picture chosen from this computer stays in the browser until "Save";
   // then it is uploaded to assets/uploads/<page>/ before the page's file.
   var uploads = {}; // "assets/uploads/…" → { file, blobUrl, done }
-  var PAGE = FILE.replace(/^content\/|\.json$/g, "");
+  var PAGE = PRODUCT ? "shop" : FILE.replace(/^content\/|\.json$/g, "");
   function norm(p) { return String(p || "").replace(/^\/+/, ""); }
   function picture(path) {
     var p = norm(path), img = el("img", { alt: "", loading: "lazy", decoding: "async" });
@@ -671,6 +909,7 @@
   }
   function write(tr) {
     var note = tr.failed ? T.trFail : tr.n ? T.trDone.replace("{n}", tr.n) : "";
+    giveSlugs();
     if (tr.n) { commit(); fill(); drawLists(); }
     setStatus(T.saving);
     var orig = JSON.parse(original);

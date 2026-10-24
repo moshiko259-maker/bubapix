@@ -1283,9 +1283,9 @@ function shop(ctx) {
         </button>`;
   const filters = cats.length
     ? `
-      <div class="filters cat-strip needs-js" role="group" aria-label="${e(t.shop.categoriesLabel)}">${tile("", t.shop.all, `<span class="cat-letter">${icon("grid")}</span>`, data.products.length, true)}${cats.filter((c) => !c.parent).map((c) => tile(c.slug, c.name, c.image ? img(ctx, c.image, { sizes: "120px" }) : `<span class="cat-letter">${e([...c.name][0] || "")}</span>`, c.count, false)).join("")}
+      <div class="filters cat-strip needs-js" data-ed-hide role="group" aria-label="${e(t.shop.categoriesLabel)}">${tile("", t.shop.all, `<span class="cat-letter">${icon("grid")}</span>`, data.products.length, true)}${cats.filter((c) => !c.parent).map((c) => tile(c.slug, c.name, c.image ? img(ctx, c.image, { sizes: "120px" }) : `<span class="cat-letter">${e([...c.name][0] || "")}</span>`, c.count, false)).join("")}
       </div>${cats.filter((c) => c.subs && c.subs.length).map((c) => `
-      <div class="filters sub-strip" role="group" aria-label="${e(c.name)}" data-parent="${e(c.slug)}" hidden>
+      <div class="filters sub-strip" data-ed-hide role="group" aria-label="${e(c.name)}" data-parent="${e(c.slug)}" hidden>
         <button type="button" class="filter sub-chip" data-filter="${e(c.slug)}" aria-pressed="false">${e(t.shop.all)}</button>${c.subs.map((s) => `
         <button type="button" class="filter sub-chip" data-filter="${e(s.slug)}" aria-pressed="false">${e(s.name)} <span class="sub-count">${e(s.count ? String(s.count) : t.shop.comingSoon)}</span></button>`).join("")}
       </div>`).join("")}
@@ -1297,16 +1297,25 @@ function shop(ctx) {
         ${data.products.map((x) => productCard(ctx, x)).join("\n        ")}
       </div>`
     : `
-      <p class="shop-empty">${e(t.shop.empty)}</p>`;
+      <p class="shop-empty" data-ed-label="shop_empty">${e(t.shop.empty)}</p>`;
+  // The owner's page editor (js/page-editor.js): title, opening line, and the
+  // categories (name and picture) as a list that is shown only while editing,
+  // in place of the category strip (data-ed-hide). New products are added
+  // from the editor too. Visitors see the same shop.
+  const catEditor = `
+      <template data-ed-missing>
+      <ul class="pe-cats" data-ed-list="categories" data-ed-subs="name" data-ed-tags="h3" data-ed-photo="image" data-ed-slug="slug"><li data-ed-item="0"><h3 data-ed-sub="name"></h3></li></ul>
+      </template>`;
   return layout(ctx, {
-    edits: [[t.edit.newProduct, ed.newProduct], [t.edit.shopSettings, ed.shop], ...data.products.map((x) => [t.edit.product.replace("{name}", x.title), ed.product(x.slug)])],
+    edits: [[t.edit.newProduct, ed.newProduct], [t.edit.shopSettings, ed.shop], ...data.products.filter((x) => !x.example).map((x) => [t.edit.product.replace("{name}", x.title), ed.product(x.slug)])],
     title: pageTitle(ctx, t.shop.title),
     description: data.shop.intro ? clip(data.shop.intro) : clip(`${t.shop.title} — ${data.seoDescription}`),
     current: "shop",
+    pageEditor: "page",
     main: `
-    <div class="page">
-      <header class="page-head shop-head"><h1 class="page-title">${e(t.shop.title)}</h1>${orderLink(ctx)}${data.shop.intro ? `
-        <p class="lede">${e(data.shop.intro)}</p>` : ""}</header>${filters}${data.products.some((x) => x.priceText) ? currencyPicker(ctx) : ""}${grid}
+    <div class="page" data-ed-file="content/shop.json">
+      <header class="page-head shop-head"><h1 class="page-title" data-ed-label="nav_shop">${e(t.shop.title)}</h1>${orderLink(ctx)}${data.shop.intro ? `
+        <p class="lede" data-ed="intro">${e(data.shop.intro)}</p>` : ""}</header>${filters}${catEditor}${data.products.some((x) => x.priceText) ? currencyPicker(ctx) : ""}${grid}
     </div>`,
     shopScript: true,
   });
@@ -1372,6 +1381,16 @@ function product(ctx, x) {
             <li><button type="button" data-thumb="${i}" aria-label="${e(t.shop.photo.replace("{n}", i + 1))}"${i === 0 ? ' aria-current="true"' : ""}>${img(ctx, im, { sizes: "96px" })}</button></li>`).join("")}
           </ul>` : "";
   const sub = [x.category && x.category.name, x.type !== "physical" && t.shop.types[x.type], t.shop.shipsTo[x.shipsTo]].filter(Boolean);
+  // The owner's page editor (js/page-editor.js), for real products only (an
+  // example product has no file): name, description, photos and "more
+  // details" as lists shown only while editing (data-ed-hide hides the
+  // visitor's version then), and a panel for price, availability, category
+  // and showing in the shop. data-ed-choices: the names of the choices, in
+  // the page's language.
+  const editing = !x.example;
+  const missing = (html) => (editing ? `<template data-ed-missing>${html}</template>` : "");
+  const choices = editing ? ` data-ed-file="content/products/${e(x.slug)}.json" data-ed-choices="${e(JSON.stringify({ availability: t.shop.availability }))}"` : "";
+  const hide = editing ? " data-ed-hide" : "";
   return layout(ctx, {
     edits: [[t.edit.thisProduct, ed.product(x.slug)], [t.edit.shopSettings, ed.shop], [t.edit.newProduct, ed.newProduct]],
     title: x.seoTitle || pageTitle(ctx, x.title),
@@ -1381,17 +1400,19 @@ function product(ctx, x) {
     viewer: true,
     shopScript: true,
     noindex: x.example,
+    pageEditor: editing ? "page" : false,
     main: `
-    <article class="page product-page">
+    <article class="page product-page"${choices}>
       <p class="crumb shop-crumb"><a href="${link("shop/")}">${e(t.shop.title)}</a>${orderLink(ctx)}</p>
       <div class="product-layout">
-        <div class="product-photos">
+        <div class="product-photos"${hide}>
           <div class="product-stage">${slides}
           </div>${thumbs}
-        </div>
+        </div>${missing(`
+        <div class="pe-photos-box"><ul class="pe-photos" data-ed-list="images" data-ed-subs="alt" data-ed-tags="p" data-ed-photo="image" data-ed-photo-main><li data-ed-item="0"><p data-ed-sub="alt"></p></li></ul></div>`)}
         <div class="product-info">${x.example ? `
           <p class="example-badge">${e(t.shop.exampleBadge)}</p>` : ""}
-          <h1 class="page-title product-title">${e(x.title)}</h1>
+          <h1 class="page-title product-title"${editing ? ' data-ed="title"' : ""}>${e(x.title)}</h1>
           <p class="product-sub">${sub.map(e).join(" · ")}</p>
           <div class="buy-box">${x.priceText ? `
             <p class="buy-price"><span${priceAttrs(x.price, x.currency, x.priceFrom)}>${x.priceFrom ? fromPrefix(ctx) : ""}${e(x.priceText)}</span>${vatNote(ctx)}</p>` : ""}
@@ -1399,9 +1420,11 @@ function product(ctx, x) {
             <div class="product-action">${action}</div>` : ""}${rows.length ? `
             <dl class="buy-rows">${rows.join("")}</dl>` : ""}
           </div>${x.description ? `
-          <div class="prose product-description">${md(x.description)}</div>` : ""}${x.details.length || sh.returns ? `
+          <div class="prose product-description"${editing ? " data-ed=\"description\" data-multiline" : ""}>${md(x.description)}</div>` : missing(`
+          <div class="prose product-description" data-ed="description" data-multiline></div>`)}${missing(`
+          <ul class="pe-details" data-ed-list="details" data-ed-subs="title,text" data-ed-tags="h3,p" data-ed-multi="text"><li data-ed-item="0"><h3 data-ed-sub="title"></h3><p data-ed-sub="text"></p></li></ul>`)}${x.details.length || sh.returns ? `
           <div class="product-more">${x.details.map((d) => `
-            <details><summary>${e(d.title)}</summary><div class="prose">${md(d.text)}</div></details>`).join("")}${sh.returns ? `
+            <details${hide}><summary>${e(d.title)}</summary><div class="prose">${md(d.text)}</div></details>`).join("")}${sh.returns ? `
             <details><summary>${e(t.shop.returnsTitle)}</summary><div class="prose">${md(sh.returns)}</div></details>` : ""}
           </div>` : ""}${x.variants.length ? `
           <dl class="details product-variants">${x.variants.map((v) => `<div><dt>${e(v.name)}</dt><dd>${v.values.map(e).join(" · ")}</dd></div>`).join("")}</dl>` : ""}${x.projects.length ? `

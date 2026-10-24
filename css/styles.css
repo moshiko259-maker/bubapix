@@ -1093,6 +1093,29 @@ h1.pe-editable { min-width: 4ch; }
 .pe-list-item .pe-badge.pe-new { position: static; display: inline-block; margin-bottom: 0.4rem; }
 .pe-list-tools { flex-wrap: wrap; gap: 0.35rem; }
 .pe-plain-note { margin-block-end: 1.25rem; }
+/* Shop and product pages while the owner edits them (js/page-editor.js). */
+.page-editing [data-ed-hide] { display: none !important; }
+.pe-list-title { margin-top: 2rem; }
+.pe-photos-box .pe-list-title { margin-top: 0; }
+.pe-list-note { margin: 0 0 1rem; }
+.pe-cats, .pe-photos, .pe-details { margin: 0; padding: 0; list-style: none; }
+.pe-cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr)); gap: 1rem; }
+.pe-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr)); gap: 0.75rem; }
+.pe-cats img, .pe-photos img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; margin-bottom: 0.5rem; }
+.pe-cats h3, .pe-details h3 { font-size: 1rem; font-weight: 600; }
+.pe-photos p { font-size: 0.8125rem; }
+.pe-details { display: grid; gap: 1rem; }
+.pe-details li { padding: 0.75rem; border: 1px solid var(--line); border-radius: 10px; }
+.pe-details h3 { margin-bottom: 0.4rem; }
+.pe-panel { display: grid; gap: 0.75rem; min-width: 0; margin: 0 0 1.25rem; padding: 1rem; border: 2px dashed var(--line); border-radius: 12px; }
+.pe-panel legend { padding: 0 0.4rem; font-weight: 600; }
+.pe-field { display: grid; gap: 0.3rem; font-size: 0.875rem; }
+.pe-price-row { display: flex; align-items: center; gap: 0.5rem; }
+.pe-price { width: 9rem; }
+.pe-new-box { grid-template-rows: none; overflow: auto; width: min(32rem, 100%); }
+.pe-new-photo img { width: 8rem; height: 8rem; object-fit: cover; border-radius: 8px; }
+.pe-new-product { justify-content: flex-start; margin: 1rem 0; }
+.pe-created a { color: var(--ink); }
 .manage-projects-title { margin: 1rem 0 0.4rem; font-weight: 600; }
 .manage-projects { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0; padding: 0; list-style: none; }
 .manage-projects a { color: var(--ink); }
