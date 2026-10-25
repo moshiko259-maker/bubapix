@@ -631,7 +631,7 @@ function home(ctx) {
     <section class="section home-posters" aria-labelledby="posters-title">
       <h2 id="posters-title" class="visually-hidden">${e(t.nav.work)}</h2>
       <div class="mosaic poster-rows${lay.gap ? ` gap-${lay.gap}` : ""}" data-mosaic>${posterLayout.rows.map((row) => `
-        <div class="mrow n${row.length}">${row.map((p) => galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${p.name} — ${t.home.openProject}`, sizes: `(max-width: 700px) 46vw, (max-width: 1440px) ${Math.ceil(92 / row.length * 1.1)}vw, ${Math.ceil(1328 / row.length * 1.1)}px`, extraClass: `poster${posterLayout.cls.get(p) ? " " + posterLayout.cls.get(p) : ""}` }).replace(/^<(a|figure) /, `<$1 data-project="${e(p.slug)}" data-srow="${posterPhoneRow(posterProjects, p)}" `)).join("")}</div>`).join("")}
+        <div class="mrow n${row.length}">${row.map((p) => galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${p.name} — ${t.home.openProject}`, caption: p.posterCaption, sizes: `(max-width: 700px) 46vw, (max-width: 1440px) ${Math.ceil(92 / row.length * 1.1)}vw, ${Math.ceil(1328 / row.length * 1.1)}px`, extraClass: `poster${posterLayout.cls.get(p) ? " " + posterLayout.cls.get(p) : ""}` }).replace(/^<(a|figure) /, `<$1 data-project="${e(p.slug)}" data-srow="${posterPhoneRow(posterProjects, p)}" `)).join("")}</div>`).join("")}
       </div>
     </section>`
     : "";

@@ -72,7 +72,7 @@
     describe: "תיאור לעיוורים", noAlt: "אין תיאור לעיוורים", ok: "אישור",
     altEdit: "כתבו בקצרה מה רואים בתמונה. קוראי מסך מקריאים את זה לגולשים עיוורים.",
     caption: "כותרת ותיאור", captionTitle: "כותרת לתמונה (לא חובה)", captionNote: "תיאור קצר (לא חובה)", captionWhere: "איפה להציג",
-    capHidden: "לא להציג (נשמר)", capHome: "מתחת לתמונה, בגלריה של דף הבית", capShow: "מתחת לתמונה",
+    capHidden: "לא להציג (נשמר)", capHome: "מתחת לתמונה, בגלריה של דף הבית", capShow: "מתחת לתמונה", capPoster: "מתחת לפוסטר",
     captionNoteHelp: "הכותרת והתיאור מתורגמים לאנגלית בשמירה. תיאור לעיוורים — בכפתור ״תיאור לעיוורים״.",
     hiddenTitle: "תמונות מוסתרות (נשמרות, לא מוצגות)",
     elsewhereTitle: "מוצגות במקום אחר בדף (פתיחה או שורת הפוסטרים), ולכן לא בגלריה",
@@ -182,7 +182,7 @@
     describe: "Description for blind visitors", noAlt: "No description for blind visitors", ok: "OK",
     altEdit: "Say briefly what the picture shows. Screen readers read it to blind visitors.",
     caption: "Title and text", captionTitle: "Picture title (optional)", captionNote: "Short text (optional)", captionWhere: "Where to show it",
-    capHidden: "Not shown (kept)", capHome: "Under the picture, in the homepage gallery", capShow: "Under the picture",
+    capHidden: "Not shown (kept)", capHome: "Under the picture, in the homepage gallery", capShow: "Under the picture", capPoster: "Under the poster",
     captionNoteHelp: "The title and text are translated to Hebrew on saving. The description for blind visitors is under \"Description for blind visitors\".",
     hiddenTitle: "Hidden pictures (kept, not shown)",
     elsewhereTitle: "Shown elsewhere on the page (opening or posters row), so not in the gallery",
@@ -335,10 +335,13 @@
   // ---------- state ----------
   var data = null, sha = "", original = "";
   var projects = []; // { slug, name } from content/projects, for the owner's own choice
+  // A poster's "Title and text" (kept in the project's file; cap: the fields, origCap: as loaded).
+  var CAP_KEYS = ["poster_title_he", "poster_title_en", "poster_note_he", "poster_note_en", "poster_caption"];
+  function capOf(d) { var c = {}; CAP_KEYS.forEach(function (k) { c[k] = d && typeof d[k] === "string" ? d[k] : ""; }); return c; }
   var pageAdds = {}; // project slug -> pictures to add to that project's page gallery
   var hasPageAdds = function () { return Object.keys(pageAdds).some(function (k) { return pageAdds[k].length; }); };
   // Existing projects changed here: names, cover (poster) or the posters row.
-  var renamed = function () { return projects.filter(function (p) { return !p.isNew && (p.title_he !== p.orig_he || p.title_en !== p.orig_en || !!p.cover || p.in_posters !== p.orig_in_posters || p.order !== p.orig_order || p.poster_w !== p.orig_poster_w); }); };
+  var renamed = function () { return projects.filter(function (p) { return !p.isNew && (p.title_he !== p.orig_he || p.title_en !== p.orig_en || !!p.cover || p.in_posters !== p.orig_in_posters || p.order !== p.orig_order || p.poster_w !== p.orig_poster_w || JSON.stringify(p.cap || {}) !== (p.origCap || JSON.stringify(p.cap || {}))); }); };
   var created = function () { return projects.filter(function (p) { return p.isNew; }); };
   // Texts kept in other files: interface texts (content/labels.json) and the
   // services list (content/services.json). Changed here in the page's language.
@@ -357,7 +360,7 @@
             var d = {};
             try { d = JSON.parse(b64ToUtf8(res.content)); } catch (e) { d = {}; }
             var slug = f.name.replace(/\.json$/, "");
-            return { slug: slug, title_he: d.title_he || "", title_en: d.title_en || "", orig_he: d.title_he || "", orig_en: d.title_en || "", name: (he ? d.title_he || d.title_en : d.title_en || d.title_he) || slug, order: Number(d.order) || 99, orig_order: Number(d.order) || 99, poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, orig_poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, in_posters: d.in_posters !== false, orig_in_posters: d.in_posters !== false, origCover: d.cover || "", cover: null };
+            return { slug: slug, title_he: d.title_he || "", title_en: d.title_en || "", orig_he: d.title_he || "", orig_en: d.title_en || "", name: (he ? d.title_he || d.title_en : d.title_en || d.title_he) || slug, order: Number(d.order) || 99, orig_order: Number(d.order) || 99, poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, orig_poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, in_posters: d.in_posters !== false, orig_in_posters: d.in_posters !== false, origCover: d.cover || "", cover: null, cap: capOf(d), origCap: JSON.stringify(capOf(d)) };
           });
         }));
       })
@@ -426,7 +429,7 @@
   // Every change keeps a copy of the state before it, in this tab only.
   var past = [], last = "";
   function snapshot() {
-    return JSON.stringify({ data: data, projects: projects.map(function (p) { return { slug: p.slug, isNew: !!p.isNew, title_he: p.title_he, title_en: p.title_en, orig_he: p.orig_he, orig_en: p.orig_en, order: p.order, orig_order: p.orig_order, poster_w: p.poster_w || 0, orig_poster_w: p.orig_poster_w || 0, name: p.name, cover: p.cover || null, in_posters: p.in_posters !== false, orig_in_posters: p.orig_in_posters !== false, origCover: p.origCover || "" }; }), pageAdds: pageAdds, texts: texts });
+    return JSON.stringify({ data: data, projects: projects.map(function (p) { return { slug: p.slug, isNew: !!p.isNew, title_he: p.title_he, title_en: p.title_en, orig_he: p.orig_he, orig_en: p.orig_en, order: p.order, orig_order: p.orig_order, poster_w: p.poster_w || 0, orig_poster_w: p.orig_poster_w || 0, name: p.name, cover: p.cover || null, in_posters: p.in_posters !== false, orig_in_posters: p.orig_in_posters !== false, origCover: p.origCover || "", cap: p.cap || capOf(null), origCap: p.origCap || JSON.stringify(capOf(null)) }; }), pageAdds: pageAdds, texts: texts });
   }
   function commit() {
     if (!data) return;
@@ -817,6 +820,14 @@
         : button(T.posterHide, function () { p.in_posters = false; changed(); syncPage(); }, "pe-btn pe-danger"));
       if (p.in_posters === false) pe.tools.appendChild(el("span", { "class": "pe-tools-label", text: T.posterHiddenNote }));
       if (p.poster_w) pe.tools.appendChild(button(T.posterAuto, function () { projects.forEach(function (q) { q.poster_w = 0; }); changed(); syncPage(); }));
+      if (!p.cap) p.cap = capOf(null);
+      pe.tools.appendChild(button(T.caption, function () {
+        core.captionDialog(T, p.cap, lang, [["hidden", T.capHidden], ["everywhere", T.capPoster]], function () { changed(); syncPage(); }, "poster_");
+      }, "pe-btn pe-caption-btn"));
+      // The caption the page was built with is replaced by the one being edited.
+      Array.prototype.forEach.call(pe.el.querySelectorAll(".jg-caption"), function (n) { n.remove(); });
+      var pt = p.cap["poster_title_" + lang] || "", pn = p.cap["poster_note_" + lang] || "";
+      if (p.cap.poster_caption === "everywhere" && (pt || pn) && pe.media) pe.el.insertBefore(el("span", { "class": "jg-caption pe-caption" }, [pt ? el("span", { "class": "jg-title", text: pt }) : null, pn ? el("span", { "class": "jg-note", text: pn }) : null]), pe.media.parentNode === pe.el ? pe.media.nextSibling : null);
       pe.tools.appendChild(button(T.nextBtn, function () { movePoster(slug, 1); }, "pe-btn pe-move", T.later));
     });
     layoutPosters();
@@ -834,8 +845,8 @@
   // The title and text under an opening picture, as visitors will see them.
   function showCap(box, o, pre) {
     if (!box) return;
-    var old = box.querySelector(":scope > .pe-caption, :scope > figure > .pe-caption");
-    if (old) old.remove();
+    // The caption the page was built with is replaced by the one being edited.
+    Array.prototype.forEach.call(box.querySelectorAll(".jg-caption"), function (n) { n.remove(); });
     var t1 = o[pre + "title_" + lang] || "", t2 = o[pre + "note_" + lang] || "";
     if (o[pre + "caption"] !== "everywhere" || !(t1 || t2)) return;
     var fig = box.querySelector("figure") || box;
@@ -1308,7 +1319,7 @@
         if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) { msg.textContent = T.errAddress; return; }
         if (projects.some(function (p) { return p.slug === slug; })) { msg.textContent = T.errTaken; return; }
         var maxOrder = projects.reduce(function (m, p) { return Math.max(m, p.order || 0); }, 0);
-        projects.push({ slug: slug, isNew: true, title_he: nHe.value.trim(), title_en: nEn.value.trim(), orig_he: "", orig_en: "", order: maxOrder + 1, cover: cover });
+        projects.push({ slug: slug, isNew: true, title_he: nHe.value.trim(), title_en: nEn.value.trim(), orig_he: "", orig_en: "", order: maxOrder + 1, cover: cover, cap: capOf(null), origCap: JSON.stringify(capOf(null)) });
         nHe.value = ""; nEn.value = ""; nSlug.value = ""; slugTouched = false; cover = null; coverInfo.textContent = "";
         msg.textContent = T.created;
         drawList(); commit(); refreshStatus(); render();
@@ -1356,9 +1367,11 @@
           if (p.in_posters === false) d.in_posters = false; else delete d.in_posters;
           if (p.order !== p.orig_order) d.order = p.order;
           if (p.poster_w) d.poster_w = p.poster_w; else delete d.poster_w;
+          // The poster's title and text: written only when there is one (or there was one).
+          if (p.cap) CAP_KEYS.forEach(function (k) { if (p.cap[k] && p.cap[k] !== "hidden") d[k] = p.cap[k]; else if (k in d) d[k] = k === "poster_caption" ? "hidden" : ""; });
           return api("/contents/" + encPath(path), { method: "PUT", body: { message: "Project " + p.slug + ": changed on the homepage (name, poster, order or poster size)", content: utf8ToB64(JSON.stringify(d, null, 2) + "\n"), sha: res.sha, branch: BRANCH } });
         })
-        .then(function () { p.orig_he = p.title_he; p.orig_en = p.title_en; if (p.cover) p.origCover = "/" + p.cover.path; p.cover = null; p.orig_in_posters = p.in_posters; p.orig_order = p.order; p.orig_poster_w = p.poster_w; });
+        .then(function () { p.orig_he = p.title_he; p.orig_en = p.title_en; if (p.cover) p.origCover = "/" + p.cover.path; p.cover = null; p.orig_in_posters = p.in_posters; p.orig_order = p.order; p.orig_poster_w = p.poster_w; p.origCap = JSON.stringify(p.cap || capOf(null)); });
     });
     return chain;
   }
@@ -1418,7 +1431,13 @@
     document.head.appendChild(s);
   });
   trReady.then(function () { if (window.BubaTranslate) (bar.querySelector(".pe-bar-layout") || bar).appendChild(window.BubaTranslate.toggle()); });
-  var trPairs = function () { var p = [{ now: data, before: JSON.parse(original) }]; if (textsOrig) p.push({ now: texts, before: JSON.parse(textsOrig) }); return p; };
+  var trPairs = function () {
+    var p = [{ now: data, before: JSON.parse(original) }];
+    if (textsOrig) p.push({ now: texts, before: JSON.parse(textsOrig) });
+    // Posters' titles and texts (in the project files).
+    p.push({ now: { caps: projects.map(function (x) { return x.cap || (x.cap = capOf(null)); }) }, before: { caps: projects.map(function (x) { return JSON.parse(x.origCap || JSON.stringify(capOf(null))); }) } });
+    return p;
+  };
   function trNote() { var n = window.BubaTranslate ? window.BubaTranslate.note(trRes) : ""; return n ? " " + n : ""; }
   function trKind() { return trRes.failed ? "warn" : "ok"; }
   function save() {

@@ -403,6 +403,8 @@ function contentFor(lang) {
         titleInGallery: p.title_in_gallery === true && !!name,
         // "Title and text" of the cover: under it on the projects page ("work"), on the project page ("project"), or both.
         coverCaption: captionOf(p, "cover_", lang, ["work", "project", "both"]),
+        // "Title and text" under its poster on the homepage.
+        posterCaption: captionOf(p, "poster_", lang, ["everywhere"]),
         text: pick(p, "text", lang),
         description: pick(p, "description", lang),
         seoTitle: pick(p, "seo_title", lang),
