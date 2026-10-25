@@ -280,6 +280,8 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 }
 .jg-item.is-lead { flex-basis: 100% !important; }
 .jg-item[hidden] { display: none; }
+/* A whole grid hidden by the page editor (the projects page shows its own editing grid instead). */
+.jg[hidden] { display: none; }
 .jg-media {
   display: block;
   overflow: hidden;
