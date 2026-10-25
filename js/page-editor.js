@@ -110,6 +110,7 @@
     trDone: "תורגמו לאנגלית {n} טקסטים. לתיקון — פתחו את הדף באנגלית, וכבו שם את ״תרגום אוטומטי״ לפני השמירה.",
     trFail: "התרגום לאנגלית לא הצליח (אולי נגמרה המכסה היומית החינמית, או שאין אינטרנט). העברית נשמרה; האנגלית לא השתנתה.",
     tip5: "״תרגום אוטומטי״ מתרגם בשמירה כל טקסט ששיניתם לשפה השנייה (חינם). מתקנים תרגום? כבו אותו לפני השמירה.",
+    frameTip: "לחצו על התמונה כדי לבחור אותה, וגררו נקודה כחולה כדי לשנות גודל (במחשב)", widthLabel: "רוחב", photoSizeNote: "גודל התמונה: לוחצים על תמונה וגוררים נקודה כחולה (במחשב). בטלפון התמונה תמיד ברוחב מלא.",
     photoAdd: "הוספת תמונה", photoChange: "החלפת התמונה", photoRemove: "הסרת התמונה", photoRemoved: "התמונה הוסרה. אפשר לבטל עם ״ביטול פעולה״.",
     pickTitle: "בחירת תמונה", pickLoading: "טוען תמונות…", pickUpload: "העלאה מהמחשב או מהטלפון:", uploadNote: "(תישמר באתר רק בלחיצה על ״שמירה״)",
     choose: "בחירה", close: "סגירה", newBadge: "חדשה — תישמר בשמירה",
@@ -171,6 +172,7 @@
     trDone: "Translated to Hebrew: {n}. To fix it, open the page in Hebrew and turn off \"Auto-translate\" there before saving.",
     trFail: "Translating to Hebrew failed (maybe the free daily allowance ran out, or there is no internet). The English is saved; the Hebrew did not change.",
     tip5: "\"Auto-translate\" translates every text you changed into the other language when saving (free). Fixing a translation? Turn it off before saving.",
+    frameTip: "Click the picture to choose it, and drag a blue dot to change its size (computers)", widthLabel: "Width", photoSizeNote: "Picture size: click a picture and drag a blue dot (computers). On phones the picture is always full width.",
     photoAdd: "Add a picture", photoChange: "Replace the picture", photoRemove: "Remove the picture", photoRemoved: "Picture removed. You can undo it.",
     pickTitle: "Choose a picture", pickLoading: "Loading pictures…", pickUpload: "Upload from your computer or phone:", uploadNote: "(saved on the site only when you press \"Save\")",
     choose: "Choose", close: "Close", newBadge: "New — saved when you save",
@@ -407,12 +409,13 @@
       var field = n.getAttribute("data-ed-list");
       lists.push({ node: n, field: field, subs: (n.getAttribute("data-ed-subs") || "name").split(","), tpl: tpl ? tpl.cloneNode(true) : el("li"),
         tags: words("data-ed-tags"), bare: words("data-ed-bare-en"), notr: words("data-ed-notr"), photo: n.getAttribute("data-ed-photo") || "",
-        photoMain: n.hasAttribute("data-ed-photo-main"), multi: words("data-ed-multi"), slug: n.getAttribute("data-ed-slug") || "", ts: words("data-ts-subs") });
+        photoMain: n.hasAttribute("data-ed-photo-main"), photoSize: n.hasAttribute("data-ed-photo-size"), multi: words("data-ed-multi"), slug: n.getAttribute("data-ed-slug") || "", ts: words("data-ts-subs") });
       // A list shown only while editing gets its own heading and a short explanation.
       if (T["list_" + field]) {
         n.parentNode.insertBefore(el("h2", { "class": "section-label pe-list-title", text: T["list_" + field] }), n);
         if (T["note_" + field]) n.parentNode.insertBefore(el("p", { "class": "pe-note pe-list-note", text: T["note_" + field] }), n);
       }
+      if (n.hasAttribute("data-ed-photo-size") && wide.matches) n.parentNode.insertBefore(el("p", { "class": "pe-note pe-photo-size-note", text: T.photoSizeNote }), n);
     });
     var hd = box.querySelector(".page-head") || (PRODUCT && box.querySelector(".product-info"));
     if (hd && hd.classList.contains("product-info")) hd.insertBefore(el("p", { "class": "pe-note pe-proj-note", text: T.langNote }), hd.firstChild);
@@ -430,6 +433,21 @@
     return n;
   }
   var dragFrom = null;
+  var wide = window.matchMedia ? window.matchMedia("(min-width: 701px)") : { matches: true };
+  function photoFrame(it, L, img) {
+    var key = L.photo + "_w";
+    var box = el("span", { "class": "pe-photo-box" }, [img]);
+    var w = Number(it[key]);
+    if (w >= 20 && w < 100 && wide.matches) { box.style.width = w + "%"; box.style.marginInline = "auto"; }
+    if (wide.matches) core.frame(box, {
+      min: 20, max: 100,
+      start: function () { return box.getBoundingClientRect().width / (box.parentNode.getBoundingClientRect().width || 1) * 100; },
+      area: function () { return box.parentNode.getBoundingClientRect().width; },
+      live: function (pct) { box.style.width = pct + "%"; box.style.marginInline = "auto"; },
+      done: function (pct) { if (pct >= 100) delete it[key]; else it[key] = pct; changed(); },
+    }, T);
+    return box;
+  }
   function drawLists() {
     lists.forEach(function (L) {
       var items = Array.isArray(state.file[L.field]) ? state.file[L.field] : (state.file[L.field] = []);
@@ -446,6 +464,8 @@
         if (oldImg) oldImg.remove();
         if (L.photo && it[L.photo]) {
           var pic = picture(it[L.photo]);
+          // Size by dragging a dot (computers): kept as <field>_w, % of the item's width.
+          if (L.photoSize) pic = photoFrame(it, L, pic);
           li.insertBefore(pic, li.firstChild);
           if (uploads[norm(it[L.photo])]) li.insertBefore(el("span", { "class": "pe-badge pe-new", text: T.newBadge }), pic.nextSibling);
         }

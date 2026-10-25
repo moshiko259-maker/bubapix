@@ -1059,8 +1059,12 @@ function about(ctx) {
       </div>${a.team.length ? `
       <section class="section-inner" aria-labelledby="team-title">
         <h2 id="team-title" class="section-label" data-ed-label="about_team" data-ts="about/team-title">${e(t.about.team)}</h2>
-        <ul class="team" data-ed-list="team" data-ed-subs="name,role,bio" data-ed-tags="h3,p.muted,p" data-ed-bare-en="name" data-ed-notr="name" data-ed-photo="photo" data-ts-subs="about/name,about/role,about/bio">${a.team.map((m) => `
-          <li data-ed-item="${m.i}">${m.photo ? img(ctx, m.photo, { sizes: "(max-width: 560px) 100vw, 25vw" }) : ""}<h3 data-ed-sub="name" data-ts="about/name">${e(m.name)}</h3>${m.role ? `<p class="muted" data-ed-sub="role" data-ts="about/role">${e(m.role)}</p>` : ""}${m.bio ? `<p data-ed-sub="bio" data-ts="about/bio">${e(m.bio)}</p>` : ""}</li>`).join("")}
+        <ul class="team" data-ed-list="team" data-ed-subs="name,role,bio" data-ed-tags="h3,p.muted,p" data-ed-bare-en="name" data-ed-notr="name" data-ed-photo="photo" data-ed-photo-size data-ts-subs="about/name,about/role,about/bio">${a.team.map((m) => {
+            // Picture size set by dragging in the page editor (computers): a class with its own rule.
+            if (m.photoW) freeRules.set(`tw-${m.photoW}`, `.team .tw-${m.photoW}{width:${m.photoW}%;margin-inline:auto;display:block}`);
+            return `
+          <li data-ed-item="${m.i}">${m.photo ? img(ctx, m.photo, { sizes: "(max-width: 560px) 100vw, 25vw", cls: m.photoW ? `tw-${m.photoW}` : "" }) : ""}<h3 data-ed-sub="name" data-ts="about/name">${e(m.name)}</h3>${m.role ? `<p class="muted" data-ed-sub="role" data-ts="about/role">${e(m.role)}</p>` : ""}${m.bio ? `<p data-ed-sub="bio" data-ts="about/bio">${e(m.bio)}</p>` : ""}</li>`;
+          }).join("")}
         </ul>
       </section>` : ""}
     </div>`,

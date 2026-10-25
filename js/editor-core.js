@@ -16,6 +16,7 @@
  *   BubaCore.siteWatch(opts)                 "the site is updated ✓" after a save
  *   BubaCore.describe(T, he, en, done)       "Description for blind visitors" window
  *   BubaCore.captionDialog(T, g, lang, choices, done, pre)  "Title and text" window for a picture
+ *   BubaCore.frame(box, o, T)                size by dragging a dot (computers): o.start, area, live, done, min, max
  */
 (function () {
   "use strict";
@@ -231,10 +232,63 @@
     ] }, title);
   }
 
+  // A picture's size by dragging one of six dots (as in the other editors).
+  // o.start() → width now (%), o.area() → the width it is measured against (px),
+  // o.live(pct) while dragging, o.done(pct) at the end; o.min/o.max (default 10/100).
+  // T: frameTip, widthLabel.
+  function frame(box, o, T) {
+    var min = o.min || 10, max = o.max || 100;
+    box.classList.add("pe-framed");
+    if (o.selectedNow) box.classList.add("pe-selected");
+    box.setAttribute("title", T.frameTip);
+    box.addEventListener("click", function (e) {
+      if (e.target.closest(".pe-tools, .pe-dot")) return;
+      var was = box.classList.contains("pe-selected");
+      Array.prototype.forEach.call(document.querySelectorAll(".pe-selected"), function (n) { n.classList.remove("pe-selected"); });
+      if (!was) box.classList.add("pe-selected");
+    });
+    var label = el("span", { "class": "pe-frame-label" });
+    box.appendChild(label);
+    ["nw", "ne", "sw", "se", "w", "e"].forEach(function (pos) {
+      var dot = el("span", { "class": "pe-dot pe-dot-" + pos, "aria-hidden": "true" });
+      dot.addEventListener("mousedown", function (e) { e.preventDefault(); e.stopPropagation(); });
+      dot.addEventListener("dragstart", function (e) { e.preventDefault(); e.stopPropagation(); });
+      dot.addEventListener("pointerdown", function (e) {
+        e.preventDefault(); e.stopPropagation();
+        var drag = box.closest("[draggable]");
+        if (drag) drag.setAttribute("draggable", "false");
+        var startPct = o.start(), startX = e.clientX, startY = e.clientY;
+        var areaW = o.area() || 1;
+        var rd = dot.getBoundingClientRect(), b = box.getBoundingClientRect();
+        var right = rd.left + rd.width / 2 > b.left + b.width / 2, bottom = pos.charAt(0) === "s";
+        var pct = Math.round(startPct);
+        box.classList.add("is-resizing", "pe-selected");
+        try { dot.setPointerCapture(e.pointerId); } catch (x) { /* old browser */ }
+        function mv(ev) {
+          var dx = (ev.clientX - startX) * (right ? 1 : -1);
+          var dy = pos.length === 2 ? (ev.clientY - startY) * (bottom ? 1 : -1) * (b.width / Math.max(1, b.height)) : 0;
+          var dd = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
+          pct = Math.max(min, Math.min(max, Math.round(startPct + dd / areaW * 100)));
+          label.textContent = T.widthLabel + " " + pct + "%";
+          o.live(pct);
+        }
+        function up() {
+          dot.removeEventListener("pointermove", mv); dot.removeEventListener("pointerup", up); dot.removeEventListener("pointercancel", up);
+          box.classList.remove("is-resizing");
+          if (drag) drag.setAttribute("draggable", "true");
+          if (pct !== Math.round(startPct)) o.done(pct);
+          setTimeout(function () { label.textContent = ""; }, 900);
+        }
+        dot.addEventListener("pointermove", mv); dot.addEventListener("pointerup", up); dot.addEventListener("pointercancel", up);
+      });
+      box.appendChild(dot);
+    });
+  }
+
   window.BubaCore = {
     el: el, button: button, token: token,
     utf8ToB64: utf8ToB64, b64ToUtf8: b64ToUtf8, readB64: readB64,
     github: github, loadStyles: loadStyles, history: history, siteWatch: siteWatch,
-    describe: describe, captionDialog: captionDialog,
+    describe: describe, captionDialog: captionDialog, frame: frame,
   };
 })();

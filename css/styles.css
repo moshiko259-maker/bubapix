@@ -1182,6 +1182,8 @@ h1.pe-editable { min-width: 4ch; }
 
 /* ---------- Page editor: selection frame with dots (resize) ---------- */
 .pe-framed { position: relative; }
+.pe-photo-box { display: block; position: relative; margin-bottom: 0.75rem; }
+.pe-photo-box img { margin-bottom: 0; }
 .pe-framed:hover { outline: 1px dashed rgba(22, 22, 29, 0.45); outline-offset: -1px; }
 .pe-framed.pe-selected { outline: 2px solid #2f6fde; outline-offset: -2px; }
 .pe-dot { position: absolute; z-index: 6; width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 3px solid #2f6fde; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); display: none; touch-action: none; }

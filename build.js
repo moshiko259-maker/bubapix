@@ -640,6 +640,8 @@ function contentFor(lang) {
           role: pick(m, "role", lang),
           bio: pick(m, "bio", lang),
           photo: imgWithAlt(m.photo, lang === "he" ? String(m.name_he || "").trim() || m.name : m.name, `team member ${i + 1}`),
+          // Width of the picture in its card (computers), set by dragging in the page editor.
+          photoW: Number(m.photo_w) >= 20 && Number(m.photo_w) < 100 ? Math.round(Number(m.photo_w)) : 0,
           i,
         })),
     },
