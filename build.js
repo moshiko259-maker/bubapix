@@ -293,20 +293,6 @@ function contentFor(lang) {
     if (im) im.alt = alt;
     return im;
   };
-  const categories = raw.categories
-    .filter((c) => c && safeSlug(c.slug || ""))
-    .map((c) => {
-      const name = pick(c, "name", lang) || c.slug;
-      return {
-        slug: c.slug,
-        name,
-        image: c.image ? picture({ image: c.image, alt_en: c.name_en, alt_he: c.name_he }, name, `shop category "${c.slug}" image`) : null,
-        // Shown in the shop even before it has products ("coming soon").
-        showEmpty: c.show_when_empty === true,
-      };
-    });
-  const catBySlug = new Map(categories.map((c) => [c.slug, c]));
-
   // One picture with its optional title and note.
   //   caption: "hidden" (default) | "project" (project page) | "everywhere"
   //   on_home: also show it in the homepage gallery
@@ -338,6 +324,20 @@ function contentFor(lang) {
     im.fw = Number.isFinite(fw) && fw >= 10 ? Math.min(100, Math.round(fw)) : 0;
     return im;
   };
+
+  // Project categories (after picture(), which a category's image uses).
+  const categories = raw.categories
+    .filter((c) => c && safeSlug(c.slug || ""))
+    .map((c) => {
+      const name = pick(c, "name", lang) || c.slug;
+      return {
+        slug: c.slug,
+        name,
+        image: c.image ? picture({ image: c.image, alt_en: c.name_en, alt_he: c.name_he }, name, `project category "${c.slug}" image`) : null,
+        showEmpty: c.show_when_empty === true,
+      };
+    });
+  const catBySlug = new Map(categories.map((c) => [c.slug, c]));
 
   const projects = raw.projects
     .filter((p) => visible(p) && safeSlug(p.slug))

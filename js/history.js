@@ -14,6 +14,7 @@
  *   BubaHistory.open({
  *     api: function (path) -> Promise of the GitHub answer (the editor's own, with the owner's sign-in),
  *     path: "content/about.json" (or a folder: "content/projects"),
+ *     paths: [ ... ]           (optional, instead of path: several files or folders together),
  *     branch: "redesign-v2",
  *     title: "Earlier versions of this page",
  *     note: "...",            (optional: what a version does and does not bring back)
@@ -99,7 +100,19 @@
     closeBtn.focus();
     var fmt;
     try { fmt = new Intl.DateTimeFormat(he ? "he-IL" : "en-GB", { dateStyle: "medium", timeStyle: "short" }); } catch (e) { fmt = null; }
-    opts.api("/commits?path=" + encodeURIComponent(opts.path) + "&sha=" + encodeURIComponent(opts.branch) + "&per_page=20")
+    // One path, or several (paths): their saves together, newest first.
+    var paths = opts.paths || [opts.path];
+    Promise.all(paths.map(function (p) {
+      return opts.api("/commits?path=" + encodeURIComponent(p) + "&sha=" + encodeURIComponent(opts.branch) + "&per_page=20");
+    }))
+      .then(function (lists) {
+        if (lists.length === 1) return lists[0];
+        var seen = {}, all = [];
+        lists.forEach(function (l) { (Array.isArray(l) ? l : []).forEach(function (c) { if (c && c.sha && !seen[c.sha]) { seen[c.sha] = true; all.push(c); } }); });
+        var when = function (c) { return c.commit && c.commit.committer && c.commit.committer.date || c.commit && c.commit.author && c.commit.author.date || ""; };
+        all.sort(function (a, b) { return when(a) < when(b) ? 1 : when(a) > when(b) ? -1 : 0; });
+        return all.slice(0, 20);
+      })
       .then(function (list) {
         listBox.textContent = "";
         if (!Array.isArray(list) || !list.length) { listBox.appendChild(el("p", { "class": "pe-note", text: T.empty })); return; }

@@ -11,10 +11,14 @@
  *   - the order of the projects (drag or arrows),
  *   - the size of each picture on computers (drag the dots), or of all at once,
  *   - replacing a project's picture (its cover) and its description for blind
- *     visitors.
- * It saves the changed files (content/labels.json and the changed
- * content/projects/<slug>.json) to the work branch with the owner's own GitHub
- * sign-in. Everything else in those files is kept exactly as it is.
+ *     visitors,
+ *   - the categories (the filter buttons visitors see at the top): their
+ *     names, order, new ones and deleting; and which categories each project
+ *     is in (the owner chooses; nothing is assigned automatically).
+ * It saves the changed files (content/labels.json, content/categories.json
+ * and the changed content/projects/<slug>.json) to the work branch with the
+ * owner's own GitHub sign-in. Everything else in those files is kept exactly
+ * as it is.
  */
 (function boot() {
   "use strict";
@@ -46,8 +50,10 @@
   var REPO = launcher.getAttribute("data-repo");
   var BRANCH = launcher.getAttribute("data-branch");
   var LABELS = "content/labels.json";
+  var CATS = "content/categories.json";
   var lang = document.documentElement.lang === "he" ? "he" : "en";
   var he = lang === "he";
+  var otherLang = he ? "en" : "he";
 
   var T = he ? {
     title: "עריכת עמוד הפרויקטים",
@@ -99,7 +105,26 @@
     tipClose: "הבנתי", help: "עזרה",
     history: "גרסאות קודמות", historyLoaded: "גרסה קודמת נטענה לדף. בדקו ולחצו ״שמירה״ כדי לקבוע אותה.", historyFailed: "לא הצלחתי לטעון את הגרסה מ־GitHub.",
     historyTitle: "גרסאות קודמות של דף הפרויקטים",
-    historyNote: "הרשימה כוללת כל שמירה של קובצי הפרויקטים. בחירה בגרסה מחזירה לדף את הסדר, הגדלים ותמונות השער (עם התיאורים שלהן) כפי שהיו, כשינוי שלא נשמר. רק ״שמירה״ קובעת. אפשר לבטל עם ״ביטול פעולה״. השם והתוכן של כל פרויקט, הכותרות וסגנונות הטקסט לא משתנים. פרויקט שלא היה קיים אז נשאר כמו שהוא.",
+    historyNote: "הרשימה כוללת כל שמירה של קובצי הפרויקטים ושל הקטגוריות. בחירה בגרסה מחזירה לדף את הסדר, הגדלים, תמונות השער (עם התיאורים שלהן) והקטגוריות כפי שהיו, כשינוי שלא נשמר. רק ״שמירה״ קובעת. אפשר לבטל עם ״ביטול פעולה״. השם והתוכן של כל פרויקט, הכותרות וסגנונות הטקסט לא משתנים. פרויקט שלא היה קיים אז נשאר כמו שהוא.",
+    cats: "קטגוריות",
+    catsNote: "קטגוריות הן כפתורי הסינון שהגולשים רואים בראש העמוד. הכפתורים מוצגים כשיש לפחות שתי קטגוריות עם פרויקטים, או קטגוריה אחת ופרויקט בלי קטגוריה. הסדר כאן הוא סדר הכפתורים. שם הקטגוריה מוצג גם מתחת לשם הפרויקט, בדף הפרויקט.",
+    catsAssignNote: "משייכים פרויקט לקטגוריה בכפתור ״קטגוריות״ שבכל תמונה.",
+    catsNone: "אין עדיין קטגוריות.",
+    catsShown: "כרגע הגולשים רואים את כפתורי הסינון.",
+    catsHidden: "כרגע הגולשים לא רואים כפתורי סינון.",
+    catNew: "+ קטגוריה חדשה",
+    catName: "שם הקטגוריה",
+    catNameNote: "השם נכתב בשפת הדף. בשמירה הוא מתורגם לשפה השנייה. קטגוריה בלי שם לא נשמרת.",
+    catUp: "הזזה למעלה ברשימה", catDown: "הזזה למטה ברשימה",
+    catDelete: "מחיקה", catDeleteTip: "מחיקת הקטגוריה (היא מוסרת גם מהפרויקטים)",
+    catDeleted: "הקטגוריה נמחקה והוסרה מהפרויקטים. אפשר לבטל עם ״ביטול פעולה״.",
+    catCount: "{n} פרויקטים", catCountOne: "פרויקט אחד", catCountZero: "אין פרויקטים",
+    catEmptyOnly: "קטגוריה בלי שם לא נשמרת, ולא היה שינוי אחר לשמור.",
+    catsBtn: "קטגוריות", catsDialog: "הקטגוריות של {name}",
+    catsPickNote: "סמנו את הקטגוריות של הפרויקט (אפשר כמה, או אף אחת).",
+    catsNoneYet: "אין עדיין קטגוריות. מוסיפים קטגוריה ב״+ קטגוריה חדשה״ בראש העמוד.",
+    catNoName: "(בלי שם)",
+    tip5: "קטגוריות: מוסיפים ומשנים בראש העמוד, ומשייכים פרויקט בכפתור ״קטגוריות״ שבתמונה.",
   } : {
     title: "Editing the projects page",
     loading: "Loading the projects page…",
@@ -150,7 +175,26 @@
     tipClose: "Got it", help: "Help",
     history: "Earlier versions", historyLoaded: "An earlier version is loaded on the page. Check it and press \"Save\" to keep it.", historyFailed: "Could not load the version from GitHub.",
     historyTitle: "Earlier versions of the projects page",
-    historyNote: "The list includes every save of the project files. Choosing a version brings back the order, the sizes and the cover pictures (with their descriptions) as they were, as an unsaved change. Only \"Save\" makes it final. You can undo it. Each project's name and content, the titles and the text styles do not change. A project that did not exist then stays as it is.",
+    historyNote: "The list includes every save of the project files and of the categories. Choosing a version brings back the order, the sizes, the cover pictures (with their descriptions) and the categories as they were, as an unsaved change. Only \"Save\" makes it final. You can undo it. Each project's name and content, the titles and the text styles do not change. A project that did not exist then stays as it is.",
+    cats: "Categories",
+    catsNote: "Categories are the filter buttons visitors see at the top of the page. The buttons are shown when at least two categories have projects, or one category and a project without a category. The order here is the order of the buttons. A category's name is also shown under the project's name, on the project page.",
+    catsAssignNote: "Put a project in a category with the \"Categories\" button on its picture.",
+    catsNone: "No categories yet.",
+    catsShown: "Visitors now see the filter buttons.",
+    catsHidden: "Visitors do not see filter buttons now.",
+    catNew: "+ New category",
+    catName: "Category name",
+    catNameNote: "The name is written in this page's language. On saving it is translated into the other language. A category without a name is not saved.",
+    catUp: "Move up the list", catDown: "Move down the list",
+    catDelete: "Delete", catDeleteTip: "Delete the category (it is also removed from the projects)",
+    catDeleted: "The category was deleted and removed from the projects. You can undo it.",
+    catCount: "{n} projects", catCountOne: "1 project", catCountZero: "No projects",
+    catEmptyOnly: "A category without a name is not saved, and there was nothing else to save.",
+    catsBtn: "Categories", catsDialog: "Categories of {name}",
+    catsPickNote: "Tick the project's categories (several, or none).",
+    catsNoneYet: "No categories yet. Add one with \"+ New category\" at the top of the page.",
+    catNoName: "(no name)",
+    tip5: "Categories: add and change them at the top of the page, and put a project in them with the \"Categories\" button on its picture.",
   };
 
   // ---------- small helpers ----------
@@ -209,21 +253,23 @@
   histBtn.disabled = true;
   function openHistory() {
     core.history(launcher, {
-      api: api, path: "content/projects", branch: BRANCH, title: T.historyTitle, note: T.historyNote, load: loadVersion,
+      api: api, paths: ["content/projects", CATS], branch: BRANCH, title: T.historyTitle, note: T.historyNote, load: loadVersion,
       onLoaded: function () { setStatus(T.historyLoaded, "warn"); },
       onError: function () { setStatus(T.historyFailed, "error"); },
       onMissing: function () { setStatus(T.historyFailed, "error"); },
     });
   }
   // What this page sets in each project file (the rest of the file stays as it is now).
-  var PAGE_FIELDS = ["order", "list_w", "cover", "cover_alt_he", "cover_alt_en", "title_in_gallery", "cover_title_he", "cover_title_en", "cover_note_he", "cover_note_en", "cover_caption"];
+  var PAGE_FIELDS = ["order", "list_w", "cover", "cover_alt_he", "cover_alt_en", "title_in_gallery", "cover_title_he", "cover_title_en", "cover_note_he", "cover_note_en", "cover_caption", "categories"];
   function loadVersion(commitSha) {
-    return Promise.all(state.list.map(function (p) {
-      var path = "content/projects/" + p.slug + ".json";
+    var at = function (path) {
       return api("/contents/" + encPath(path) + "?ref=" + encodeURIComponent(commitSha))
         .then(function (res) { return JSON.parse(b64ToUtf8(res.content)); })
         .catch(function (err) { if (err.status === 404) return null; throw err; });
-    })).then(function (olds) {
+    };
+    // The categories as they were then (none, if the file did not exist yet).
+    var oldCats = at(CATS).then(function (c) { state.categories = c && Array.isArray(c.categories) ? c.categories : []; });
+    return Promise.all(state.list.map(function (p) { return at("content/projects/" + p.slug + ".json"); }).concat([oldCats])).then(function (olds) {
       var at = {};
       state.list.forEach(function (p, i) {
         at[p.slug] = i;
@@ -262,7 +308,9 @@
   setStatus(T.loading);
   saveBtn.disabled = true;
   function setStatus(text, kind) { status.textContent = text || ""; status.className = "pe-status" + (kind ? " is-" + kind : ""); }
-  function refreshStatus() { setStatus(dirty() ? T.unsaved : T.noChanges, dirty() ? "warn" : ""); saveBtn.disabled = !dirty(); }
+  // While saving, typing does not change the status or turn "Save" back on (no second save at the same time).
+  var busy = false;
+  function refreshStatus() { if (busy) return; setStatus(dirty() ? T.unsaved : T.noChanges, dirty() ? "warn" : ""); saveBtn.disabled = !dirty(); }
 
   // ---------- undo ----------
   var past = [], last = "";
@@ -307,15 +355,23 @@
   var loadLabels = api("/contents/" + encPath(LABELS) + ref)
     .then(function (res) { return { sha: res.sha, data: JSON.parse(b64ToUtf8(res.content) || "{}") }; })
     .catch(function (err) { if (err.status === 404) return { sha: "", data: {} }; throw err; });
+  var loadCats = api("/contents/" + encPath(CATS) + ref)
+    .then(function (res) { return { sha: res.sha, data: JSON.parse(b64ToUtf8(res.content) || "{}") }; })
+    .catch(function (err) { if (err.status === 404) return { sha: "", data: { categories: [] } }; throw err; });
   var loadProjects = Promise.all(slugs.map(function (slug) {
     var path = "content/projects/" + slug + ".json";
     return api("/contents/" + encPath(path) + ref).then(function (res) { return { slug: slug, path: path, sha: res.sha, data: JSON.parse(b64ToUtf8(res.content)) }; });
   }));
-  Promise.all([loadLabels, loadProjects])
+  Promise.all([loadLabels, loadProjects, loadCats])
     .then(function (r) {
-      files = { labels: { path: LABELS, sha: r[0].sha, data: r[0].data }, projects: {} };
+      var catData = r[2].data && typeof r[2].data === "object" ? r[2].data : {};
+      files = { labels: { path: LABELS, sha: r[0].sha, data: r[0].data }, projects: {}, categories: { path: CATS, sha: r[2].sha, data: catData } };
       r[1].forEach(function (p) { files.projects[p.slug] = p; });
-      state = { labels: r[0].data, list: r[1].map(function (p) { return { slug: p.slug, data: p.data }; }) };
+      state = {
+        labels: r[0].data,
+        list: r[1].map(function (p) { return { slug: p.slug, data: p.data }; }),
+        categories: JSON.parse(JSON.stringify(Array.isArray(catData.categories) ? catData.categories : [])),
+      };
       original = snap();
       start();
       histBtn.disabled = false;
@@ -431,6 +487,7 @@
   }
   function render() {
     area.textContent = "";
+    area.appendChild(catsPanel());
     var per = sameWidth();
     area.appendChild(el("div", { "class": "pe-gal-tools" }, [
       el("label", { "class": "pe-gal-size" }, [
@@ -458,6 +515,144 @@
     }
     area.appendChild(grid);
     area.appendChild(el("p", { "class": "pe-note", text: T.coverNote }));
+    paintCats();
+  }
+
+  // ---------- categories (the filter buttons visitors see at the top) ----------
+  // content/categories.json: { categories: [{ slug, name_he, name_en, ... }] };
+  // each project file: categories: [slug, ...]. A new category gets its slug
+  // (an internal name, never shown) from its English name on saving.
+  function catName(c) { return (c && (c["name_" + lang] || c["name_" + otherLang])) || ""; }
+  function catsOf(p) { return Array.isArray(p.data.categories) ? p.data.categories : []; }
+  function catBySlug(slug) { for (var i = 0; i < state.categories.length; i++) if (state.categories[i].slug === slug) return state.categories[i]; return null; }
+  function projectCats(p) { return catsOf(p).map(catBySlug).filter(function (c) { return c && catName(c); }); }
+  function countIn(c) { return state.list.filter(function (p) { return catsOf(p).indexOf(c.slug) >= 0; }).length; }
+  // The same rule as the site (src/render.js, work()): buttons when two categories
+  // have projects, or one category and a project without a category.
+  function filtersShown() {
+    var used = state.categories.filter(function (c) { return catName(c) && countIn(c); });
+    return used.length > 1 || (used.length === 1 && state.list.some(function (p) { return !projectCats(p).length; }));
+  }
+  function countText(n) { return n === 0 ? T.catCountZero : n === 1 ? T.catCountOne : T.catCount.replace("{n}", n); }
+  function catsPanel() {
+    var box = el("section", { "class": "pe-cats-panel", "aria-label": T.cats }, [
+      el("h2", { "class": "pe-cats-title", text: T.cats }),
+      el("p", { "class": "pe-note", text: T.catsNote }),
+    ]);
+    if (!state.categories.length) box.appendChild(el("p", { "class": "pe-note pe-cats-none", text: T.catsNone }));
+    else {
+      var list = el("ol", { "class": "pe-cats-list" });
+      state.categories.forEach(function (c, i) {
+        var input = el("input", { type: "text", "class": "pe-input pe-cat-name", dir: he ? "rtl" : "ltr", "aria-label": T.catName + " " + (i + 1), "data-cat": String(i), placeholder: c["name_" + otherLang] || T.catName, maxlength: "60" });
+        input.value = c["name_" + lang] || "";
+        input.addEventListener("input", function () {
+          var v = clean(input.value);
+          if (v) c["name_" + lang] = v; else delete c["name_" + lang];
+          refreshStatus(); paintCats();
+        });
+        input.addEventListener("change", function () { commit(); });
+        input.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); input.blur(); } });
+        var up = button("↑", function () { moveCat(i, -1); }, "pe-btn pe-move pe-cat-up", T.catUp);
+        var down = button("↓", function () { moveCat(i, 1); }, "pe-btn pe-move pe-cat-down", T.catDown);
+        up.disabled = i === 0; down.disabled = i === state.categories.length - 1;
+        list.appendChild(el("li", { "class": "pe-cat-row" }, [
+          input,
+          el("span", { "class": "pe-note pe-cat-count", "data-cat-count": String(i) }),
+          up, down,
+          button(T.catDelete, function () { deleteCat(i); }, "pe-btn pe-ghost pe-cat-delete", T.catDeleteTip),
+        ]));
+      });
+      box.appendChild(list);
+    }
+    box.appendChild(el("div", { "class": "pe-cats-foot" }, [
+      button(T.catNew, addCat, "pe-btn pe-cat-new"),
+      el("span", { "class": "pe-note", text: T.catNameNote }),
+    ]));
+    box.appendChild(el("p", { "class": "pe-note pe-cats-state", "data-cats-shown": "" }));
+    box.appendChild(el("p", { "class": "pe-note", text: T.catsAssignNote }));
+    return box;
+  }
+  // Counts, "visitors see the buttons", and each picture's categories, without
+  // drawing the page again (so typing a name keeps the cursor where it is).
+  function paintCats() {
+    Array.prototype.forEach.call(area.querySelectorAll("[data-cat-count]"), function (n) {
+      var c = state.categories[Number(n.getAttribute("data-cat-count"))];
+      n.textContent = c ? countText(countIn(c)) : "";
+    });
+    var st = area.querySelector("[data-cats-shown]");
+    if (st) st.textContent = filtersShown() ? T.catsShown : T.catsHidden;
+    Array.prototype.forEach.call(area.querySelectorAll(".pe-item"), function (fig) {
+      var p = fig.__p;
+      if (!p) return;
+      var names = projectCats(p).map(catName);
+      var tag = fig.querySelector(".pe-work-cats");
+      if (tag) { tag.textContent = names.join(", "); tag.hidden = !names.length; }
+      var b = fig.querySelector(".pe-cats-btn");
+      if (b) b.textContent = T.catsBtn + (names.length ? " (" + names.length + ")" : "");
+    });
+  }
+  function moveCat(i, dir) {
+    var j = i + dir;
+    if (j < 0 || j >= state.categories.length) return;
+    var tmp = state.categories[i]; state.categories[i] = state.categories[j]; state.categories[j] = tmp;
+    changed();
+    var b = area.querySelector('.pe-cat-row:nth-child(' + (j + 1) + ') ' + (dir < 0 ? ".pe-cat-up" : ".pe-cat-down"));
+    if (b && !b.disabled) b.focus(); else { var n = area.querySelector('.pe-cat-name[data-cat="' + j + '"]'); if (n) n.focus(); }
+  }
+  function addCat() {
+    state.categories.push({ slug: "new-" + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), _new: true });
+    changed();
+    var n = area.querySelector('.pe-cat-name[data-cat="' + (state.categories.length - 1) + '"]');
+    if (n) n.focus();
+  }
+  function deleteCat(i) {
+    var slug = state.categories[i].slug;
+    state.categories.splice(i, 1);
+    state.list.forEach(function (p) {
+      if (catsOf(p).indexOf(slug) >= 0) p.data.categories = catsOf(p).filter(function (s) { return s !== slug; });
+    });
+    changed();
+    setStatus(T.catDeleted, "warn");
+    var nb = area.querySelector(".pe-cat-new");
+    if (nb) nb.focus();
+  }
+  // Which categories a project is in: a small window with a tick box for each.
+  function pickCats(p, opener) {
+    var cur = catsOf(p);
+    var boxes = [];
+    var list = el("div", { "class": "pe-cats-pick" });
+    if (!state.categories.length) list.appendChild(el("p", { "class": "pe-note", text: T.catsNoneYet }));
+    state.categories.forEach(function (c) {
+      var cb = el("input", { type: "checkbox", value: c.slug });
+      cb.checked = cur.indexOf(c.slug) >= 0;
+      boxes.push(cb);
+      list.appendChild(el("label", { "class": "pe-check" }, [cb, document.createTextNode(catName(c) || T.catNoName)]));
+    });
+    var okBtn = button(T.ok, function () {
+      var chosen = boxes.filter(function (b) { return b.checked; }).map(function (b) { return b.value; });
+      // Slugs this page does not know (for example from the admin panel) stay as they are.
+      var known = state.categories.map(function (c) { return c.slug; });
+      var next = chosen.concat(cur.filter(function (s) { return known.indexOf(s) < 0; }));
+      close();
+      if (JSON.stringify(next) === JSON.stringify(cur)) return;
+      if (next.length) p.data.categories = next; else p.data.categories = [];
+      changed();
+    }, "pe-btn pe-primary");
+    var title = T.catsDialog.replace("{name}", nameOf(p));
+    var dialog = el("div", { "class": "pe-modal pe-cats-modal", role: "dialog", "aria-modal": "true", "aria-label": title }, [
+      el("div", { "class": "pe-modal-box pe-small-box" }, [
+        el("div", { "class": "pe-modal-head" }, [el("strong", { text: title }), button(T.close, function () { close(); }, "pe-btn pe-ghost")]),
+        el("div", { "class": "pe-modal-foot" }, [el("p", { "class": "pe-note", text: T.catsPickNote }), list, okBtn]),
+      ]),
+    ]);
+    function close() {
+      dialog.remove(); document.removeEventListener("keydown", onKey);
+      if (opener && opener.isConnected) opener.focus();
+    }
+    function onKey(e) { if (e.key === "Escape") close(); }
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(dialog);
+    (boxes[0] || okBtn).focus();
   }
   function nameOf(p) { return (he ? p.data.title_he || p.data.title_en : p.data.title_en || p.data.title_he) || p.slug; }
   function move(i, dir) {
@@ -494,6 +689,7 @@
     if (uploads[norm(d.cover)]) fig.appendChild(el("span", { "class": "pe-badge", text: T.newBadge }));
     if (!d["cover_alt_" + lang]) fig.appendChild(el("span", { "class": "pe-missing", text: T.noAlt }));
     fig.appendChild(el("span", { "class": "pe-work-name", text: nameOf(p) }));
+    fig.appendChild(el("span", { "class": "pe-work-cats", hidden: "" }));
     touchPick(fig, p);
     fig.appendChild(el("div", { "class": "pe-tools" }, [
       button(T.prevBtn, function () { move(it.i, -1); }, "pe-btn pe-move", T.earlier),
@@ -511,6 +707,8 @@
       }, "pe-btn pe-name-btn"),
       // The cover's own title and text (cover_title_*, cover_note_*, cover_caption) — shared with the project page's cover.
       button(T.caption, function () { core.captionDialog(T, d, lang, [["hidden", T.capHidden], ["work", T.capCoverWork], ["project", T.capCoverProject], ["both", T.capCoverBoth]], changed, "cover_"); }, "pe-btn pe-caption-btn"),
+      // Which categories this project is in (content/projects/<slug>.json, categories).
+      button(T.catsBtn, function (e) { pickCats(p, e.currentTarget); }, "pe-btn pe-cats-btn"),
     ]));
     // Under the picture as visitors will see it: the cover's own title and text when shown here, otherwise the name if chosen.
     var ct = d["cover_title_" + lang] || "", cn = d["cover_note_" + lang] || "";
@@ -540,7 +738,7 @@
   var pendingDraw = false;
   function redraw() {
     var a = document.activeElement;
-    if (a && a.isContentEditable) {
+    if (a && (a.isContentEditable || (a.tagName === "INPUT" && area.contains(a)))) {
       if (!pendingDraw) { pendingDraw = true; a.addEventListener("blur", function () { pendingDraw = false; render(); }, { once: true }); }
       return;
     }
@@ -682,7 +880,7 @@
     if (old) old.remove();
     var box = el("div", { "class": "pe-tip", role: "note" }, [
       el("strong", { text: T.tipTitle }),
-      el("ol", {}, (touch.matches ? [T.tip1, T.tipTouch, T.tip3, T.tip4] : [T.tip1, T.tip2, T.tip3, T.tip4]).map(function (t) { return el("li", { text: t }); })),
+      el("ol", {}, (touch.matches ? [T.tip1, T.tipTouch, T.tip3, T.tip5, T.tip4] : [T.tip1, T.tip2, T.tip3, T.tip5, T.tip4]).map(function (t) { return el("li", { text: t }); })),
       button(T.tipClose, function () { try { localStorage.setItem(TIP, "1"); } catch (e) { /* storage blocked */ } box.remove(); }, "pe-btn pe-primary"),
     ]);
     bar.parentNode.insertBefore(box, bar.nextSibling);
@@ -711,7 +909,7 @@
   function save() {
     if (!dirty() || translating) return;
     if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
-    translating = true; saveBtn.disabled = true; trRes = { n: 0 };
+    translating = true; busy = true; saveBtn.disabled = true; trRes = { n: 0 };
     trReady
       .then(function () { return window.BubaTranslate ? window.BubaTranslate.run(trPairs(), { onStart: function (m) { setStatus(m); } }) : { n: 0 }; })
       .then(function (r) { trRes = r; }, function () { trRes = { n: 0, failed: true }; })
@@ -719,22 +917,40 @@
   }
   function saveNow() {
     lastCommit = "";
-    if (!dirty()) return;
+    busy = false;
+    if (!dirty()) { refreshStatus(); return; }
     if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
     saveBtn.disabled = true;
     setStatus(T.saving);
     // The order on the page becomes 1, 2, 3… for the projects shown here.
     state.list.forEach(function (p, i) { if (Number(p.data.order) !== i + 1) p.data.order = i + 1; });
+    var dropped = finishCategories();
+    if (dropped) render();
     var orig = JSON.parse(original);
     var origBy = {};
     orig.list.forEach(function (p) { origBy[p.slug] = p.data; });
     var writes = [];
     if (JSON.stringify(state.labels) !== JSON.stringify(orig.labels)) writes.push({ file: files.labels, data: state.labels, message: "Projects page: texts edited on the page" });
+    if (JSON.stringify(state.categories) !== JSON.stringify(orig.categories || [])) {
+      var catFile = {};
+      Object.keys(files.categories.data).forEach(function (k) { catFile[k] = files.categories.data[k]; });
+      catFile.categories = JSON.parse(JSON.stringify(state.categories));
+      writes.push({ file: files.categories, data: catFile, message: "Projects page: categories edited on the page" });
+    }
     state.list.forEach(function (p) {
       if (JSON.stringify(p.data) !== JSON.stringify(origBy[p.slug])) writes.push({ file: files.projects[p.slug], data: p.data, message: "Project " + p.slug + ": changed on the projects page (order, size or picture)" });
     });
     var used = {};
     state.list.forEach(function (p) { var u = uploads[norm(p.data.cover)]; if (u && !u.done) used[norm(p.data.cover)] = true; });
+    if (!writes.length && !Object.keys(used).length && !(window.BubaStyle && window.BubaStyle.dirty())) {
+      original = snap(); last = snap();
+      refreshStatus();
+      if (dropped) setStatus(T.catEmptyOnly, "warn");
+      return;
+    }
+    // What is sent now: edits made while saving stay "unsaved" afterwards.
+    var sent = snap();
+    busy = true;
     var wrote = 0;
     // First make sure no file changed elsewhere since it was loaded; only then write.
     Promise.all(writes.map(function (w) {
@@ -752,21 +968,73 @@
           chain = chain.then(function () {
             var body = { message: w.message, content: utf8ToB64(JSON.stringify(w.data, null, 2) + "\n"), branch: BRANCH };
             if (w.file.sha) body.sha = w.file.sha;
-            return api("/contents/" + encPath(w.file.path), { method: "PUT", body: body }).then(function (res) { w.file.sha = res.content.sha; wrote++; });
+            return api("/contents/" + encPath(w.file.path), { method: "PUT", body: body }).then(function (res) { w.file.sha = res.content.sha; if (w.file === files.categories) files.categories.data = w.data; wrote++; });
           });
         });
         return chain.then(function () { return window.BubaStyle ? window.BubaStyle.save("projects page") : ""; }).then(function (c) { if (c) { lastCommit = c; wrote++; } });
       })
       .then(function () {
-        original = snap();
-        saveBtn.disabled = true;
+        busy = false;
+        original = sent;
+        saveBtn.disabled = !dirty();
         followSave(lastCommit);
+        if (dirty()) refreshStatus();
       })
       .catch(function (err) {
+        busy = false;
         saveBtn.disabled = false;
         if (wrote) { setStatus(T.errPartial, "error"); return; }
         setStatus(err.changed || err.status === 409 ? T.errChanged : err.status === 401 || err.status === 403 ? T.errAuth : T.errSave, "error");
       });
+  }
+
+  // Before writing: a category without a name in either language is left out
+  // (and taken off the projects); a name written in one language only is used
+  // for both; a new category gets its slug from its English name. Returns how
+  // many were left out.
+  function slugify(t) {
+    return String(t || "").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/, "");
+  }
+  function finishCategories() {
+    var gone = [], renamed = {};
+    state.categories = state.categories.filter(function (c) {
+      var ok = clean(c.name_he) || clean(c.name_en);
+      if (!ok) gone.push(c.slug);
+      return ok;
+    });
+    // A name missing in one language: the saved one when the other name is the
+    // same as saved (for example after "Undo"), otherwise the same name.
+    var savedCats = (JSON.parse(original).categories || []);
+    state.categories.forEach(function (c) {
+      var was = savedCats.filter(function (o) { return o.slug === c.slug; })[0];
+      [[lang, otherLang], [otherLang, lang]].forEach(function (pr) {
+        if (!clean(c["name_" + pr[1]]) && was && clean(was["name_" + pr[1]]) && clean(was["name_" + pr[0]]) === clean(c["name_" + pr[0]])) c["name_" + pr[1]] = was["name_" + pr[1]];
+      });
+      if (!clean(c["name_" + otherLang]) && clean(c["name_" + lang])) c["name_" + otherLang] = c["name_" + lang];
+      if (!clean(c["name_" + lang]) && clean(c["name_" + otherLang])) c["name_" + lang] = c["name_" + otherLang];
+    });
+    state.categories.forEach(function (c, i) {
+      if (!c._new) return;
+      var taken = state.categories.filter(function (o) { return o !== c; }).map(function (o) { return o.slug; });
+      var base = slugify(c.name_en) || "category-" + (i + 1), slug = base, n = 2;
+      while (taken.indexOf(slug) >= 0) slug = base + "-" + n++;
+      renamed[c.slug] = slug;
+      c.slug = slug;
+      delete c._new;
+    });
+    state.list.forEach(function (p) {
+      var cs = catsOf(p);
+      if (!cs.length) return;
+      var next = cs.filter(function (s) { return gone.indexOf(s) < 0; }).map(function (s) { return renamed[s] || s; });
+      if (JSON.stringify(next) !== JSON.stringify(cs)) p.data.categories = next;
+    });
+    // Undo after saving must not bring a saved category back as "new".
+    var fix = function (snapText) {
+      Object.keys(renamed).forEach(function (t) { snapText = snapText.split('"' + t + '"').join('"' + renamed[t] + '"'); });
+      return snapText.split(',"_new":true').join("");
+    };
+    if (Object.keys(renamed).length) { past = past.map(fix); last = fix(last); }
+    return gone.length;
   }
 
   function quit() {
