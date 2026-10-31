@@ -50,6 +50,8 @@
     "previous": "Previous project",
     "next": "Next project",
     "video": "Video",
+    "play": "Play the video",
+    "playFrom": "The video loads from {site} only after you press play",
     "gallery": "Images",
     "details": "Details",
     "synopsis": "Synopsis",
@@ -83,7 +85,8 @@
   },
   "footer": {
     "top": "Back to top",
-    "logoAlt": "BubaPix Animation Productions logo"
+    "logoAlt": "BubaPix Animation Productions logo",
+    "ai": "The films, characters and pictures in our projects were made with AI tools, directed and edited by BubaPix."
   },
   "community": {
     "sectionTitle": "Ratings and comments",
@@ -161,7 +164,9 @@
     "noAnalytics": "The site has no tracking cookies and no traffic-analysis tools.",
     "mail": "Where orders and messages go: a shop order is sent from your own email app to our mailboxes, {emails}. When someone writes through the site's forms, we get an email saying so, without your name, message or email address.",
     "gmail": "The {gmail} mailbox is a Google Gmail mailbox.",
-    "and": " and "
+    "and": " and ",
+    "videos": "Videos: the videos on the site are shown from YouTube (Google). Nothing is loaded from YouTube until you press play; after that, Google's privacy policy applies.",
+    "retention": "How long we keep it: a private consultation is deleted one year after our last contact with you. A published comment, question or idea is kept as long as it is shown on the site. Comments, questions and ideas that are not published, and spam, are deleted within 30 days of review."
   },
   "viewer": {
     "label": "Image viewer",

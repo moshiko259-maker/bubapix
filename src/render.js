@@ -283,6 +283,7 @@ ${data.participation.ideas ? `
     </nav>
     ${footerContact(ctx)}
     ${installButton(ctx)}
+    ${t.footer.ai ? `<p class="footer-ai">${e(t.footer.ai)}</p>` : ""}
     <div class="footer-meta">
       <a class="lang-switch" href="${otherHref}" hreflang="${otherLang}" lang="${otherLang}" data-lang="${otherLang}">${e(t.nav.switchLabel)}</a>
       <p>&copy; <span data-year>${new Date().getFullYear()}</span> BubaPix</p>
@@ -764,10 +765,17 @@ function videoBlock(ctx, v, projectTitle, poster) {
   const { t } = ctx;
   const title = `${projectTitle} — ${v.title || t.work.video}`;
   let player = "";
-  if (v.embed && v.embed.kind === "youtube") {
-    player = `<iframe src="https://www.youtube-nocookie.com/embed/${e(v.embed.id)}" title="${e(title)}" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
-  } else if (v.embed && v.embed.kind === "vimeo") {
-    player = `<iframe src="https://player.vimeo.com/video/${e(v.embed.id)}?dnt=1" title="${e(title)}" loading="lazy" allow="fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+  // YouTube and Vimeo: nothing is loaded from them until the visitor presses
+  // play (a picture from this site and a play button, js/main.js swaps in the
+  // player). Without JavaScript the button opens the video on its own site.
+  const embed = v.embed && v.embed.kind === "youtube"
+    ? { site: "YouTube", src: `https://www.youtube-nocookie.com/embed/${v.embed.id}?autoplay=1`, href: `https://www.youtube.com/watch?v=${v.embed.id}`, allow: "accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" }
+    : v.embed && v.embed.kind === "vimeo"
+      ? { site: "Vimeo", src: `https://player.vimeo.com/video/${v.embed.id}?dnt=1&autoplay=1`, href: `https://vimeo.com/${v.embed.id}`, allow: "autoplay; fullscreen; picture-in-picture" }
+      : null;
+  if (embed) {
+    const from = t.work.playFrom.replace("{site}", embed.site);
+    player = `<a class="video-play" href="${e(embed.href)}" target="_blank" rel="noopener" data-embed="${e(embed.src)}" data-embed-allow="${e(embed.allow)}" data-embed-title="${e(title)}" aria-label="${e(`${t.work.play}: ${title}. ${from}`)}">${poster ? img(ctx, { ...poster, alt: "" }, { sizes: "(max-width: 700px) 100vw, 60vw", cls: "video-poster" }) : ""}<span class="video-play-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span><span class="video-play-from" aria-hidden="true">${e(from)}</span></a>`;
   } else if (v.file) {
     player = `<video controls preload="metadata" playsinline${poster ? ` poster="${ctx.assetBase}${e(poster.src)}"` : ""}><source src="${ctx.assetBase}${e(v.file)}" type="${/\.webm$/i.test(v.file) ? "video/webm" : "video/mp4"}"></video>`;
   }
@@ -1181,6 +1189,10 @@ function privacy(ctx) {
     items.splice(where + 1, 0, t.privacy.mail.replace("{emails}", list) + (gmail ? " " + t.privacy.gmail.replace("{gmail}", gmail) : ""));
     items.unshift(t.privacy.owner.replace("{emails}", list));
   }
+  // Videos from YouTube (only when the site has one), and how long messages are kept (before "Your rights").
+  const tube = (data.showreel && data.showreel.kind === "youtube") || data.projects.some((p) => (p.sections || []).some((sec) => sec.type === "videos" && sec.videos.some((v) => v.embed && v.embed.kind === "youtube")));
+  const rights = items.indexOf(t.privacy.items[t.privacy.items.length - 1]);
+  items.splice(rights, 0, ...(tube ? [t.privacy.videos] : []), t.privacy.retention);
   return layout(ctx, {
     title: pageTitle(ctx, t.privacy.title),
     description: t.privacy.items[0],

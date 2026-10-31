@@ -7,6 +7,7 @@
       section you were reading.
    5. Image viewer on project pages: a picture opens large, with
       Previous / Next, arrow keys, swipe, and Esc to close.
+   6. Videos: the YouTube / Vimeo player loads only after "play".
    No libraries. Every page works without this file.
    ========================================================== */
 
@@ -416,4 +417,21 @@
     var closeHelp = document.querySelector("[data-install-close]");
     if (closeHelp) closeHelp.addEventListener("click", function () { installHelp.close(); });
   }
+
+  // ---------- Videos: the player loads only after "play" ----------
+  // Until then nothing is loaded from YouTube or Vimeo (see the privacy page).
+  // Without this script the button opens the video on its own site.
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a.video-play[data-embed]");
+    if (!a || document.documentElement.classList.contains("page-editing")) return;
+    e.preventDefault();
+    var f = document.createElement("iframe");
+    f.src = a.getAttribute("data-embed");
+    f.title = a.getAttribute("data-embed-title") || "";
+    f.setAttribute("allow", a.getAttribute("data-embed-allow") || "");
+    f.setAttribute("allowfullscreen", "");
+    f.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+    a.parentNode.replaceChild(f, a);
+    f.focus();
+  });
 })();

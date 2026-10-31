@@ -12,7 +12,7 @@ const crypto = require("crypto");
 let sharp = null;
 try { sharp = require("sharp"); } catch (e) { /* optional */ }
 
-const WIDTHS = [640, 1280, 1920];
+const WIDTHS = [640, 960, 1280, 1920];
 
 function readSize(file) {
   const b = fs.readFileSync(file);

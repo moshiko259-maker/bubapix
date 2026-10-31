@@ -56,4 +56,5 @@ module.exports = [
   ["shop_pay_title", [["shop", "payTitle"]], "Order: Payment heading", "הזמנה: כותרת תשלום"],
   // Footer
   ["footer_top", [["footer", "top"]], "Footer: Back to top", "תחתית: חזרה למעלה"],
+  ["footer_ai", [["footer", "ai"]], "Footer: note that the projects are made with AI", "תחתית: הודעה שהפרויקטים נוצרו בבינה מלאכותית"],
 ];

@@ -927,6 +927,8 @@ collections:
           - { name: shop_pay_title_he, label: "Order: Payment heading, Hebrew (usual: תשלום) / הזמנה: כותרת תשלום, עברית", widget: string, required: false }
           - { name: footer_top_en, label: "Footer: Back to top, English (usual: Back to top) / תחתית: חזרה למעלה, אנגלית", widget: string, required: false }
           - { name: footer_top_he, label: "Footer: Back to top, Hebrew (usual: חזרה למעלה) / תחתית: חזרה למעלה, עברית", widget: string, required: false }
+          - { name: footer_ai_en, label: "Footer: note that the projects are made with AI, English (usual: The films, characters and pictures in our projects were made with AI tools, directed and edited by BubaPix.) / תחתית: הודעה שהפרויקטים נוצרו בבינה מלאכותית, אנגלית", widget: string, required: false }
+          - { name: footer_ai_he, label: "Footer: note that the projects are made with AI, Hebrew (usual: הסרטים, הדמויות והתמונות בפרויקטים נוצרו בכלי בינה מלאכותית, בבימוי ובעריכה של BubaPix.) / תחתית: הודעה שהפרויקטים נוצרו בבינה מלאכותית, עברית", widget: string, required: false }
           # labels-fields:end
 
       - name: services
