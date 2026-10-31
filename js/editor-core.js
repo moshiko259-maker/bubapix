@@ -17,10 +17,14 @@
  *   BubaCore.describe(T, he, en, done)       "Description for blind visitors" window
  *   BubaCore.captionDialog(T, g, lang, choices, done, pre)  "Title and text" window for a picture
  *   BubaCore.frame(box, o, T)                size by dragging a dot (computers): o.start, area, live, done, min, max
+ *   BubaCore.saveFiles(opts)                 saving: check every file first, then write (see below)
+ *   BubaCore.version                         editors that need a newer copy load it again (a browser
+ *                                            can keep an older copy of this file for a few minutes)
  */
 (function () {
   "use strict";
-  if (window.BubaCore) return;
+  var VERSION = 2;
+  if (window.BubaCore && window.BubaCore.version >= VERSION) return;
 
   function el(tag, attrs, kids) {
     var n = document.createElement(tag);
@@ -285,7 +289,62 @@
     });
   }
 
+  // Saving, the same way in every editor:
+  //   1. before writing anything, each file is checked: a file the editor
+  //      loaded must still be the same version (sha) on GitHub (otherwise
+  //      nothing is written: err.changed); a new file must not exist yet;
+  //      a file that is only added to (merge) is read now, as it is now;
+  //   2. pictures chosen on this computer go up;
+  //   3. the files are written, one after the other.
+  // opts: api, branch,
+  //   uploads: [{ path, file, message, done() }],
+  //   files: [{ path, sha ("" = a new file), text (the whole file) or
+  //             merge(currentData) -> data (only some fields change; the
+  //             rest of the file as it is now), message, saved(newSha) }]
+  // Resolves to { wrote }; on failure err.wrote says how many files were
+  // already written (so the editor can say "some changes were saved").
+  function saveFiles(opts) {
+    var api = opts.api, ref = "?ref=" + encodeURIComponent(opts.branch);
+    var enc = function (p) { return p.split("/").map(encodeURIComponent).join("/"); };
+    var files = opts.files || [], uploads = opts.uploads || [];
+    var wrote = 0;
+    var changedErr = function () { var e = new Error("changed"); e.changed = true; return e; };
+    var check = Promise.all(files.map(function (f) {
+      return api("/contents/" + enc(f.path) + ref)
+        .then(function (cur) {
+          if (f.merge) return { sha: cur.sha, data: JSON.parse(b64ToUtf8(cur.content)) };
+          if (cur.sha !== f.sha) throw changedErr();
+          return { sha: f.sha };
+        }, function (err) {
+          if (err.status !== 404) throw err;
+          if (f.sha || f.merge) throw changedErr();
+          return { sha: "" };
+        });
+    }));
+    return check.then(function (found) {
+      var chain = Promise.resolve();
+      uploads.forEach(function (u) {
+        chain = chain.then(function () { return readB64(u.file); })
+          .then(function (b64) { return api("/contents/" + enc(u.path), { method: "PUT", body: { message: u.message, content: b64, branch: opts.branch } }); })
+          .then(function () { if (u.done) u.done(); });
+      });
+      files.forEach(function (f, i) {
+        chain = chain.then(function () {
+          var text = f.merge ? JSON.stringify(f.merge(found[i].data), null, 2) + "\n" : f.text;
+          var body = { message: f.message, content: utf8ToB64(text), branch: opts.branch };
+          if (found[i].sha) body.sha = found[i].sha;
+          return api("/contents/" + enc(f.path), { method: "PUT", body: body });
+        }).then(function (res) {
+          wrote++;
+          if (f.saved) f.saved(res && res.content ? res.content.sha : "");
+        });
+      });
+      return chain;
+    }).then(function () { return { wrote: wrote }; }, function (err) { err.wrote = wrote; throw err; });
+  }
+
   window.BubaCore = {
+    version: VERSION, saveFiles: saveFiles,
     el: el, button: button, token: token,
     utf8ToB64: utf8ToB64, b64ToUtf8: b64ToUtf8, readB64: readB64,
     github: github, loadStyles: loadStyles, history: history, siteWatch: siteWatch,

@@ -27,11 +27,17 @@
   // A page from before js/main.js did this (the browser can keep a page for
   // a few minutes after an update) loads only the editor: then the editor
   // loads the shared file itself and starts again.
+  // An older copy of the shared file (kept by the browser) lacks what this
+  // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core) {
+  if (!core || !(core.version >= 2)) {
+    if (window.__bubapixCoreLoading) return;
+    var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
-    var coreSrc = (lb && lb.getAttribute("data-core-src")) || (me && me.src ? me.src.replace(/[^/]*$/, "editor-core.js?t=" + Date.now()) : "");
-    if (!coreSrc || window.__bubapixCoreLoading) return;
+    var given = lb && lb.getAttribute("data-core-src");
+    var coreSrc = given || (me && me.src ? me.src.replace(/[^/]*$/, "editor-core.js") : "");
+    if (!coreSrc || tries > 2) return;
+    if (core || tries > 1 || !given) coreSrc += (coreSrc.indexOf("?") < 0 ? "?" : "&") + "t=" + Date.now();
     window.__bubapixCoreLoading = true;
     var cs = document.createElement("script");
     cs.src = coreSrc;
@@ -375,7 +381,10 @@
     status.textContent = text || "";
     status.className = "pe-status" + (kind ? " is-" + kind : "");
   }
+  // While saving, typing does not change the status or turn "Save" back on (no second save at the same time).
+  var busy = false;
   function refreshStatus() {
+    if (busy) return;
     setStatus(dirty() ? T.unsaved : T.noChanges, dirty() ? "warn" : "");
     saveBtn.disabled = !dirty();
   }
@@ -1196,7 +1205,7 @@
   function save() {
     if (!dirty() || translating) return;
     if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
-    translating = true; saveBtn.disabled = true; trRes = { n: 0 };
+    translating = true; busy = true; saveBtn.disabled = true; trRes = { n: 0 };
     trReady
       .then(function () { return window.BubaTranslate ? window.BubaTranslate.run(trPairs(), { onStart: function (m) { setStatus(m); }, topOnly: true }) : { n: 0 }; })
       .then(function (r) { trRes = r; }, function () { trRes = { n: 0, failed: true }; })
@@ -1204,54 +1213,41 @@
   }
   function saveNow() {
     lastCommit = "";
-    if (!dirty()) return;
+    busy = false;
+    if (!dirty()) { refreshStatus(); return; }
     if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
     saveBtn.disabled = true;
     setStatus(T.saving);
+    busy = true;
     // Only pictures uploaded now and still used on the page are sent.
     var used = {};
     var all = [data.cover];
     data.sections.forEach(function (sec) { (sec && Array.isArray(sec.images) ? sec.images : []).forEach(function (g) { if (g) all.push(g.image); }); });
     all.forEach(function (p) { var u = uploads[norm(p)]; if (u && !u.done) used[norm(p)] = true; });
-    var chain = Promise.resolve();
-    Object.keys(used).forEach(function (p) {
-      chain = chain.then(function () { return readB64(uploads[p].file); })
-        .then(function (b64) { return api("/contents/" + encPath(p), { method: "PUT", body: { message: "Upload picture (project " + SLUG + ", edited on the page)", content: b64, branch: BRANCH } }); })
-        .then(function () { uploads[p].done = true; });
-    });
-    var fileChanged = JSON.stringify(data) !== original;
-    var labelsChanged = labelsDirty();
+    // What is sent now: edits made while saving stay "unsaved" afterwards (they are not lost).
+    var sentData = JSON.stringify(data), sentLabels = JSON.stringify(labels);
+    var files = [];
+    if (sentData !== original) files.push({ path: FILE, sha: sha, text: JSON.stringify(data, null, 2) + "\n", message: "Project " + SLUG + ": edited on the page", saved: function (s) { sha = s; original = sentData; } });
+    if (sentLabels !== labelsOrig) files.push({ path: LABELS, sha: labelsSha, text: JSON.stringify(labels, null, 2) + "\n", message: "Project pages: shared texts edited on the page (" + SLUG + ")", saved: function (s) { labelsSha = s; labelsOrig = sentLabels; } });
     var wrote = 0;
-    var shaOf = function (path) { return api("/contents/" + encPath(path) + ref).then(function (cur) { return cur.sha; }).catch(function (err) { if (err.status === 404) return ""; throw err; }); };
-    // First make sure neither file changed elsewhere since it was loaded; only then write.
-    Promise.all([fileChanged ? shaOf(FILE) : sha, labelsChanged ? shaOf(LABELS) : labelsSha])
-      .then(function (shas) {
-        if (shas[0] !== sha || shas[1] !== labelsSha) { var err = new Error("changed"); err.changed = true; throw err; }
-        return chain;
-      })
-      .then(function () {
-        if (!fileChanged) return null;
-        return api("/contents/" + encPath(FILE), { method: "PUT", body: { message: "Project " + SLUG + ": edited on the page", content: utf8ToB64(JSON.stringify(data, null, 2) + "\n"), sha: sha, branch: BRANCH } });
-      })
-      .then(function (res) {
-        if (res) { sha = res.content.sha; original = JSON.stringify(data); wrote++; }
-        if (!labelsChanged) return null;
-        var body = { message: "Project pages: shared texts edited on the page (" + SLUG + ")", content: utf8ToB64(JSON.stringify(labels, null, 2) + "\n"), branch: BRANCH };
-        if (labelsSha) body.sha = labelsSha;
-        return api("/contents/" + encPath(LABELS), { method: "PUT", body: body });
-      })
-      .then(function (res) {
-        if (res) { labelsSha = res.content.sha; labelsOrig = JSON.stringify(labels); wrote++; }
-        return window.BubaStyle ? window.BubaStyle.save("project " + SLUG) : "";
-      })
+    // Every file is checked first, then the pictures go up, then the files (js/editor-core.js).
+    core.saveFiles({
+      api: api, branch: BRANCH,
+      uploads: Object.keys(used).map(function (p) { return { path: p, file: uploads[p].file, message: "Upload picture (project " + SLUG + ", edited on the page)", done: function () { uploads[p].done = true; } }; }),
+      files: files,
+    })
+      .then(function (r) { wrote = r.wrote; return window.BubaStyle ? window.BubaStyle.save("project " + SLUG) : ""; })
       .then(function (c) {
         if (c) lastCommit = c;
-        saveBtn.disabled = true;
+        busy = false;
+        saveBtn.disabled = !dirty();
         followSave(lastCommit);
+        if (dirty()) refreshStatus();
       })
       .catch(function (err) {
+        busy = false;
         saveBtn.disabled = false;
-        if (wrote) { setStatus(T.errPartial, "error"); return; }
+        if (wrote || err.wrote) { setStatus(T.errPartial, "error"); return; }
         setStatus(err.changed || err.status === 409 ? T.errChanged : err.status === 401 || err.status === 403 ? T.errAuth : T.errSave, "error");
       });
   }

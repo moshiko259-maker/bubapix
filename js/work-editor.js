@@ -26,11 +26,17 @@
   // A page from before js/main.js did this (the browser can keep a page for
   // a few minutes after an update) loads only the editor: then the editor
   // loads the shared file itself and starts again.
+  // An older copy of the shared file (kept by the browser) lacks what this
+  // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core) {
+  if (!core || !(core.version >= 2)) {
+    if (window.__bubapixCoreLoading) return;
+    var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
-    var coreSrc = (lb && lb.getAttribute("data-core-src")) || (me && me.src ? me.src.replace(/[^/]*$/, "editor-core.js?t=" + Date.now()) : "");
-    if (!coreSrc || window.__bubapixCoreLoading) return;
+    var given = lb && lb.getAttribute("data-core-src");
+    var coreSrc = given || (me && me.src ? me.src.replace(/[^/]*$/, "editor-core.js") : "");
+    if (!coreSrc || tries > 2) return;
+    if (core || tries > 1 || !given) coreSrc += (coreSrc.indexOf("?") < 0 ? "?" : "&") + "t=" + Date.now();
     window.__bubapixCoreLoading = true;
     var cs = document.createElement("script");
     cs.src = coreSrc;
@@ -952,28 +958,17 @@
     var sent = snap();
     busy = true;
     var wrote = 0;
-    // First make sure no file changed elsewhere since it was loaded; only then write.
-    Promise.all(writes.map(function (w) {
-      return api("/contents/" + encPath(w.file.path) + ref).then(function (cur) { return cur.sha; }).catch(function (err) { if (err.status === 404) return ""; throw err; });
-    }))
-      .then(function (shas) {
-        writes.forEach(function (w, k) { if (shas[k] !== w.file.sha) { var err = new Error("changed"); err.changed = true; throw err; } });
-        var chain = Promise.resolve();
-        Object.keys(used).forEach(function (path) {
-          chain = chain.then(function () { return readB64(uploads[path].file); })
-            .then(function (b64) { return api("/contents/" + encPath(path), { method: "PUT", body: { message: "Upload picture (projects page, edited on the page)", content: b64, branch: BRANCH } }); })
-            .then(function () { uploads[path].done = true; });
-        });
-        writes.forEach(function (w) {
-          chain = chain.then(function () {
-            var body = { message: w.message, content: utf8ToB64(JSON.stringify(w.data, null, 2) + "\n"), branch: BRANCH };
-            if (w.file.sha) body.sha = w.file.sha;
-            return api("/contents/" + encPath(w.file.path), { method: "PUT", body: body }).then(function (res) { w.file.sha = res.content.sha; if (w.file === files.categories) files.categories.data = w.data; wrote++; });
-          });
-        });
-        return chain.then(function () { return window.BubaStyle ? window.BubaStyle.save("projects page") : ""; }).then(function (c) { if (c) { lastCommit = c; wrote++; } });
-      })
-      .then(function () {
+    // Every file is checked first, then the pictures go up, then the files (js/editor-core.js).
+    core.saveFiles({
+      api: api, branch: BRANCH,
+      uploads: Object.keys(used).map(function (path) { return { path: path, file: uploads[path].file, message: "Upload picture (projects page, edited on the page)", done: function () { uploads[path].done = true; } }; }),
+      files: writes.map(function (w) {
+        return { path: w.file.path, sha: w.file.sha, text: JSON.stringify(w.data, null, 2) + "\n", message: w.message, saved: function (newSha) { w.file.sha = newSha; if (w.file === files.categories) files.categories.data = w.data; } };
+      }),
+    })
+      .then(function (r) { wrote = r.wrote; return window.BubaStyle ? window.BubaStyle.save("projects page") : ""; })
+      .then(function (c) {
+        if (c) { lastCommit = c; wrote++; }
         busy = false;
         original = sent;
         saveBtn.disabled = !dirty();
@@ -983,7 +978,7 @@
       .catch(function (err) {
         busy = false;
         saveBtn.disabled = false;
-        if (wrote) { setStatus(T.errPartial, "error"); return; }
+        if (wrote || err.wrote) { setStatus(T.errPartial, "error"); return; }
         setStatus(err.changed || err.status === 409 ? T.errChanged : err.status === 401 || err.status === 403 ? T.errAuth : T.errSave, "error");
       });
   }

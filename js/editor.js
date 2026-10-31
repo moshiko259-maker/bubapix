@@ -21,11 +21,17 @@
   // A page from before js/main.js did this (the browser can keep a page for
   // a few minutes after an update) loads only the editor: then the editor
   // loads the shared file itself and starts again.
+  // An older copy of the shared file (kept by the browser) lacks what this
+  // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core) {
+  if (!core || !(core.version >= 2)) {
+    if (window.__bubapixCoreLoading) return;
+    var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
-    var coreSrc = (lb && lb.getAttribute("data-core-src")) || (me && me.src ? me.src.replace(/[^/]*$/, "editor-core.js?t=" + Date.now()) : "");
-    if (!coreSrc || window.__bubapixCoreLoading) return;
+    var given = lb && lb.getAttribute("data-core-src");
+    var coreSrc = given || (me && me.src ? me.src.replace(/[^/]*$/, "editor-core.js") : "");
+    if (!coreSrc || tries > 2) return;
+    if (core || tries > 1 || !given) coreSrc += (coreSrc.indexOf("?") < 0 ? "?" : "&") + "t=" + Date.now();
     window.__bubapixCoreLoading = true;
     var cs = document.createElement("script");
     cs.src = coreSrc;
@@ -99,6 +105,7 @@
     openManage: "לכלי הניהול",
     errLoad: "לא הצלחתי לטעון את הגדרות הדף מ־GitHub.",
     errSave: "השמירה נכשלה. שום דבר לא השתנה.",
+    errPartial: "חלק מהשינויים נשמרו וחלק לא. רעננו את הדף ובדקו.",
     errChanged: "הגדרות הדף השתנו בינתיים במקום אחר (למשל בכלי הניהול). כדי לא למחוק את השינוי ההוא, לא שמרתי. צאו מהעריכה, רעננו את הדף ונסו שוב.",
     errAuth: "הכניסה פגה או שאין הרשאה. היכנסו מחדש לכלי הניהול ונסו שוב.",
     leave: "יש שינויים שלא נשמרו. לצאת בכל זאת?",
@@ -209,6 +216,7 @@
     openManage: "Open the admin panel",
     errLoad: "Could not load the page settings from GitHub.",
     errSave: "Saving failed. Nothing was changed.",
+    errPartial: "Some changes were saved and some were not. Reload the page and check.",
     errChanged: "The page settings were changed elsewhere in the meantime (for example in the admin panel). To keep that change, nothing was saved. Leave editing, reload the page and try again.",
     errAuth: "The sign-in expired or has no permission. Sign in to the admin panel again and retry.",
     leave: "There are unsaved changes. Leave anyway?",
@@ -421,13 +429,19 @@
     status.textContent = text || "";
     status.className = "pe-status" + (kind ? " is-" + kind : "");
   }
+  // While saving, typing does not change the status or turn "Save" back on (no second save at the same time).
+  var busy = false;
   function refreshStatus() {
+    if (busy) return;
     setStatus(dirty() ? T.unsaved : T.noChanges, dirty() ? "warn" : "");
     saveBtn.disabled = !dirty();
   }
   // ---------- undo ----------
   // Every change keeps a copy of the state before it, in this tab only.
   var past = [], last = "";
+  // A project's fields that say what is saved on GitHub (not edits).
+  var SAVED_KEYS = ["isNew", "orig_he", "orig_en", "orig_order", "orig_poster_w", "orig_in_posters", "origCover", "origCap"];
+  var addedSaved = {}; // "slug|/picture" already added to a project's page by a save
   function snapshot() {
     return JSON.stringify({ data: data, projects: projects.map(function (p) { return { slug: p.slug, isNew: !!p.isNew, title_he: p.title_he, title_en: p.title_en, orig_he: p.orig_he, orig_en: p.orig_en, order: p.order, orig_order: p.orig_order, poster_w: p.poster_w || 0, orig_poster_w: p.orig_poster_w || 0, name: p.name, cover: p.cover || null, in_posters: p.in_posters !== false, orig_in_posters: p.orig_in_posters !== false, origCover: p.origCover || "", cap: p.cap || capOf(null), origCap: p.origCap || JSON.stringify(capOf(null)) }; }), pageAdds: pageAdds, texts: texts });
   }
@@ -441,6 +455,19 @@
   function undo() {
     if (!past.length) { setStatus(T.nothingToUndo); return; }
     var prev = JSON.parse(past.pop());
+    // Undo brings back the edits, never an older idea of what is saved on GitHub:
+    // a project created by a save stays created (and stays in the list), and
+    // pictures already added to a project's page are not added again.
+    var cur = {};
+    projects.forEach(function (p) { cur[p.slug] = p; });
+    prev.projects.forEach(function (p) {
+      var c = cur[p.slug];
+      if (!c) return;
+      SAVED_KEYS.forEach(function (k) { p[k] = c[k]; });
+      if (p.cover && "/" + p.cover.path === p.origCover) p.cover = null;
+    });
+    projects.forEach(function (c) { if (!c.isNew && !prev.projects.some(function (p) { return p.slug === c.slug; })) prev.projects.push(c); });
+    Object.keys(prev.pageAdds || {}).forEach(function (slug) { prev.pageAdds[slug] = prev.pageAdds[slug].filter(function (a) { return !addedSaved[slug + "|" + a.image]; }); });
     data = prev.data; projects = prev.projects; pageAdds = prev.pageAdds; texts = prev.texts || texts;
     last = snapshot();
     undoBtn.disabled = !past.length;
@@ -1337,45 +1364,6 @@
     drawList();
     document.body.appendChild(dialog);
   }
-  // New project files: the same fields the admin panel creates.
-  function saveNewProjects() {
-    var chain = Promise.resolve();
-    created().forEach(function (p) {
-      chain = chain.then(function () {
-        var d = {
-          title_en: p.title_en, title_he: p.title_he, show_title: true, visible: true, featured: true, order: p.order, title_in_gallery: false,
-          categories: [], text_en: "", text_he: "", description_en: "", description_he: "",
-          cover: p.cover ? "/" + p.cover.path : "", cover_alt_en: p.cover ? p.cover.alts.en : "", cover_alt_he: p.cover ? p.cover.alts.he : "",
-          video_url: "", video_file: "", gallery: [], details: [], sections: [],
-        };
-        return api("/contents/" + encPath("content/projects/" + p.slug + ".json"), { method: "PUT", body: { message: "New project: " + (p.title_en || p.title_he || p.slug) + " (created on the homepage)", content: utf8ToB64(JSON.stringify(d, null, 2) + "\n"), branch: BRANCH } });
-      }).then(function () { p.isNew = false; p.orig_he = p.title_he; p.orig_en = p.title_en; p.cover = null; });
-    });
-    return chain;
-  }
-  // Renamed projects: only the two name fields change; everything else is kept.
-  function saveRenames() {
-    var chain = Promise.resolve();
-    renamed().forEach(function (p) {
-      var path = "content/projects/" + p.slug + ".json";
-      chain = chain
-        .then(function () { return api("/contents/" + encPath(path) + "?ref=" + encodeURIComponent(BRANCH)); })
-        .then(function (res) {
-          var d = JSON.parse(b64ToUtf8(res.content));
-          d.title_he = p.title_he; d.title_en = p.title_en;
-          if (p.cover) { d.cover = "/" + p.cover.path; d.cover_alt_he = p.cover.alts.he; d.cover_alt_en = p.cover.alts.en; }
-          if (p.in_posters === false) d.in_posters = false; else delete d.in_posters;
-          if (p.order !== p.orig_order) d.order = p.order;
-          if (p.poster_w) d.poster_w = p.poster_w; else delete d.poster_w;
-          // The poster's title and text: written only when there is one (or there was one).
-          if (p.cap) CAP_KEYS.forEach(function (k) { if (p.cap[k] && p.cap[k] !== "hidden") d[k] = p.cap[k]; else if (k in d) d[k] = k === "poster_caption" ? "hidden" : ""; });
-          return api("/contents/" + encPath(path), { method: "PUT", body: { message: "Project " + p.slug + ": changed on the homepage (name, poster, order or poster size)", content: utf8ToB64(JSON.stringify(d, null, 2) + "\n"), sha: res.sha, branch: BRANCH } });
-        })
-        .then(function () { p.orig_he = p.title_he; p.orig_en = p.title_en; if (p.cover) p.origCover = "/" + p.cover.path; p.cover = null; p.orig_in_posters = p.in_posters; p.orig_order = p.order; p.orig_poster_w = p.poster_w; p.origCap = JSON.stringify(p.cap || capOf(null)); });
-    });
-    return chain;
-  }
-
   // ---------- earlier versions (like "site history" in website builders) ----------
   function historyPanel() {
     core.history(launcher, {
@@ -1443,103 +1431,128 @@
   function save() {
     if (!dirty() || translating) return;
     if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
-    translating = true; saveBtn.disabled = true; trRes = { n: 0 };
+    translating = true; busy = true; saveBtn.disabled = true; trRes = { n: 0 };
     trReady
       .then(function () { return window.BubaTranslate ? window.BubaTranslate.run(trPairs(), { topOnly: true, onStart: function (m) { setStatus(m); } }) : { n: 0 }; })
       .then(function (r) { trRes = r; }, function () { trRes = { n: 0, failed: true }; })
       .then(function () { translating = false; saveNow(); });
   }
+  // A picture added to a project's page gallery (its first gallery section, or a new one).
+  function addPictures(d, adds) {
+    if (!Array.isArray(d.sections)) d.sections = [];
+    var sec = d.sections.filter(function (x) { return x && x.type === "gallery"; })[0];
+    if (!sec) { sec = { type: "gallery", hidden: false, heading_en: "", heading_he: "", images: [] }; d.sections.push(sec); }
+    if (!Array.isArray(sec.images)) sec.images = [];
+    adds.forEach(function (a) {
+      if (sec.images.some(function (x) { return x && x.image === a.image; })) return;
+      sec.images.push({ image: a.image, link: "", alt_en: a.alt_en, alt_he: a.alt_he, title_en: "", title_he: "", note_en: "", note_he: "", caption: "hidden", on_home: false, frame: "natural", focus: "center" });
+    });
+    return d;
+  }
+  // A poster's fields as they are now (what this save sends for that project).
+  function posterFields(p) {
+    return { title_he: p.title_he, title_en: p.title_en, cover: p.cover, in_posters: p.in_posters, order: p.order, poster_w: p.poster_w, cap: JSON.parse(JSON.stringify(p.cap || capOf(null))) };
+  }
+  // After a project's file is written: what was sent is now what is saved
+  // (a change made while saving stays unsaved).
+  function markSaved(p, f) {
+    p.isNew = false;
+    p.orig_he = f.title_he; p.orig_en = f.title_en;
+    if (f.cover) p.origCover = "/" + f.cover.path;
+    if (p.cover === f.cover) p.cover = null;
+    p.orig_in_posters = f.in_posters; p.orig_order = f.order; p.orig_poster_w = f.poster_w;
+    p.origCap = JSON.stringify(f.cap);
+  }
   function saveNow() {
     lastCommit = "";
-    if (!dirty()) return;
+    busy = false;
+    if (!dirty()) { refreshStatus(); return; }
     saveBtn.disabled = true;
     setStatus(T.saving);
+    busy = true;
     var used = {};
     var all = [data.hero_image, data.feature_image].concat(data.gallery.map(function (g) { return g && g.image; }))
       .concat(projects.map(function (p) { return p.cover ? p.cover.path : ""; }))
       .concat([].concat.apply([], Object.keys(pageAdds).map(function (k) { return pageAdds[k].map(function (a) { return a.image; }); })));
     all.forEach(function (p) { var u = uploads[norm(p)]; if (u && !u.done) used[norm(p)] = true; });
-    var chain = Promise.resolve();
-    Object.keys(used).forEach(function (p) {
-      chain = chain.then(function () { return readB64(uploads[p].file); })
-        .then(function (b64) { return api("/contents/" + encPath(p), { method: "PUT", body: { message: "Upload picture (homepage, edited on the page)", content: b64, branch: BRANCH } }); })
-        // Keep showing the picture from this computer until the site is rebuilt.
-        .then(function () { uploads[p].done = true; });
+    // What is sent now. Edits made while saving stay "unsaved" afterwards (they are not lost).
+    var sentData = JSON.stringify(data), sentTexts = JSON.parse(JSON.stringify(texts)), origTexts = JSON.parse(textsOrig || "{}");
+    var files = [];
+    var newSlugs = created().map(function (p) { return p.slug; });
+    // New project files: the same fields the admin panel creates (and this page's poster settings).
+    created().forEach(function (p) {
+      var f = posterFields(p);
+      var adds = (pageAdds[p.slug] || []).slice();
+      var d = {
+        title_en: f.title_en, title_he: f.title_he, show_title: true, visible: true, featured: true, order: f.order, title_in_gallery: false,
+        categories: [], text_en: "", text_he: "", description_en: "", description_he: "",
+        cover: f.cover ? "/" + f.cover.path : "", cover_alt_en: f.cover ? f.cover.alts.en : "", cover_alt_he: f.cover ? f.cover.alts.he : "",
+        video_url: "", video_file: "", gallery: [], details: [], sections: [],
+      };
+      if (f.in_posters === false) d.in_posters = false;
+      if (f.poster_w) d.poster_w = f.poster_w;
+      CAP_KEYS.forEach(function (k) { if (f.cap[k] && f.cap[k] !== "hidden") d[k] = f.cap[k]; });
+      if (adds.length) addPictures(d, adds);
+      files.push({ path: "content/projects/" + p.slug + ".json", sha: "", text: JSON.stringify(d, null, 2) + "\n", message: "New project: " + (f.title_en || f.title_he || p.slug) + " (created on the homepage)", saved: function () { markSaved(p, f); savedAdds(p.slug, adds); } });
     });
-    chain
-      .then(saveNewProjects)
-      .then(function () { return api("/contents/" + encPath(FILE) + "?ref=" + encodeURIComponent(BRANCH)); })
-      .then(function (cur) {
-        if (cur.sha !== sha) { var err = new Error("changed"); err.changed = true; throw err; }
-        if (JSON.stringify(data) === original) return { content: { sha: sha } };
-        return api("/contents/" + encPath(FILE), { method: "PUT", body: { message: "Homepage: edited on the page", content: utf8ToB64(JSON.stringify(data, null, 2) + "\n"), sha: sha, branch: BRANCH } });
-      })
-      .then(function (res) {
-        sha = res.content.sha;
-        original = JSON.stringify(data);
-        return savePageAdds();
-      })
-      .then(saveTexts)
-      .then(saveRenames)
-      .then(function () { return window.BubaStyle ? window.BubaStyle.save("homepage") : ""; })
+    if (sentData !== original) files.push({ path: FILE, sha: sha, text: JSON.stringify(data, null, 2) + "\n", message: "Homepage: edited on the page", saved: function (v) { sha = v; original = sentData; } });
+    // Pictures added to existing projects' page galleries: added to each file as it is now.
+    Object.keys(pageAdds).forEach(function (slug) {
+      var adds = pageAdds[slug].slice();
+      if (!adds.length || newSlugs.indexOf(slug) >= 0) return;
+      files.push({ path: "content/projects/" + slug + ".json", merge: function (d) { return addPictures(d, adds); }, message: "Project " + slug + ": picture added (edited on the homepage)", saved: function () { savedAdds(slug, adds); } });
+    });
+    // Interface texts and services: only if changed here, and only if the file did not change elsewhere.
+    var setOrig = function (key) { var o = JSON.parse(textsOrig || "{}"); o[key] = sentTexts[key]; textsOrig = JSON.stringify(o); };
+    if (textsOrig && JSON.stringify(sentTexts.labels) !== JSON.stringify(origTexts.labels)) files.push({ path: "content/labels.json", sha: labelsSha, text: JSON.stringify(sentTexts.labels, null, 2) + "\n", message: "Homepage: texts edited on the page", saved: function (v) { labelsSha = v; setOrig("labels"); } });
+    if (textsOrig && sentTexts.services && JSON.stringify(sentTexts.services) !== JSON.stringify(origTexts.services)) files.push({ path: "content/services.json", sha: servicesSha, text: JSON.stringify(sentTexts.services, null, 2) + "\n", message: "Services: names edited on the homepage", saved: function (v) { servicesSha = v; setOrig("services"); } });
+    // Existing projects changed here: only their names and poster fields change; everything else in the file is kept.
+    renamed().forEach(function (p) {
+      var f = posterFields(p), origOrder = p.orig_order;
+      files.push({
+        path: "content/projects/" + p.slug + ".json",
+        merge: function (d) {
+          d.title_he = f.title_he; d.title_en = f.title_en;
+          if (f.cover) { d.cover = "/" + f.cover.path; d.cover_alt_he = f.cover.alts.he; d.cover_alt_en = f.cover.alts.en; }
+          if (f.in_posters === false) d.in_posters = false; else delete d.in_posters;
+          if (f.order !== origOrder) d.order = f.order;
+          if (f.poster_w) d.poster_w = f.poster_w; else delete d.poster_w;
+          // The poster's title and text: written only when there is one (or there was one).
+          CAP_KEYS.forEach(function (k) { if (f.cap[k] && f.cap[k] !== "hidden") d[k] = f.cap[k]; else if (k in d) d[k] = k === "poster_caption" ? "hidden" : ""; });
+          return d;
+        },
+        message: "Project " + p.slug + ": changed on the homepage (name, poster, order or poster size)",
+        saved: function () { markSaved(p, f); },
+      });
+    });
+    var wrote = 0;
+    // Every file is checked first, then the pictures go up, then the files (js/editor-core.js).
+    core.saveFiles({
+      api: api, branch: BRANCH,
+      uploads: Object.keys(used).map(function (path) { return { path: path, file: uploads[path].file, message: "Upload picture (homepage, edited on the page)", done: function () { uploads[path].done = true; } }; }),
+      files: files,
+    })
+      .then(function (r) { wrote = r.wrote; return window.BubaStyle ? window.BubaStyle.save("homepage") : ""; })
       .then(function (c) {
-        if (c) lastCommit = c;
-        saveBtn.disabled = true;
+        if (c) { lastCommit = c; wrote++; }
+        busy = false;
+        saveBtn.disabled = !dirty();
         followSave(lastCommit);
         render();
+        if (dirty()) refreshStatus();
       })
       .catch(function (err) {
+        busy = false;
         saveBtn.disabled = false;
+        render();
+        if (wrote || err.wrote) { setStatus(T.errPartial, "error"); return; }
         setStatus(err.changed || err.status === 409 ? T.errChanged : err.status === 401 || err.status === 403 ? T.errAuth : T.errSave, "error");
       });
   }
-  // Interface texts and services: written only if changed here, and only if
-  // the file did not change elsewhere since it was loaded.
-  function saveTexts() {
-    if (!textsDirty()) return Promise.resolve();
-    var orig = JSON.parse(textsOrig);
-    var jobs = [];
-    if (JSON.stringify(texts.labels) !== JSON.stringify(orig.labels)) jobs.push({ path: "content/labels.json", data: texts.labels, sha: function () { return labelsSha; }, set: function (v) { labelsSha = v; }, message: "Homepage: texts edited on the page" });
-    if (texts.services && JSON.stringify(texts.services) !== JSON.stringify(orig.services)) jobs.push({ path: "content/services.json", data: texts.services, sha: function () { return servicesSha; }, set: function (v) { servicesSha = v; }, message: "Services: names edited on the homepage" });
-    var chain = Promise.resolve();
-    jobs.forEach(function (j) {
-      chain = chain
-        .then(function () { return api("/contents/" + encPath(j.path) + "?ref=" + encodeURIComponent(BRANCH)).then(function (r) { return r.sha; }).catch(function (err) { if (err.status === 404) return ""; throw err; }); })
-        .then(function (cur) {
-          if (cur !== j.sha()) { var err = new Error("changed"); err.changed = true; throw err; }
-          var body = { message: j.message, content: utf8ToB64(JSON.stringify(j.data, null, 2) + "\n"), branch: BRANCH };
-          if (j.sha()) body.sha = j.sha();
-          return api("/contents/" + encPath(j.path), { method: "PUT", body: body });
-        })
-        .then(function (res) { j.set(res.content.sha); });
-    });
-    return chain.then(function () { textsOrig = JSON.stringify(texts); });
-  }
-  // Adds the chosen pictures to each project's page gallery (its first
-  // gallery section, or a new one), keeping everything else in the file.
-  function savePageAdds() {
-    var chain = Promise.resolve();
-    Object.keys(pageAdds).forEach(function (slug) {
-      var adds = pageAdds[slug];
-      if (!adds.length) return;
-      var path = "content/projects/" + slug + ".json";
-      chain = chain
-        .then(function () { return api("/contents/" + encPath(path) + "?ref=" + encodeURIComponent(BRANCH)); })
-        .then(function (res) {
-          var d = JSON.parse(b64ToUtf8(res.content));
-          if (!Array.isArray(d.sections)) d.sections = [];
-          var sec = d.sections.filter(function (x) { return x && x.type === "gallery"; })[0];
-          if (!sec) { sec = { type: "gallery", hidden: false, heading_en: "", heading_he: "", images: [] }; d.sections.push(sec); }
-          if (!Array.isArray(sec.images)) sec.images = [];
-          adds.forEach(function (a) {
-            if (sec.images.some(function (x) { return x && x.image === a.image; })) return;
-            sec.images.push({ image: a.image, link: "", alt_en: a.alt_en, alt_he: a.alt_he, title_en: "", title_he: "", note_en: "", note_he: "", caption: "hidden", on_home: false, frame: "natural", focus: "center" });
-          });
-          return api("/contents/" + encPath(path), { method: "PUT", body: { message: "Project " + slug + ": picture added (edited on the homepage)", content: utf8ToB64(JSON.stringify(d, null, 2) + "\n"), sha: res.sha, branch: BRANCH } });
-        })
-        .then(function () { pageAdds[slug] = []; });
-    });
-    return chain;
+  // Pictures added by a save: off the waiting list (others added meanwhile stay), and remembered for "Undo".
+  function savedAdds(slug, adds) {
+    adds.forEach(function (a) { addedSaved[slug + "|" + a.image] = true; });
+    if (pageAdds[slug]) pageAdds[slug] = pageAdds[slug].filter(function (a) { return adds.indexOf(a) < 0; });
   }
 
   function quit() {
