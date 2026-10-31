@@ -30,7 +30,9 @@
     return out;
   }
   var ADDED = [/https?:\/\//i, /www\./i, /\]\(/, /\*\*/, /[<>]/, /@[\w-]+\.[a-z]/i];
-  function decode(t) { return new DOMParser().parseFromString(t, "text/html").documentElement.textContent; }
+  // Only the entities the service sends back (&amp;, &#39; …) become characters:
+  // text between < and > is kept as written.
+  function decode(t) { var a = document.createElement("textarea"); a.innerHTML = String(t).replace(/</g, "&lt;"); return a.value; }
   function clean(t) { return String(t || "").replace(/\r/g, "").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim(); }
   var cache = {};
   function translate(text, from, to) {
@@ -43,6 +45,16 @@
       paras.forEach(function (p) { seq = seq.then(function (done) { return translate(p, from, to).then(function (t) { return done.concat(t); }); }); });
       return seq.then(function (list) { var t = list.join("\n\n"); cache[key] = t; return t; });
     }
+    // Several lines in one paragraph (a line break, or a list): each line on its
+    // own, so the lines stay; a list mark ("- ", "1. ") is kept as it is.
+    var lines = String(text).split("\n").filter(function (l) { return l.trim(); });
+    if (lines.length > 1) {
+      var seqL = Promise.resolve([]);
+      lines.forEach(function (l) { seqL = seqL.then(function (done) { return translate(l, from, to).then(function (t) { return done.concat(t); }); }); });
+      return seqL.then(function (list) { var t = list.join("\n"); cache[key] = t; return t; });
+    }
+    var mark = /^(\s*(?:[-*•–]|\d{1,3}[.)])\s+)([\s\S]*)$/.exec(String(text));
+    if (mark && mark[2].trim()) return translate(mark[2], from, to).then(function (t) { t = mark[1].replace(/^\s+/, "") + t; cache[key] = t; return t; });
     var chain = Promise.resolve([]);
     chunks(text).forEach(function (part) {
       chain = chain.then(function (done) {

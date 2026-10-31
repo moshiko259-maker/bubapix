@@ -60,6 +60,13 @@ module.exports = function createImages(root) {
       return null;
     }
     const rel = value.replace(/^\/+/, "");
+    // Only ordinary pictures: an SVG (or any other file) could carry a script
+    // that runs on the site when its link is opened. The admin panel accepts
+    // only these too (admin/config.yml, accept).
+    if (!/\.(jpe?g|png|webp|gif)$/i.test(rel)) {
+      warnings.push(`${where}: only JPEG, PNG, WebP or GIF pictures are used (${value})`);
+      return null;
+    }
     if (cache.has(rel)) return { ...cache.get(rel) };
     const file = path.join(root, rel);
     if (!file.startsWith(root + path.sep) || !fs.existsSync(file)) {

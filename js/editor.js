@@ -90,6 +90,7 @@
     textHint: "לחצו כדי לשנות את הטקסט",
     textEmptyBack: "הטקסט ריק, ולכן יוצג הטקסט הרגיל.",
     textNoEmpty: "השם לא יכול להיות ריק. השם הקודם הוחזר.",
+    taglineEmpty: "משפט הפתיחה לא יכול להיות ריק (אחרת יוצג במקומו המשפט בשפה השנייה). המשפט הקודם הוחזר.",
     servicesNote: "שמות השירותים והכותרת ״שירותים״ משתנים גם בדף השירותים ובתפריט. בשפת הדף בלבד.",
     posterSizeNote: "פוסטרים: גודל — לוחצים על פוסטר וגוררים נקודה כחולה (במחשב). סדר — גוררים פוסטר או חצים. הסדר הוא גם סדר הפרויקטים בעמוד הפרויקטים.",
     posterTouchNote: "פוסטרים: נוגעים בפוסטר כדי לבחור אותו, ואז ״→ קודם״ או ״הבא ←״ לשינוי הסדר. הסדר הוא גם סדר הפרויקטים בעמוד הפרויקטים. גודל: גוררים נקודה כחולה (לא בטלפון).",
@@ -201,6 +202,7 @@
     textHint: "Click to change the text",
     textEmptyBack: "The text is empty, so the usual text will show.",
     textNoEmpty: "The name cannot be empty. The previous name is back.",
+    taglineEmpty: "The opening sentence cannot be empty (the other language's sentence would show instead). The previous sentence is back.",
     servicesNote: "Service names and the \"Services\" heading also change on the services page and in the menu, in this language only.",
     posterSizeNote: "Posters: size — click a poster and drag a blue dot (on computers). Order — drag a poster or use the arrows. This is also the order of projects on the projects page.",
     posterTouchNote: "Posters: tap a poster to choose it, then \"← Earlier\" or \"Later →\" to change the order. This is also the order of projects on the projects page. Size: drag a blue dot (not on phones).",
@@ -703,7 +705,20 @@
         refreshStatus();
       });
       tagline.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); tagline.blur(); } });
-      tagline.addEventListener("blur", commit);
+      // An empty sentence is not kept: the site would show the other language's
+      // sentence (or none), and an empty one could not be clicked to write it again.
+      var taglineBefore = tagline.textContent.replace(/\s+/g, " ").trim();
+      tagline.addEventListener("focus", function () { if (data["tagline_" + lang]) taglineBefore = data["tagline_" + lang]; });
+      tagline.addEventListener("blur", function () {
+        if (!data["tagline_" + lang]) {
+          var back = taglineBefore || JSON.parse(original)["tagline_" + lang];
+          if (back) data["tagline_" + lang] = back; else delete data["tagline_" + lang];
+          tagline.textContent = back;
+          refreshStatus();
+          setStatus(T.taglineEmpty, "warn");
+        }
+        commit();
+      });
     }
     // In editing, clicking a picture must not leave the page.
     opening.addEventListener("click", function (e) {

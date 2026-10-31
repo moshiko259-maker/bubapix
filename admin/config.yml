@@ -136,6 +136,8 @@ collections:
       - name: cover
         label: "Cover image or poster / תמונת שער או פוסטר"
         widget: image
+        # Only ordinary pictures: an SVG file can carry a script that runs on the site.
+        accept: "image/jpeg,image/png,image/webp,image/gif"
         required: false
         hint: "Shown whole, never cropped. / מוצגת בשלמותה, בלי חיתוך."
       - name: cover_alt_en
@@ -217,7 +219,7 @@ collections:
                 summary: "{{fields.title_en}}"
                 hint: "Drag to change the order. / גררו לשינוי הסדר."
                 fields:
-                  - { name: image, label: "Image / תמונה", widget: image }
+                  - { name: image, label: "Image / תמונה", widget: image, accept: "image/jpeg,image/png,image/webp,image/gif" }
                   - { name: visible, label: "Show / להציג", widget: boolean, default: true, required: false, hint: "Off: kept, not shown on the page. / כבוי: נשמרת, לא מוצגת בדף." }
                   - { name: link, label: "Link when the picture is clicked (optional) / קישור בלחיצה על התמונה (רשות)", widget: string, required: false, pattern: ['^$|^https://|^/[a-z0-9/-]*$', "https://… or a site page like /shop/ / ‏https://… או עמוד באתר כמו /shop/"], hint: "Empty: the picture opens large. / ריק: התמונה נפתחת בגדול." }
                   - { name: alt_en, label: "Description for blind visitors, English / תיאור לעיוורים, אנגלית", widget: string, required: false }
@@ -408,7 +410,7 @@ collections:
         thumbnail: image
         hint: "The first photo is the main one. Drag to change the order. Real product photos are best. / התמונה הראשונה היא הראשית."
         fields:
-          - { name: image, label: "Photo / תמונה", widget: image }
+          - { name: image, label: "Photo / תמונה", widget: image, accept: "image/jpeg,image/png,image/webp,image/gif" }
           - { name: alt_en, label: "Description for blind visitors, English / תיאור לעיוורים, אנגלית", widget: string, required: false }
           - { name: alt_he, label: "Description for blind visitors, Hebrew / תיאור לעיוורים, עברית", widget: string, required: false }
       - name: card_fit
@@ -581,10 +583,10 @@ collections:
         file: content/site.json
         format: json
         fields:
-          - { name: hero_image, label: "Large opening image (optional) / תמונת פתיחה גדולה (לא חובה)", widget: image, required: false, hint: "Shown first, full width, never cropped. If it is also a project image, it is shown only once. / מוצגת ראשונה ברוחב מלא. אם היא גם תמונה של פרויקט, תוצג פעם אחת בלבד." }
+          - { name: hero_image, label: "Large opening image (optional) / תמונת פתיחה גדולה (לא חובה)", widget: image, accept: "image/jpeg,image/png,image/webp,image/gif", required: false, hint: "Shown first, full width, never cropped. If it is also a project image, it is shown only once. / מוצגת ראשונה ברוחב מלא. אם היא גם תמונה של פרויקט, תוצג פעם אחת בלבד." }
           - { name: hero_alt_en, label: "Main image description, English / תיאור התמונה באנגלית", widget: string, required: false }
           - { name: hero_alt_he, label: "Main image description, Hebrew / תיאור התמונה בעברית", widget: string, required: false }
-          - { name: feature_image, label: "Second opening picture, framed under the opening image (optional) / תמונת פתיחה שנייה, במסגרת מתחת לתמונת הפתיחה (רשות)", widget: image, required: false, hint: "Shown centred in a frame, with the opening sentence under it. Empty: not shown. It is not repeated in the gallery. / מוצגת במרכז במסגרת, ומשפט הפתיחה מתחתיה. ריק: לא מוצגת. לא חוזרת בגלריה." }
+          - { name: feature_image, label: "Second opening picture, framed under the opening image (optional) / תמונת פתיחה שנייה, במסגרת מתחת לתמונת הפתיחה (רשות)", widget: image, accept: "image/jpeg,image/png,image/webp,image/gif", required: false, hint: "Shown centred in a frame, with the opening sentence under it. Empty: not shown. It is not repeated in the gallery. / מוצגת במרכז במסגרת, ומשפט הפתיחה מתחתיה. ריק: לא מוצגת. לא חוזרת בגלריה." }
           - { name: feature_alt_en, label: "Second opening picture description, English / תיאור התמונה השנייה, אנגלית", widget: string, required: false }
           - { name: feature_alt_he, label: "Second opening picture description, Hebrew / תיאור התמונה השנייה, עברית", widget: string, required: false }
           - name: feature_size
@@ -651,7 +653,7 @@ collections:
             summary: "{{fields.alt_en}}"
             hint: "Pictures shown on the homepage. Choose a project to make the picture open that project's page; leave it empty for a picture to look at only. Drag to change the order. Turn off 'Show' to hide one without deleting it. / תמונות בדף הבית. בחרו פרויקט כדי שלחיצה על התמונה תפתח את דף הפרויקט; בלי פרויקט — תמונה לתצוגה בלבד. גררו לשינוי הסדר."
             fields:
-              - { name: image, label: "Image / תמונה", widget: image }
+              - { name: image, label: "Image / תמונה", widget: image, accept: "image/jpeg,image/png,image/webp,image/gif" }
               - { name: visible, label: "Show / להציג", widget: boolean, default: true, required: false }
               - name: size
                 label: "Size on the homepage / גודל בדף הבית"
@@ -766,7 +768,7 @@ collections:
               - { name: name_he, label: "Name, Hebrew / שם, עברית", widget: string, required: false }
               - { name: name_en, label: "Name, English / שם, אנגלית", widget: string }
               - { name: slug, label: "Short ID in English letters (a-z and dashes, e.g. mugs) / מזהה קצר באותיות אנגליות (למשל mugs)", widget: string, pattern: ['^[a-z0-9][a-z0-9-]*$', "Use a-z, 0-9 and dashes"] }
-              - { name: image, label: "Category picture (optional) / תמונה לקטגוריה (רשות)", widget: image, required: false }
+              - { name: image, label: "Category picture (optional) / תמונה לקטגוריה (רשות)", widget: image, accept: "image/jpeg,image/png,image/webp,image/gif", required: false }
               - { name: show_when_empty, label: "Show before it has products (\"coming soon\") / להציג גם לפני שיש מוצרים (״בקרוב״)", widget: boolean, default: false, required: false }
               - name: parent
                 label: "Main category (only for a subcategory) / קטגוריה ראשית (רק לתת־קטגוריה)"
@@ -995,7 +997,7 @@ collections:
               - { name: role_he, label: "Role, Hebrew / תפקיד בעברית", widget: string, required: false }
               - { name: bio_en, label: "Short bio, English / תיאור קצר באנגלית", widget: text, required: false }
               - { name: bio_he, label: "Short bio, Hebrew / תיאור קצר בעברית", widget: text, required: false }
-              - { name: photo, label: "Photo / תמונה", widget: image, required: false }
+              - { name: photo, label: "Photo / תמונה", widget: image, accept: "image/jpeg,image/png,image/webp,image/gif", required: false }
 
       - name: contact
         label: "Contact page / עמוד יצירת קשר"
