@@ -1170,6 +1170,17 @@ function privacy(ctx) {
   const items = [...t.privacy.items];
   if (data.participation.ratings) items.splice(5, 0, t.privacy.ratings);
   if (!data.analytics) items.splice(items.length - 1, 0, t.privacy.noAnalytics);
+  // Who is responsible and where orders and messages go (the addresses from content/contact.json).
+  const mails = [data.contact.email, data.contact.email2].filter(Boolean);
+  // An address in the text: a mail link, left-to-right inside Hebrew.
+  const mailLinks = (html) => mails.reduce((h, m) => h.split(e(m)).join(`<a class="text-link" href="mailto:${e(m)}" dir="ltr">${e(m)}</a>`), html);
+  if (mails.length) {
+    const list = mails.length > 1 ? `${mails.slice(0, -1).join(", ")}${t.privacy.and}${mails[mails.length - 1]}` : mails[0];
+    const gmail = mails.find((m) => /@gmail\.com$/i.test(m));
+    const where = items.indexOf(t.privacy.items[5]);
+    items.splice(where + 1, 0, t.privacy.mail.replace("{emails}", list) + (gmail ? " " + t.privacy.gmail.replace("{gmail}", gmail) : ""));
+    items.unshift(t.privacy.owner.replace("{emails}", list));
+  }
   return layout(ctx, {
     title: pageTitle(ctx, t.privacy.title),
     description: t.privacy.items[0],
@@ -1179,7 +1190,7 @@ function privacy(ctx) {
       <header class="page-head"><h1 class="page-title">${e(t.privacy.title)}</h1></header>
       <div class="prose prose-large">
         <ul>${items.map((x) => `
-          <li>${e(x)}</li>`).join("")}
+          <li>${mailLinks(e(x))}</li>`).join("")}
         </ul>
         <p><a class="text-link" href="${makeLink(ctx)("contact/")}">${e(t.consult.title)}</a></p>
       </div>

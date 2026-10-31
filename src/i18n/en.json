@@ -146,6 +146,7 @@
   },
   "privacy": {
     "title": "Privacy",
+    "owner": "Who is responsible for the information (the data controllers): Moses Appleboim and Dan Moskona. To contact us: {emails}.",
     "items": [
       "What we collect: in the site's forms, the display name you choose, your message, and your email address if you give it. For a shop order, what is in the email sent from your own email app (name, items, notes and your email address).",
       "Why: to review and answer your message and to handle your order. Comments and questions, and ideas you allow us to share, are published with your display name only, after review. Private consultations are never published.",
@@ -157,7 +158,10 @@
       "Your rights: to see the information kept about you, and to ask us to correct or delete it. Write to us through the private consultation form or by email."
     ],
     "ratings": "Ratings are anonymous: only a one-way coded form is kept, to allow one rating per project.",
-    "noAnalytics": "The site has no tracking cookies and no traffic-analysis tools."
+    "noAnalytics": "The site has no tracking cookies and no traffic-analysis tools.",
+    "mail": "Where orders and messages go: a shop order is sent from your own email app to our mailboxes, {emails}. When someone writes through the site's forms, we get an email saying so, without your name, message or email address.",
+    "gmail": "The {gmail} mailbox is a Google Gmail mailbox.",
+    "and": " and "
   },
   "viewer": {
     "label": "Image viewer",
