@@ -346,7 +346,9 @@
   var data = null, sha = "", original = "";
   var projects = []; // { slug, name } from content/projects, for the owner's own choice
   // A poster's "Title and text" (kept in the project's file; cap: the fields, origCap: as loaded).
-  var CAP_KEYS = ["poster_title_he", "poster_title_en", "poster_note_he", "poster_note_en", "poster_caption"];
+  // The poster's title and text, and its description for blind visitors (the
+  // project's cover_alt_*, the same picture).
+  var CAP_KEYS = ["poster_title_he", "poster_title_en", "poster_note_he", "poster_note_en", "poster_caption", "cover_alt_he", "cover_alt_en"];
   function capOf(d) { var c = {}; CAP_KEYS.forEach(function (k) { c[k] = d && typeof d[k] === "string" ? d[k] : ""; }); return c; }
   var pageAdds = {}; // project slug -> pictures to add to that project's page gallery
   var hasPageAdds = function () { return Object.keys(pageAdds).some(function (k) { return pageAdds[k].length; }); };
@@ -855,7 +857,7 @@
       pe.tools.appendChild(button(T.prevBtn, function () { movePoster(slug, -1); }, "pe-btn pe-move", T.earlier));
       pe.tools.appendChild(el("span", { "class": "pe-tools-label", text: displayName(p) }));
       pe.tools.appendChild(button(T.posterReplace, function () {
-        pick(function (path, alts) { p.cover = { path: path, alts: alts }; changed(); syncPage(); }, "", { noProject: true, note: T.posterNote });
+        pick(function (path, alts) { p.cover = { path: path, alts: alts }; if (!p.cap) p.cap = capOf(null); p.cap.cover_alt_he = alts.he || ""; p.cap.cover_alt_en = alts.en || ""; changed(); syncPage(); }, "", { noProject: true, note: T.posterNote });
       }));
       pe.tools.appendChild(p.in_posters === false
         ? button(T.posterShow, function () { p.in_posters = true; changed(); syncPage(); })
@@ -866,6 +868,11 @@
       pe.tools.appendChild(button(T.caption, function () {
         core.captionDialog(T, p.cap, lang, [["hidden", T.capHidden], ["everywhere", T.capPoster]], function () { changed(); syncPage(); }, "poster_");
       }, "pe-btn pe-caption-btn"));
+      pe.tools.appendChild(button(T.describe, function () {
+        core.describe(T, p.cap.cover_alt_he, p.cap.cover_alt_en, function (alts) { p.cap.cover_alt_he = alts.he; p.cap.cover_alt_en = alts.en; changed(); syncPage(); });
+      }, "pe-btn pe-describe-btn"));
+      Array.prototype.forEach.call(pe.el.querySelectorAll(".pe-missing"), function (n) { n.remove(); });
+      if (!p.cap["cover_alt_" + lang]) pe.el.appendChild(el("span", { "class": "pe-missing", text: T.noAlt }));
       // The caption the page was built with is replaced by the one being edited.
       Array.prototype.forEach.call(pe.el.querySelectorAll(".jg-caption"), function (n) { n.remove(); });
       var pt = p.cap["poster_title_" + lang] || "", pn = p.cap["poster_note_" + lang] || "";
@@ -1361,7 +1368,7 @@
         if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) { msg.textContent = T.errAddress; return; }
         if (projects.some(function (p) { return p.slug === slug; })) { msg.textContent = T.errTaken; return; }
         var maxOrder = projects.reduce(function (m, p) { return Math.max(m, p.order || 0); }, 0);
-        projects.push({ slug: slug, isNew: true, title_he: nHe.value.trim(), title_en: nEn.value.trim(), orig_he: "", orig_en: "", order: maxOrder + 1, cover: cover, cap: capOf(null), origCap: JSON.stringify(capOf(null)) });
+        projects.push({ slug: slug, isNew: true, title_he: nHe.value.trim(), title_en: nEn.value.trim(), orig_he: "", orig_en: "", order: maxOrder + 1, cover: cover, cap: capOf(cover ? { cover_alt_he: cover.alts.he || "", cover_alt_en: cover.alts.en || "" } : null), origCap: JSON.stringify(capOf(null)) });
         nHe.value = ""; nEn.value = ""; nSlug.value = ""; slugTouched = false; cover = null; coverInfo.textContent = "";
         msg.textContent = T.created;
         drawList(); commit(); refreshStatus(); render();
@@ -1523,7 +1530,7 @@
     if (textsOrig && sentTexts.services && JSON.stringify(sentTexts.services) !== JSON.stringify(origTexts.services)) files.push({ path: "content/services.json", sha: servicesSha, text: JSON.stringify(sentTexts.services, null, 2) + "\n", message: "Services: names edited on the homepage", saved: function (v) { servicesSha = v; setOrig("services"); } });
     // Existing projects changed here: only their names and poster fields change; everything else in the file is kept.
     renamed().forEach(function (p) {
-      var f = posterFields(p), origOrder = p.orig_order;
+      var f = posterFields(p), origOrder = p.orig_order, origCap = JSON.parse(p.origCap || "{}");
       files.push({
         path: "content/projects/" + p.slug + ".json",
         merge: function (d) {
@@ -1533,7 +1540,12 @@
           if (f.order !== origOrder) d.order = f.order;
           if (f.poster_w) d.poster_w = f.poster_w; else delete d.poster_w;
           // The poster's title and text: written only when there is one (or there was one).
-          CAP_KEYS.forEach(function (k) { if (f.cap[k] && f.cap[k] !== "hidden") d[k] = f.cap[k]; else if (k in d) d[k] = k === "poster_caption" ? "hidden" : ""; });
+          CAP_KEYS.forEach(function (k) {
+            // The description is written only when changed here (the project's
+            // own page edits it too).
+            if (/^cover_alt_/.test(k)) { if (f.cap[k] !== (origCap[k] || "")) d[k] = f.cap[k]; return; }
+            if (f.cap[k] && f.cap[k] !== "hidden") d[k] = f.cap[k]; else if (k in d) d[k] = k === "poster_caption" ? "hidden" : "";
+          });
           return d;
         },
         message: "Project " + p.slug + ": changed on the homepage (name, poster, order or poster size)",

@@ -937,7 +937,7 @@ outputs.set("robots.txt", `User-agent: *\nDisallow: ${sitePath}admin/\n\nSitemap
     if (outputs.has(rel) || !/^(he\/)?((work|services|about|testimonials|contact|ideas|privacy|accessibility|shop|pages)\/.*)?index\.html$/.test(rel)) continue;
     const full = path.join(root, rel);
     fs.mkdirSync(path.dirname(full), { recursive: true });
-    fs.writeFileSync(full, render.notFound(site, t.en, t.he, preview));
+    fs.writeFileSync(full, render.notFound(site, t.en, t.he, preview, "../".repeat(rel.split("/").length - 1)));
     outputs.set(rel, null); // keep it in the list
     retired++;
   }

@@ -77,6 +77,9 @@ function ratioClass(im) {
 // caption: { title, note } or null. lead: shown alone, full width.
 // Address for a picture's own link (see build.js picture()).
 const linkOf = (ctx, ln) => (ln.external ? e(ln.href) : makeLink(ctx)(ln.path));
+// A Hebrew-only name on an English page (a project without an English name):
+// marked as Hebrew, so a screen reader reads it with a Hebrew voice.
+const heLang = (ctx, text) => (ctx.lang !== "he" && /[\u0590-\u05FF]/.test(String(text || "")) && !/[A-Za-z]/.test(String(text || "")) ? ' lang="he"' : "");
 
 // eager: the main picture of the first screen (loaded first). soon: also on the
 // first screen, loaded at once (never "lazy", which delays the first view).
@@ -86,7 +89,7 @@ function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = fa
   const sz = sizes || (isLead ? FULL : "(max-width: 560px) 92vw, (max-width: 1100px) 46vw, 40vw");
   const picture = `<span class="jg-media">${img(ctx, im, { sizes: sz, attrs: eager ? 'fetchpriority="high" decoding="async"' : soon ? 'decoding="async"' : 'loading="lazy" decoding="async"' })}</span>`;
   const capInner = caption && (caption.title || caption.note)
-    ? `${caption.title ? `<span class="jg-title">${e(caption.title)}</span>` : ""}${caption.note ? `<span class="jg-note">${e(caption.note)}</span>` : ""}`
+    ? `${caption.title ? `<span class="jg-title"${heLang(ctx, caption.title)}>${e(caption.title)}</span>` : ""}${caption.note ? `<span class="jg-note">${e(caption.note)}</span>` : ""}`
     : "";
   const framed = FRAMES[im.frame] ? ` fit-cover focus-${im.focus || "center"}` : "";
   const classes = `jg-item ${cls}${isLead ? " is-lead" : ""}${framed}${extraClass ? " " + extraClass : ""}`;
@@ -737,6 +740,7 @@ function work(ctx) {
       // The cover's own title and text when the owner chose to show them here; otherwise the project's name if chosen.
       caption: p.coverCaption && ["work", "both"].includes(p.coverCaption.where) ? p.coverCaption : p.titleInGallery ? { title: p.name, note: p.categories.map((c) => c.name).join(", ") } : null,
       extraClass: free ? free.classes[i] : "",
+      sizes: free ? free.sizes[i] : undefined,
     }).replace(/<a class="jg-item/, `<a data-categories="${e(p.categories.map((c) => c.slug).join(" "))}" class="jg-item`)
   );
   const grid = !items.length
@@ -796,7 +800,11 @@ function freeClasses(list) {
     row.push(i); sum += f;
   });
   if (row.length) rows.push(row);
-  const classes = [];
+  const classes = [], sizes = [];
+  // How wide the picture is shown, so the browser picks a large enough file:
+  // phones one under the other (92vw); computers its share of the page
+  // (92vw up to 1440px, then 1328px, as FULL).
+  const sizeOf = (part) => part >= 1 ? FULL : `(max-width: 700px) 92vw, (max-width: 1440px) ${Math.ceil(92 * part)}vw, ${Math.ceil(1328 * part)}px`;
   for (const r of rows) {
     const f = r.map((i) => list[i].fw || 33);
     if (r.length === 1) {
@@ -804,6 +812,10 @@ function freeClasses(list) {
       const cls = `fs-${w}`;
       freeRules.set(cls, `.mrow>.${cls}{flex:none!important;width:${w}%;margin-inline:auto}`);
       classes[r[0]] = cls;
+      // An upright picture alone in its row is also limited by the screen
+      // height (80vh, see build.js); its width is then at most that.
+      const ar = ratioClass(list[r[0]]).ratio;
+      sizes[r[0]] = ar < 1.3 && w >= 50 ? `(max-width: 700px) 92vw, ${Math.ceil(80 * ar)}vh` : sizeOf(w / 100);
       continue;
     }
     const total = f.reduce((a, b) => a + b, 0);
@@ -814,15 +826,17 @@ function freeClasses(list) {
       const cls = `fr-${grow}-${String(ar).replace(".", "_")}`;
       freeRules.set(cls, `.mrow>.${cls}{flex:${grow} 1 0!important;min-width:0}.mrow>.${cls} .jg-media{aspect-ratio:${ar}}.mrow>.${cls} .jg-media img{object-fit:cover}`);
       classes[i] = cls;
+      sizes[i] = sizeOf(share[k]);
     });
   }
-  return { rows, classes };
+  return { rows, classes, sizes };
 }
 
 // Pictures inside a project page: open in the image viewer.
 function projectPictures(ctx, list) {
-  const item = (im, extraClass = "") =>
+  const item = (im, extraClass = "", sizes) =>
     galleryItem(ctx, im, {
+      sizes,
       href: im.link ? linkOf(ctx, im.link) : ctx.assetBase + e(im.full || im.src),
       label: im.link ? im.alt : `${ctx.t.work.openImage}: ${im.alt}`,
       caption: im.caption !== "hidden" ? { title: im.title, note: im.note } : null,
@@ -831,9 +845,9 @@ function projectPictures(ctx, list) {
       extraClass,
     });
   if (list.some((im) => im.fw)) {
-    const { rows, classes } = freeClasses(list);
+    const { rows, classes, sizes } = freeClasses(list);
     return `<div class="jg-project jg-free">
-        ${rows.map((r) => `<div class="mrow n${r.length}">${r.map((i) => item(list[i], classes[i])).join("")}</div>`).join("\n        ")}
+        ${rows.map((r) => `<div class="mrow n${r.length}">${r.map((i) => item(list[i], classes[i], sizes[i])).join("")}</div>`).join("\n        ")}
       </div>`;
   }
   return gallery(list.map((im) => item(im)), "jg-project");
@@ -989,7 +1003,7 @@ function project(ctx, p, prev, next) {
     : "";
   const community = (data.participation.comments && p.comments) || data.participation.ratings ? communitySection(ctx, p) : "";
   const pagerLink = (q, cls, label) =>
-    q ? `<a class="${cls}" href="${link(`work/${q.slug}/`)}"><span>${e(label)}</span>${q.name ? e(q.name) : ""}</a>` : "<span></span>";
+    q ? `<a class="${cls}" href="${link(`work/${q.slug}/`)}"><span>${e(label)}</span>${q.name ? `<span${heLang(ctx, q.name)}>${e(q.name)}</span>` : ""}</a>` : "<span></span>";
   return layout(ctx, {
     edits: [[t.edit.thisProject, ed.project(p.slug)], ...(ctx.data.participation.comments ? [[t.edit.comments, "", true]] : []), [t.edit.newProject, ed.newProject]],
     title: p.seoTitle || pageTitle(ctx, p.title),
@@ -1003,7 +1017,7 @@ function project(ctx, p, prev, next) {
     <article class="page project" data-slug="${e(p.slug)}">
       <header class="page-head">
         <p class="crumb"><a href="${link("work/")}">${e(t.work.back)}</a></p>
-        <h1 class="${p.showTitle ? "page-title" : "visually-hidden"}" data-project-title data-ts="project/title">${e(p.title)}</h1>${cats ? `
+        <h1 class="${p.showTitle ? "page-title" : "visually-hidden"}"${heLang(ctx, p.title)} data-project-title data-ts="project/title">${e(p.title)}</h1>${cats ? `
         <p class="project-meta">${e(cats)}</p>` : ""}${p.text ? `
         <p class="lede" data-ts="project/lede">${e(p.text)}</p>` : ""}
       </header>${cover}${synopsis}${p.sections.map((sec, i) => projectSection(ctx, p, sec, i)).join("")}${p.products && p.products.length ? `
@@ -1537,24 +1551,29 @@ function customPage(ctx, p) {
 
 // One bilingual 404 page for GitHub Pages. Its address is unknown in
 // advance, so it links with full addresses.
-function notFound(site, en, he, preview) {
+function notFound(site, en, he, preview, up = null) {
   const file = preview ? "index.html" : "";
   // The live site knows its address. A preview copy (the test site) is
-  // served from another address, so there the page finds the site's root
-  // from where it is opened (github.io project sites live under /<name>/).
-  const root = preview ? "" : site.url;
-  const base = preview
-    ? `\n  <script>(function(){var p=location.pathname.split("/"),b=/\\.github\\.io$/.test(location.hostname)&&p.length>2?"/"+p[1]+"/":"/";document.write('<base href="'+b+'">');})();</script>`
-    : "";
+  // served from another address:
+  // - a page that is no longer produced (up = "../" or "../../") sits at a
+  //   known place, so plain relative links work;
+  // - 404.html answers for any address, so the page finds the site's root
+  //   from where it is opened (github.io project sites live under /<name>/)
+  //   and writes the stylesheet links itself, after <base>. Written as plain
+  //   <link> tags, the browser would fetch them early at the wrong address.
+  const known = preview && up !== null;
+  const root = !preview ? site.url : known ? up : "";
+  const sheets = `<link rel="stylesheet" href="${root}css/fonts.css">\n  <link rel="stylesheet" href="${root}css/styles.css">`;
+  const head = preview && !known
+    ? `\n  <script>(function(){var p=location.pathname.split("/"),b=/\\.github\\.io$/.test(location.hostname)&&p.length>2?"/"+p[1]+"/":"/";document.write('<base href="'+b+'"><link rel="stylesheet" href="css/fonts.css"><link rel="stylesheet" href="css/styles.css">');})();</script>`
+    : `\n  ${sheets}`;
   return `<!doctype html>
 <html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>${e(en.notFound.title)} — BubaPix</title>${base}
-  <link rel="stylesheet" href="${root}css/fonts.css">
-  <link rel="stylesheet" href="${root}css/styles.css">
+  <title>${e(en.notFound.title)} — BubaPix</title>${head}
 </head>
 <body>
   <main class="page not-found">
