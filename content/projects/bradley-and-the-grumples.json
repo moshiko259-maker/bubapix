@@ -16,6 +16,51 @@
   "description_he": "",
   "sections": [
     {
+      "type": "gallery",
+      "hidden": false,
+      "heading_en": "",
+      "heading_he": "",
+      "images": [
+        {
+          "image": "/assets/uploads/imhq2maqb3bma.webp",
+          "visible": true,
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        }
+      ]
+    },
+    {
+      "type": "gallery",
+      "hidden": false,
+      "heading_en": "",
+      "heading_he": "",
+      "images": []
+    },
+    {
+      "type": "videos",
+      "hidden": false,
+      "heading_en": "",
+      "heading_he": "",
+      "items": [
+        {
+          "url": "",
+          "file": "/assets/uploads/imhq2maqb3bma.webp",
+          "shape": "wide",
+          "title_en": "",
+          "title_he": ""
+        }
+      ]
+    },
+    {
       "type": "videos",
       "hidden": false,
       "heading_en": "Trailer",
