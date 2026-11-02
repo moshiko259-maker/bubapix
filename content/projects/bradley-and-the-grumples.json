@@ -1,22 +1,58 @@
 {
   "title_en": "BRADLEY & THE GRUMPLES",
   "title_he": "",
+  "show_title": true,
   "visible": true,
+  "in_posters": true,
   "featured": true,
   "order": 2,
-  "categories": [],
+  "title_in_gallery": false,
+  "cover": "/assets/work/bradley-poster.png",
+  "cover_alt_en": "",
+  "cover_alt_he": "",
   "text_en": "",
   "text_he": "",
   "description_en": "",
   "description_he": "",
-  "cover": "/assets/work/bradley-poster.png",
-  "cover_alt_en": "Poster of Bradley & the Grumples: The First Adventure. The orange character steers a sailboat full of white furry creatures.",
-  "cover_alt_he": "הפוסטר של Bradley & the Grumples: The First Adventure. הדמות הכתומה מנווטת סירת מפרש מלאה ביצורים לבנים ופרוותיים.",
-  "video_url": "",
-  "video_file": "",
-  "gallery": [],
-  "details": [],
   "sections": [
+    {
+      "type": "gallery",
+      "hidden": false,
+      "heading_en": "",
+      "heading_he": "",
+      "images": [
+        {
+          "image": "/assets/uploads/imhq2maqb3bma.webp",
+          "visible": true,
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        }
+      ]
+    },
+    {
+      "type": "videos",
+      "hidden": false,
+      "heading_en": "",
+      "heading_he": "",
+      "items": [
+        {
+          "url": "",
+          "file": "/assets/uploads/imhq2maqb3bma.webp",
+          "shape": "wide",
+          "title_en": "",
+          "title_he": ""
+        }
+      ]
+    },
     {
       "type": "videos",
       "hidden": false,
@@ -26,23 +62,23 @@
         {
           "url": "https://youtu.be/cfV7IpP0a0U?si=cHbJPLS08ges6VLy",
           "file": "",
+          "shape": "wide",
           "title_en": "Introductory video",
-          "title_he": "סרטון היכרות",
-          "shape": "wide"
+          "title_he": "סרטון היכרות"
         },
         {
           "url": "https://youtu.be/c6adxUq3p1U?si=2viU5pA2Q1o7voC4",
           "file": "",
+          "shape": "wide",
           "title_en": "",
-          "title_he": "",
-          "shape": "wide"
+          "title_he": ""
         },
         {
           "url": "https://youtu.be/0wZFQQS31kk?si=1n6DEFKbUlBUqaGY",
           "file": "",
+          "shape": "wide",
           "title_en": "",
-          "title_he": "",
-          "shape": "wide"
+          "title_he": ""
         }
       ]
     },
@@ -54,6 +90,7 @@
       "images": [
         {
           "image": "/assets/work/bradley-turnaround.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Turnaround of the orange character in a light blue shirt and boots: front, three-quarter, side and back.",
           "alt_he": "סיבוב דמות של הדמות הכתומה בחולצה ובמגפיים תכולים: חזית, שלושה רבעים, צד וגב.",
@@ -69,6 +106,7 @@
         },
         {
           "image": "/assets/work/white-creatures-swimming.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "White furry creatures swim and pull a rope tied to a sailboat with the orange character, an island behind them.",
           "alt_he": "יצורים לבנים ופרוותיים שוחים ומושכים חבל הקשור לסירת מפרש עם הדמות הכתומה, ואי מאחוריהם.",
@@ -84,6 +122,7 @@
         },
         {
           "image": "/assets/work/white-bow-creature-turnaround.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Turnaround of a long-haired white furry creature with a pink bow: front, three-quarter, side and back.",
           "alt_he": "סיבוב דמות של יצור לבן ופרוותי בעל שיער ארוך וסרט ורוד: חזית, שלושה רבעים, צד וגב.",
@@ -99,6 +138,7 @@
         },
         {
           "image": "/assets/work/white-creatures-rope.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Furry creatures, one with wings, tow a sailboat with the orange character toward an island village.",
           "alt_he": "יצורים פרוותיים, אחד מהם מכונף, גוררים סירת מפרש עם הדמות הכתומה לעבר כפר על אי.",
@@ -114,6 +154,7 @@
         },
         {
           "image": "/assets/work/pink-creature-speech-bubbles.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Turnaround of a pink furry creature with a bow, with two speech bubbles of a joke.",
           "alt_he": "סיבוב דמות של יצור ורוד ופרוותי עם סרט, ושתי בועות דיבור עם בדיחה.",
@@ -129,6 +170,7 @@
         },
         {
           "image": "/assets/work/grumpy-white-creature-views.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Four views of a round, frowning white furry creature.",
           "alt_he": "ארבע זוויות של יצור לבן, עגול ופרוותי עם גבות זועפות.",
@@ -144,6 +186,7 @@
         },
         {
           "image": "/assets/work/pink-bow-creature-turnaround.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Turnaround of a light pink long-haired furry creature with a pink bow.",
           "alt_he": "סיבוב דמות של יצור ורוד־בהיר ופרוותי בעל שיער ארוך וסרט ורוד.",
@@ -159,6 +202,7 @@
         },
         {
           "image": "/assets/work/mohawk-creature-sheet.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Character reference sheet of a one-eyed white furry creature with a purple and blue mohawk.",
           "alt_he": "דף דמות של יצור לבן ופרוותי בעל עין אחת ותספורת מוהוק סגולה וכחולה.",
@@ -174,6 +218,7 @@
         },
         {
           "image": "/assets/work/sphere-creature-sheet.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Character reference sheet of a round white furry creature with sleepy eyes.",
           "alt_he": "דף דמות של יצור לבן, עגול ופרוותי בעיניים מנומנמות.",
@@ -189,6 +234,7 @@
         },
         {
           "image": "/assets/work/bradley-expressions.png",
+          "visible": true,
           "link": "",
           "alt_en": "Expression sheet of the orange character: sad, surprised, happy, angry, laughing, scared and more.",
           "alt_he": "דף הבעות של הדמות הכתומה: עצוב, מופתע, שמח, כועס, צוחק, מפוחד ועוד.",
@@ -204,6 +250,7 @@
         },
         {
           "image": "/assets/work/scientist-creature-turnaround.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Turnaround of a white furry creature in a lab coat with goggles.",
           "alt_he": "סיבוב דמות של יצור לבן ופרוותי בחלוק מעבדה ובמשקפי מגן.",
@@ -219,6 +266,7 @@
         },
         {
           "image": "/assets/work/pilot-creature-sheet.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Character sheet of a white furry creature in a pilot's cap with goggles and a wings pin.",
           "alt_he": "דף דמות של יצור לבן ופרוותי בכובע טייס, משקפי טיסה וסיכת כנפיים.",
@@ -234,6 +282,7 @@
         },
         {
           "image": "/assets/work/glasses-creature-sheet.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Character sheet of a white furry creature with round glasses holding a flask.",
           "alt_he": "דף דמות של יצור לבן ופרוותי במשקפיים עגולים, מחזיק מבחנה.",
@@ -249,6 +298,7 @@
         },
         {
           "image": "/assets/work/bradley-sailing-vertical.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "The orange character sails a small boat toward an island village.",
           "alt_he": "הדמות הכתומה שטה בסירה קטנה לעבר כפר על אי.",
@@ -264,6 +314,7 @@
         },
         {
           "image": "/assets/work/bradley-poster-2.png",
+          "visible": true,
           "link": "",
           "alt_en": "Second poster of Bradley & the Grumples: The First Adventure, with a coastal town behind the boat.",
           "alt_he": "פוסטר שני של Bradley & the Grumples: The First Adventure, ועיירת חוף מאחורי הסירה.",
@@ -279,6 +330,7 @@
         },
         {
           "image": "/assets/work/creatures-around-boat.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Many white furry creatures on surfboards, floats and rafts around the orange character's sailboat.",
           "alt_he": "יצורים לבנים ופרוותיים רבים על גלשנים, מצופים ורפסודות סביב סירת המפרש של הדמות הכתומה.",
@@ -294,6 +346,7 @@
         },
         {
           "image": "/assets/work/grumpy-gray-trio.png",
+          "visible": true,
           "link": "",
           "alt_en": "Three grumpy gray furry creatures: one in a wooden crown, one in a chef's hat, one in a guard vest.",
           "alt_he": "שלושה יצורים אפורים ופרוותיים זועפים: אחד בכתר עץ, אחד בכובע שף ואחד באפוד שומר.",
@@ -309,6 +362,7 @@
         },
         {
           "image": "/assets/work/creatures-pull-boat-beach.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Laughing white furry creatures on a beach pull the orange character's boat ashore.",
           "alt_he": "יצורים לבנים ופרוותיים צוחקים על החוף ומושכים את הסירה של הדמות הכתומה אל היבשה.",
@@ -324,6 +378,7 @@
         },
         {
           "image": "/assets/work/creatures-pull-boat-rocks.png",
+          "visible": true,
           "link": "",
           "alt_en": "White and pink furry creatures, one in a diving helmet, pull a rope tied to the boat near rocky cliffs.",
           "alt_he": "יצורים לבנים וורודים ופרוותיים, אחד בקסדת צלילה, מושכים חבל הקשור לסירה ליד צוקים.",
@@ -339,6 +394,7 @@
         },
         {
           "image": "/assets/work/chef-creature-turnaround.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Turnaround of a white furry creature in a chef's hat holding a rolling pin.",
           "alt_he": "סיבוב דמות של יצור לבן ופרוותי בכובע שף, מחזיק מערוך.",
@@ -354,6 +410,7 @@
         },
         {
           "image": "/assets/work/star-glasses-creature-turnaround.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Turnaround of a white furry creature in yellow star-shaped glasses.",
           "alt_he": "סיבוב דמות של יצור לבן ופרוותי במשקפי כוכב צהובים.",
@@ -369,6 +426,7 @@
         },
         {
           "image": "/assets/work/swimsuit-creature-sheet.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Character sheet of a white furry creature with a pink flower and a flowered swimsuit.",
           "alt_he": "דף דמות של יצור לבן ופרוותי עם פרח ורוד ובגד ים פרחוני.",
@@ -384,6 +442,7 @@
         },
         {
           "image": "/assets/work/teacher-creature-sheet.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Character sheet of a white furry creature with glasses holding a book: front, back, three-quarter and side.",
           "alt_he": "דף דמות של יצור לבן ופרוותי במשקפיים, מחזיק ספר: חזית, גב, שלושה רבעים וצד.",
@@ -399,6 +458,7 @@
         },
         {
           "image": "/assets/work/beanie-creature-sheet.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Character sheet of a white furry creature in a knitted beanie and teal glasses.",
           "alt_he": "דף דמות של יצור לבן ופרוותי בכובע גרב סרוג ומשקפיים בצבע טורקיז.",
@@ -414,6 +474,7 @@
         },
         {
           "image": "/assets/work/grumples-village.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "The furry creatures' village: domed houses among flowers and trees, the sea behind.",
           "alt_he": "הכפר של היצורים הפרוותיים: בתי כיפה בין פרחים ועצים, והים מאחור.",
@@ -429,6 +490,7 @@
         },
         {
           "image": "/assets/work/flute-creature-turnaround.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Turnaround of a white furry creature playing a flute.",
           "alt_he": "סיבוב דמות של יצור לבן ופרוותי מנגן בחליל.",
@@ -444,6 +506,7 @@
         },
         {
           "image": "/assets/work/meditating-creature-sheet.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Character sheet of a frowning white furry creature meditating with prayer beads.",
           "alt_he": "דף דמות של יצור לבן ופרוותי זועף, יושב במדיטציה עם מחרוזת.",
@@ -459,6 +522,7 @@
         },
         {
           "image": "/assets/work/spherical-creature-sheet.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Character reference sheet of a spherical white furry creature: front, three-quarter, side and back.",
           "alt_he": "דף דמות של יצור לבן ופרוותי כדורי: חזית, שלושה רבעים, צד וגב.",
@@ -474,6 +538,7 @@
         },
         {
           "image": "/assets/work/astronaut-creature-sheet.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Reference sheet of a furry creature in an astronaut suit, from four angles.",
           "alt_he": "דף דמות של יצור פרוותי בחליפת אסטרונאוט, מארבע זוויות.",
@@ -489,6 +554,7 @@
         },
         {
           "image": "/assets/work/scientist-creature-microscope-sheet.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Reference sheet of a white furry scientist in a lab coat, with a microscope.",
           "alt_he": "דף דמות של מדען לבן ופרוותי בחלוק מעבדה, עם מיקרוסקופ.",
@@ -504,6 +570,7 @@
         },
         {
           "image": "/assets/work/tambourine-creature-turnaround.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Turnaround of a white furry creature in black glasses with a tambourine.",
           "alt_he": "סיבוב דמות של יצור לבן ופרוותי במשקפיים שחורים עם טמבורין.",
@@ -519,6 +586,7 @@
         },
         {
           "image": "/assets/work/creatures-tow-boat-sea.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Laughing furry creatures in the sea pull the orange character's sailboat with a rope.",
           "alt_he": "יצורים פרוותיים צוחקים בים מושכים בחבל את סירת המפרש של הדמות הכתומה.",
@@ -534,6 +602,7 @@
         },
         {
           "image": "/assets/work/bow-creature-gray-turnaround.png",
+          "visible": true,
           "link": "",
           "alt_en": "Turnaround of a white long-haired furry creature with a pink bow, on a gray background.",
           "alt_he": "סיבוב דמות של יצור לבן ופרוותי בעל שיער ארוך וסרט ורוד, על רקע אפור.",
@@ -549,6 +618,7 @@
         },
         {
           "image": "/assets/work/zoo-lollipop-scene.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "At the zoo: the orange character covers his face while the furry creatures make mischief.",
           "alt_he": "בגן החיות: הדמות הכתומה מכסה את פניה בזמן שהיצורים הפרוותיים משתוללים.",
@@ -564,6 +634,7 @@
         },
         {
           "image": "/assets/work/zoo-do-not-feed-scene.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "At the zoo: furry creatures fool around by a monkey's glass, and the orange character is embarrassed.",
           "alt_he": "בגן החיות: יצורים פרוותיים משתטים ליד הזכוכית של קוף, והדמות הכתומה נבוכה.",
@@ -579,6 +650,7 @@
         },
         {
           "image": "/assets/work/maintenance-creature-sheet.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "Reference sheet of a white furry maintenance worker in a yellow helmet with a wrench.",
           "alt_he": "דף דמות של איש תחזוקה לבן ופרוותי בקסדה צהובה עם מפתח ברגים.",
@@ -594,6 +666,7 @@
         },
         {
           "image": "/assets/work/zoo-map-scene.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "At the zoo: a creature wears the zoo map on its head, and the orange character cries in despair.",
           "alt_he": "בגן החיות: יצור חובש את מפת גן החיות על ראשו, והדמות הכתומה בוכה בייאוש.",
@@ -609,6 +682,7 @@
         },
         {
           "image": "/assets/work/bradley-binoculars.jpg",
+          "visible": true,
           "link": "",
           "alt_en": "The orange character sailing a small boat, seen through binoculars.",
           "alt_he": "הדמות הכתומה שטה בסירה קטנה, במבט דרך משקפת.",
@@ -624,6 +698,7 @@
         },
         {
           "image": "/assets/work/furry-characters-lineup.png",
+          "visible": true,
           "link": "",
           "alt_en": "Lineup of six furry characters in soft colors: round, tall, big and small.",
           "alt_he": "שורה של שש דמויות פרוותיות בצבעים רכים: עגולות, גבוהות, גדולות וקטנות.",
@@ -639,6 +714,7 @@
         },
         {
           "image": "/assets/work/plush-characters-lineup-1.png",
+          "visible": true,
           "link": "",
           "alt_en": "Lineup of six colorful plush characters in clothes, with different expressions.",
           "alt_he": "שורה של שש דמויות קטיפה צבעוניות בבגדים, עם הבעות שונות.",
@@ -654,6 +730,7 @@
         },
         {
           "image": "/assets/work/plush-characters-lineup-2.png",
+          "visible": true,
           "link": "",
           "alt_en": "Lineup of six plush characters: blue, green, purple, red and tan, in everyday clothes.",
           "alt_he": "שורה של שש דמויות קטיפה: כחולות, ירוקה, סגולה, אדומה וחומה־בהירה, בבגדי יומיום.",
@@ -669,6 +746,7 @@
         },
         {
           "image": "/assets/work/character-lineup.png",
+          "visible": true,
           "link": "",
           "alt_en": "Lineup of six plush characters: blue, yellow, purple, green, red and gray.",
           "alt_he": "שורה של שש דמויות קטיפה: כחולה, צהובה, סגולה, ירוקה, אדומה ואפורה.",
@@ -684,6 +762,7 @@
         },
         {
           "image": "/assets/work/plush-characters-lineup-3.png",
+          "visible": true,
           "link": "",
           "alt_en": "Lineup of six plush characters of different heights, from a small red one to a big red one in a tank top.",
           "alt_he": "שורה של שש דמויות קטיפה בגבהים שונים, מדמות אדומה קטנה ועד דמות אדומה גדולה בגופייה.",
@@ -699,6 +778,7 @@
         },
         {
           "image": "/assets/work/plush-characters-lineup-4.png",
+          "visible": true,
           "link": "",
           "alt_en": "Lineup of six plush characters: turquoise, purple with glasses, green, grumpy blue, pink and yellow.",
           "alt_he": "שורה של שש דמויות קטיפה: טורקיז, סגולה במשקפיים, ירוקה, כחולה זועפת, ורודה וצהובה.",
@@ -714,5 +794,15 @@
         }
       ]
     }
-  ]
+  ],
+  "seo_title_en": "",
+  "seo_title_he": "",
+  "seo_description_en": "",
+  "seo_description_he": "",
+  "comments": true,
+  "categories": [],
+  "details": [],
+  "gallery": [],
+  "video_file": "",
+  "video_url": ""
 }
