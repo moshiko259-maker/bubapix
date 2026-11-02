@@ -83,7 +83,8 @@
     sizeAuto: "אוטומטי",
     perRow: "בשורה",
     freeNote: "גודל חופשי: לוחצים על תמונה, ואז גוררים את הנקודות הכחולות שבמסגרת.",
-    phoneNote: "בטלפון התמונות מוצגות אחת מתחת לשנייה. שינוי גודל — במחשב.",
+    phoneNote: "גודל בטלפון: לוחצים על תמונה וגוררים נקודה כחולה. הגודל הזה חל רק על טלפונים; במחשב נשאר הגודל שנקבע במחשב.",
+    phoneSize: "גודל בטלפון: לוחצים על התמונה וגוררים נקודה כחולה. חל רק על טלפונים.",
     frameTip: "לחצו על התמונה כדי לבחור אותה, גררו את הנקודות כדי לשנות גודל, או גררו את התמונה כדי להזיז",
     widthLabel: "רוחב",
     coverSize: "גודל: לוחצים על התמונה וגוררים נקודה כחולה (במחשב).",
@@ -191,7 +192,8 @@
     sizeAuto: "Automatic",
     perRow: "per row",
     freeNote: "Free size: click a picture, then drag the blue dots on its frame.",
-    phoneNote: "On phones the pictures show one under another. Resize on a computer.",
+    phoneNote: "Size on phones: tap a picture and drag a blue dot. This size applies to phones only; computers keep the size set on a computer.",
+    phoneSize: "Size on phones: tap the picture and drag a blue dot. Applies to phones only.",
     frameTip: "Click the picture to select it, drag the dots to resize, or drag the picture to move it",
     widthLabel: "Width",
     coverSize: "Size: click the picture and drag a blue dot (on computers).",
@@ -648,14 +650,16 @@
       media.style.aspectRatio = String(r);
       var fig = el("figure", { "class": "pe-cover pe-item" }, [media, tools]);
       // Cover size (computers): drag a dot; the width is kept in cover_w.
-      var cw = Number(data.cover_w) >= 20 && Number(data.cover_w) < 100 ? Number(data.cover_w) : 0;
-      if (cw && !narrow.matches) { fig.style.maxWidth = cw + "%"; fig.style.marginInline = "auto"; }
-      if (!narrow.matches) frame(fig, {
+      // On a phone the same dots set the phone size (cover_w_m); computers keep cover_w.
+      var wKey = narrow.matches ? "cover_w_m" : "cover_w";
+      var cw = Number(data[wKey]) >= 20 && Number(data[wKey]) < 100 ? Number(data[wKey]) : 0;
+      if (cw) { fig.style.maxWidth = cw + "%"; fig.style.marginInline = "auto"; }
+      frame(fig, {
         min: 20,
         start: function () { return fig.getBoundingClientRect().width / (box.getBoundingClientRect().width || 1) * 100; },
         area: function () { return box.getBoundingClientRect().width; },
         live: function (pct) { fig.style.maxWidth = pct + "%"; fig.style.marginInline = "auto"; },
-        done: function (pct) { if (pct >= 100) delete data.cover_w; else data.cover_w = pct; selectedCover = true; changed(); },
+        done: function (pct) { if (pct >= 100) delete data[wKey]; else data[wKey] = pct; selectedCover = true; changed(); },
         selectedNow: selectedCover,
       });
       if (uploads[norm(data.cover)]) fig.appendChild(el("span", { "class": "pe-badge", text: T.newBadge }));
@@ -668,7 +672,7 @@
     } else {
       box.appendChild(tools);
     }
-    box.appendChild(el("p", { "class": "pe-note", text: T.coverNote + (narrow.matches ? "" : " " + T.coverSize) }));
+    box.appendChild(el("p", { "class": "pe-note", text: T.coverNote + " " + (narrow.matches ? T.phoneSize : T.coverSize) }));
     return box;
   }
 
@@ -940,6 +944,11 @@
     setStatus(T.removed, "warn");
   }
 
+  // A picture with its own phone size: its own line, that wide, centred (as on the site).
+  function phoneLine(fig, media, pct) {
+    fig.style.flex = "1 1 100%"; fig.style.width = "100%"; fig.style.maxWidth = "none";
+    media.style.width = pct + "%"; media.style.marginInline = "auto";
+  }
   function cell(sec, s, g, i, it, grid) {
     var r = ratioOf(g);
     var media = el("span", { "class": "jg-media" }, [picture(g.image, "(max-width: 560px) 100vw, (max-width: 1100px) 50vw, 40vw", redraw)]);
@@ -948,7 +957,18 @@
     if (it && it.single) { fig.classList.add("pe-alone"); fig.style.width = it.single + "%"; }
     else if (it && it.grow) { fig.style.flex = it.grow + " 1 0"; fig.style.minWidth = "0"; media.style.aspectRatio = String(it.ar); media.classList.add("pe-crop"); }
     else { fig.style.flexGrow = String(Math.round(r * 100)); fig.style.flexBasis = "calc(var(--row-h) * " + r + ")"; }
-    if (!narrow.matches) frame(fig, {
+    // Phones: the picture's own phone size (fw_m), set with the same dots on a phone.
+    if (narrow.matches) {
+      if (Number(g.fw_m) >= 20) phoneLine(fig, media, Number(g.fw_m));
+      frame(fig, {
+        min: 20,
+        start: function () { return media.getBoundingClientRect().width / (grid.getBoundingClientRect().width || 1) * 100; },
+        area: function () { return grid.getBoundingClientRect().width; },
+        live: function (pct) { phoneLine(fig, media, pct); },
+        done: function (pct) { g.fw_m = pct; selected = g; changed(); },
+        selectedNow: selected === g,
+      });
+    } else frame(fig, {
       start: function () { return fig.getBoundingClientRect().width / (grid.getBoundingClientRect().width || 1) * 100; },
       area: function () { return grid.getBoundingClientRect().width; },
       live: function (pct) { fig.style.flex = "none"; fig.style.width = pct + "%"; },

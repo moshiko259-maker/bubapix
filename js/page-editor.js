@@ -116,7 +116,7 @@
     trDone: "תורגמו לאנגלית {n} טקסטים. לתיקון — פתחו את הדף באנגלית, וכבו שם את ״תרגום אוטומטי״ לפני השמירה.",
     trFail: "התרגום לאנגלית לא הצליח (אולי נגמרה המכסה היומית החינמית, או שאין אינטרנט). העברית נשמרה; האנגלית לא השתנתה.",
     tip5: "״תרגום אוטומטי״ מתרגם בשמירה כל טקסט ששיניתם לשפה השנייה (חינם). מתקנים תרגום? כבו אותו לפני השמירה.",
-    frameTip: "לחצו על התמונה כדי לבחור אותה, וגררו נקודה כחולה כדי לשנות גודל (במחשב)", widthLabel: "רוחב", photoSizeNote: "גודל התמונה: לוחצים על תמונה וגוררים נקודה כחולה (במחשב). בטלפון התמונה תמיד ברוחב מלא.",
+    frameTip: "לחצו על התמונה כדי לבחור אותה, וגררו נקודה כחולה כדי לשנות גודל", widthLabel: "רוחב", photoSizeNote: "גודל התמונה במחשב: לוחצים על תמונה וגוררים נקודה כחולה. בטלפון יש גודל נפרד, שקובעים מהטלפון.", photoSizePhone: "גודל התמונה בטלפון: לוחצים על תמונה וגוררים נקודה כחולה. הגודל הזה חל רק על טלפונים.",
     photoAdd: "הוספת תמונה", photoChange: "החלפת התמונה", photoRemove: "הסרת התמונה", photoRemoved: "התמונה הוסרה. אפשר לבטל עם ״ביטול פעולה״.",
     pickTitle: "בחירת תמונה", pickLoading: "טוען תמונות…", pickUpload: "העלאה מהמחשב או מהטלפון:", uploadNote: "(תישמר באתר רק בלחיצה על ״שמירה״)",
     choose: "בחירה", close: "סגירה", newBadge: "חדשה — תישמר בשמירה",
@@ -178,7 +178,7 @@
     trDone: "Translated to Hebrew: {n}. To fix it, open the page in Hebrew and turn off \"Auto-translate\" there before saving.",
     trFail: "Translating to Hebrew failed (maybe the free daily allowance ran out, or there is no internet). The English is saved; the Hebrew did not change.",
     tip5: "\"Auto-translate\" translates every text you changed into the other language when saving (free). Fixing a translation? Turn it off before saving.",
-    frameTip: "Click the picture to choose it, and drag a blue dot to change its size (computers)", widthLabel: "Width", photoSizeNote: "Picture size: click a picture and drag a blue dot (computers). On phones the picture is always full width.",
+    frameTip: "Click the picture to choose it, and drag a blue dot to change its size", widthLabel: "Width", photoSizeNote: "Picture size on computers: click a picture and drag a blue dot. Phones have their own size, set from a phone.", photoSizePhone: "Picture size on phones: tap a picture and drag a blue dot. This size applies to phones only.",
     photoAdd: "Add a picture", photoChange: "Replace the picture", photoRemove: "Remove the picture", photoRemoved: "Picture removed. You can undo it.",
     pickTitle: "Choose a picture", pickLoading: "Loading pictures…", pickUpload: "Upload from your computer or phone:", uploadNote: "(saved on the site only when you press \"Save\")",
     choose: "Choose", close: "Close", newBadge: "New — saved when you save",
@@ -423,7 +423,7 @@
         n.parentNode.insertBefore(el("h2", { "class": "section-label pe-list-title", text: T["list_" + field] }), n);
         if (T["note_" + field]) n.parentNode.insertBefore(el("p", { "class": "pe-note pe-list-note", text: T["note_" + field] }), n);
       }
-      if (n.hasAttribute("data-ed-photo-size") && wide.matches) n.parentNode.insertBefore(el("p", { "class": "pe-note pe-photo-size-note", text: T.photoSizeNote }), n);
+      if (n.hasAttribute("data-ed-photo-size")) n.parentNode.insertBefore(el("p", { "class": "pe-note pe-photo-size-note", text: wide.matches ? T.photoSizeNote : T.photoSizePhone }), n);
     });
     var hd = box.querySelector(".page-head") || (PRODUCT && box.querySelector(".product-info"));
     if (hd && hd.classList.contains("product-info")) hd.insertBefore(el("p", { "class": "pe-note pe-proj-note", text: T.langNote }), hd.firstChild);
@@ -443,11 +443,12 @@
   var dragFrom = null;
   var wide = window.matchMedia ? window.matchMedia("(min-width: 701px)") : { matches: true };
   function photoFrame(it, L, img) {
-    var key = L.photo + "_w";
+    // Computers: <photo>_w; phones: their own size, <photo>_w_m (same dots, on a phone).
+    var key = L.photo + (wide.matches ? "_w" : "_w_m");
     var box = el("span", { "class": "pe-photo-box" }, [img]);
     var w = Number(it[key]);
-    if (w >= 20 && w < 100 && wide.matches) { box.style.width = w + "%"; box.style.marginInline = "auto"; }
-    if (wide.matches) core.frame(box, {
+    if (w >= 20 && w < 100) { box.style.width = w + "%"; box.style.marginInline = "auto"; }
+    core.frame(box, {
       min: 20, max: 100,
       start: function () { return box.getBoundingClientRect().width / (box.parentNode.getBoundingClientRect().width || 1) * 100; },
       area: function () { return box.parentNode.getBoundingClientRect().width; },

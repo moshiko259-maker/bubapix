@@ -947,6 +947,8 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
   .mosaic:not(.is-small) .mrow { flex-wrap: wrap; }
   .mosaic:not(.is-small) .mrow.n3 .jg-item, .mosaic:not(.is-small) .mrow.n4 .jg-item, .mosaic:not(.is-small) .mrow.n5 .jg-item { flex: 1 1 calc(50% - var(--mgap)) !important; }
 }
+/* Phones: a picture with its own phone size (pm-…, css/gallery.css) takes its own line. */
+@media (max-width: 700px) { .mrow { flex-wrap: wrap; } }
 .mrow[hidden] { display: none; }
 /* Space between the pictures, chosen in the admin (Homepage > Gallery layout). */
 .mosaic.gap-none { --mgap: 0px; }
@@ -1164,6 +1166,13 @@ h1.pe-editable { min-width: 4ch; }
 .pe-add { flex-wrap: wrap; gap: 0.6rem; }
 .pe-video-list { display: grid; gap: 1.75rem; }
 .pe-video .pe-tools { width: max-content; max-width: 100%; margin-top: 0.6rem; }
+/* Phones: the video and details tools wrap onto more lines, so they never make
+   the page wider than the screen (a grid track would otherwise grow to fit them). */
+.pe-video-list { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 700px) {
+  .pe-video .pe-tools, .pe-detail .pe-tools { width: auto; flex-wrap: wrap; }
+  .pe-video .pe-select { max-width: 100%; }
+}
 .pe-video.is-tall .pe-tools { margin-inline: auto; }
 .pe-video .pe-select { color: var(--paper); }
 .pe-video-title.pe-editable { display: block; min-height: 1.4em; }

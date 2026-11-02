@@ -75,7 +75,7 @@
     orderNote: "הסדר כאן הוא גם הסדר של הפוסטרים בדף הבית ושל ״הפרויקט הקודם/הבא״.",
     sizeAll: "גודל כל התמונות במחשב", sizeAuto: "אוטומטי", perRow: "בשורה", sizeFree: "גודל חופשי",
     freeNote: "גודל: לוחצים על תמונה וגוררים נקודה כחולה. סדר: גוררים את התמונה או חצים.",
-    phoneNote: "בטלפון הגודל נקבע אוטומטית. שינוי גודל — במחשב.",
+    phoneNote: "גודל בטלפון: לוחצים על תמונה וגוררים נקודה כחולה. הגודל הזה חל רק על טלפונים; במחשב נשאר הגודל שנקבע במחשב.",
     frameTip: "לחצו על התמונה כדי לבחור אותה, גררו את הנקודות כדי לשנות גודל, או גררו את התמונה כדי להזיז",
     widthLabel: "רוחב",
     earlier: "הזזה למקום הקודם", later: "הזזה למקום הבא", prevBtn: "→ קודם", nextBtn: "הבא ←", more: "⋯ עוד", drag: "גררו כדי לשנות את הסדר",
@@ -146,7 +146,7 @@
     orderNote: "This order is also the order of the posters on the homepage and of \"previous/next project\".",
     sizeAll: "Size of all pictures on computers", sizeAuto: "Automatic", perRow: "per row", sizeFree: "Free size",
     freeNote: "Size: click a picture and drag a blue dot. Order: drag the picture or use the arrows.",
-    phoneNote: "On phones the size is automatic. Resize on a computer.",
+    phoneNote: "Size on phones: tap a picture and drag a blue dot. This size applies to phones only; computers keep the size set on a computer.",
     frameTip: "Click the picture to select it, drag the dots to resize, or drag the picture to move it",
     widthLabel: "Width",
     earlier: "Move to the previous place", later: "Move to the next place", prevBtn: "← Earlier", nextBtn: "Later →", more: "⋯ More", drag: "Drag to change the order",
@@ -268,7 +268,7 @@
     });
   }
   // What this page sets in each project file (the rest of the file stays as it is now).
-  var PAGE_FIELDS = ["order", "list_w", "cover", "cover_alt_he", "cover_alt_en", "title_in_gallery", "cover_title_he", "cover_title_en", "cover_note_he", "cover_note_en", "cover_caption", "categories"];
+  var PAGE_FIELDS = ["order", "list_w", "list_w_m", "cover", "cover_alt_he", "cover_alt_en", "title_in_gallery", "cover_title_he", "cover_title_en", "cover_note_he", "cover_note_en", "cover_caption", "categories"];
   function loadVersion(commitSha) {
     var at = function (path) {
       return api("/contents/" + encPath(path) + "?ref=" + encodeURIComponent(commitSha))
@@ -676,6 +676,11 @@
     var tmp = state.list[i]; state.list[i] = state.list[j]; state.list[j] = tmp;
     changed();
   }
+  // A picture with its own phone size: its own line, that wide, centred (as on the site).
+  function phoneLine(fig, media, pct) {
+    fig.style.flex = "1 1 100%"; fig.style.width = "100%"; fig.style.maxWidth = "none";
+    media.style.width = pct + "%"; media.style.marginInline = "auto";
+  }
   function cell(it, grid) {
     var p = it.p, d = p.data, r = it.r;
     var media = el("span", { "class": "jg-media" }, [picture(d.cover, "(max-width: 560px) 100vw, (max-width: 1100px) 50vw, 40vw", redraw)]);
@@ -684,7 +689,18 @@
     if (it.single) { fig.classList.add("pe-alone"); fig.style.width = it.single + "%"; }
     else if (it.grow) { fig.style.flex = it.grow + " 1 0"; fig.style.minWidth = "0"; media.style.aspectRatio = String(it.ar); media.classList.add("pe-crop"); }
     else { fig.style.flexGrow = String(Math.round(r * 100)); fig.style.flexBasis = "calc(var(--row-h) * " + r + ")"; }
-    if (!narrow.matches) frame(fig, {
+    // Phones: the picture's own phone size (list_w_m), set with the same dots on a phone.
+    if (narrow.matches) {
+      if (Number(d.list_w_m) >= 20) phoneLine(fig, media, Number(d.list_w_m));
+      frame(fig, {
+        min: 20,
+        start: function () { return media.getBoundingClientRect().width / (grid.getBoundingClientRect().width || 1) * 100; },
+        area: function () { return grid.getBoundingClientRect().width; },
+        live: function (pct) { phoneLine(fig, media, pct); },
+        done: function (pct) { d.list_w_m = pct; selected = p.slug; changed(); },
+        selectedNow: selected === p.slug,
+      });
+    } else frame(fig, {
       start: function () { return fig.getBoundingClientRect().width / (grid.getBoundingClientRect().width || 1) * 100; },
       area: function () { return grid.getBoundingClientRect().width; },
       live: function (pct) { fig.style.flex = "none"; fig.style.width = pct + "%"; },

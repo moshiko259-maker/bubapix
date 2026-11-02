@@ -64,6 +64,24 @@ const usedRatios = new Set();
 // Free sizes from the page editor: class name -> CSS rule (no inline styles,
 // which the Content-Security-Policy does not allow).
 const freeRules = new Map();
+// Sizes on phones (set by dragging in the page editor on a phone): written to
+// css/gallery.css for screens up to 700px only, so computers are not changed.
+//  pm-W: a picture in a gallery, posters or projects grid takes its own line,
+//        W% of the screen wide, centred (with its title and text under it);
+//  pb-W: a single picture (cover, opening pictures), W% wide, centred;
+//  tpm-W: a team photo on the About page, W% wide.
+const phoneRules = new Map();
+const pm = (w) => {
+  if (!w) return "";
+  phoneRules.set(`pm-${w}`, `.jg-item.pm-${w},.mrow>.jg-item.pm-${w}{flex:1 1 100%!important;width:100%!important;max-width:none!important}.pm-${w}>.jg-media,.pm-${w}>.jg-caption{width:${w}%;margin-inline:auto}`);
+  return `pm-${w}`;
+};
+const pb = (w) => {
+  if (!w || w >= 100) return "";
+  phoneRules.set(`pb-${w}`, `.pb-${w}{max-width:${w}%!important;margin-inline:auto!important}`);
+  return ` pb-${w}`;
+};
+const both = (a, b) => [a, b].filter(Boolean).join(" ");
 const FRAMES = { wide: 240, landscape: 178, square: 100, portrait: 80 };
 function ratioClass(im) {
   const fixed = FRAMES[im.frame];
@@ -570,7 +588,7 @@ function home(ctx) {
       external: !!(own && g.image.link.external),
       viewer: !linked(g) && !own,
       sizes: rowLen === 1 && share === 1 ? FULL : `(max-width: 700px) ${phoneLen(n) > 1 ? 46 : 92}vw, (max-width: 1440px) ${Math.ceil(92 * share)}vw, ${Math.ceil(1328 * share)}px`,
-      extraClass: freeClass.get(n) || "",
+      extraClass: both(freeClass.get(n), pm(g.image.fwm)),
     });
   };
   // Free widths of the opening pictures (computers).
@@ -602,8 +620,8 @@ function home(ctx) {
   const openingBlock = opening || feature
     ? `
     <section class="opening" aria-label="BubaPix">${opening ? `
-      <div class="opening-hero${openW("h", lay.heroW)}">${cell(0, 1)}</div>` : ""}${feature ? `
-      <div class="opening-feature${lay.feature ? ` feature-${lay.feature}` : ""}${openW("f", lay.featureW)}">${feature}</div>` : ""}${data.tagline ? `
+      <div class="opening-hero${openW("h", lay.heroW)}${pb(lay.heroWm)}">${cell(0, 1)}</div>` : ""}${feature ? `
+      <div class="opening-feature${lay.feature ? ` feature-${lay.feature}` : ""}${openW("f", lay.featureW)}${pb(lay.featureWm)}">${feature}</div>` : ""}${data.tagline ? `
       <p class="tagline opening-tagline" data-ts="home/tagline">${e(data.tagline)}</p>` : ""}
     </section>`
     : "";
@@ -642,7 +660,7 @@ function home(ctx) {
     <section class="section home-posters" aria-labelledby="posters-title">
       <h2 id="posters-title" class="visually-hidden">${e(t.nav.work)}</h2>
       <div class="mosaic poster-rows${lay.gap ? ` gap-${lay.gap}` : ""}" data-mosaic>${posterLayout.rows.map((row) => `
-        <div class="mrow n${row.length}">${row.map((p) => galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${p.name} — ${t.home.openProject}`, caption: p.posterCaption, sizes: `(max-width: 700px) 46vw, (max-width: 1440px) ${Math.ceil(92 / row.length * 1.1)}vw, ${Math.ceil(1328 / row.length * 1.1)}px`, extraClass: `poster${posterLayout.cls.get(p) ? " " + posterLayout.cls.get(p) : ""}` }).replace(/^<(a|figure) /, `<$1 data-project="${e(p.slug)}" data-srow="${posterPhoneRow(posterProjects, p)}" `)).join("")}</div>`).join("")}
+        <div class="mrow n${row.length}">${row.map((p) => galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${p.name} — ${t.home.openProject}`, caption: p.posterCaption, sizes: `(max-width: 700px) 46vw, (max-width: 1440px) ${Math.ceil(92 / row.length * 1.1)}vw, ${Math.ceil(1328 / row.length * 1.1)}px`, extraClass: both(`poster${posterLayout.cls.get(p) ? " " + posterLayout.cls.get(p) : ""}`, pm(p.posterWm)) }).replace(/^<(a|figure) /, `<$1 data-project="${e(p.slug)}" data-srow="${posterPhoneRow(posterProjects, p)}" `)).join("")}</div>`).join("")}
       </div>
     </section>`
     : "";
@@ -746,7 +764,7 @@ function work(ctx) {
       soon: i > 0 && i < 4,
       // The cover's own title and text when the owner chose to show them here; otherwise the project's name if chosen.
       caption: p.coverCaption && ["work", "both"].includes(p.coverCaption.where) ? p.coverCaption : p.titleInGallery ? { title: p.name, note: p.categories.map((c) => c.name).join(", ") } : null,
-      extraClass: free ? free.classes[i] : "",
+      extraClass: both(free ? free.classes[i] : "", pm(p.listWm)),
       sizes: free ? free.sizes[i] : undefined,
     }).replace(/<a class="jg-item/, `<a data-categories="${e(p.categories.map((c) => c.slug).join(" "))}" class="jg-item`)
   );
@@ -855,7 +873,7 @@ function projectPictures(ctx, list) {
       caption: im.caption !== "hidden" ? { title: im.title, note: im.note } : null,
       viewer: !im.link,
       external: !!(im.link && im.link.external),
-      extraClass,
+      extraClass: both(extraClass, pm(im.fwm)),
     });
   if (list.some((im) => im.fw)) {
     const { rows, classes, sizes } = freeClasses(list);
@@ -1003,6 +1021,7 @@ function project(ctx, p, prev, next) {
     coverCls = ` cw-${p.coverW}`;
     freeRules.set(`cw-${p.coverW}`, `.cw-${p.coverW}{max-width:${p.coverW}%!important;margin-inline:auto}`);
   }
+  if (p.cover) coverCls += pb(p.coverWm);
   const cover = p.cover
     ? `
       <figure class="project-cover${coverCls}"><a href="${ctx.assetBase}${e(p.cover.full || p.cover.src)}" data-viewer aria-label="${e(`${t.work.openImage}: ${p.cover.alt}`)}">${img(ctx, p.cover, { sizes: FULL, attrs: 'fetchpriority="high" decoding="async"' })}</a>${p.coverCaption && ["project", "both"].includes(p.coverCaption.where) ? `<figcaption class="jg-caption">${p.coverCaption.title ? `<span class="jg-title">${e(p.coverCaption.title)}</span>` : ""}${p.coverCaption.note ? `<span class="jg-note">${e(p.coverCaption.note)}</span>` : ""}</figcaption>` : ""}</figure>`
@@ -1097,8 +1116,9 @@ function about(ctx) {
         <ul class="team" data-ed-list="team" data-ed-subs="name,role,bio" data-ed-tags="h3,p.muted,p" data-ed-bare-en="name" data-ed-notr="name" data-ed-photo="photo" data-ed-photo-size data-ts-subs="about/name,about/role,about/bio">${a.team.map((m) => {
             // Picture size set by dragging in the page editor (computers): a class with its own rule.
             if (m.photoW) freeRules.set(`tw-${m.photoW}`, `.team .tw-${m.photoW}{width:${m.photoW}%;margin-inline:auto;display:block}`);
+            if (m.photoWm && m.photoWm < 100) phoneRules.set(`tpm-${m.photoWm}`, `.team .tpm-${m.photoWm}{width:${m.photoWm}%!important;margin-inline:auto;display:block}`);
             return `
-          <li data-ed-item="${m.i}">${m.photo ? img(ctx, String(m.photo.alt || "").trim() === String(m.name || "").trim() ? { ...m.photo, alt: "" } : m.photo, { sizes: "(max-width: 560px) 100vw, 25vw", cls: m.photoW ? `tw-${m.photoW}` : "" }) : ""}<h3 data-ed-sub="name" data-ts="about/name">${e(m.name)}</h3>${m.role ? `<p class="muted" data-ed-sub="role" data-ts="about/role">${e(m.role)}</p>` : ""}${m.bio ? `<p data-ed-sub="bio" data-ts="about/bio">${e(m.bio)}</p>` : ""}</li>`;
+          <li data-ed-item="${m.i}">${m.photo ? img(ctx, String(m.photo.alt || "").trim() === String(m.name || "").trim() ? { ...m.photo, alt: "" } : m.photo, { sizes: "(max-width: 560px) 100vw, 25vw", cls: both(m.photoW ? `tw-${m.photoW}` : "", m.photoWm && m.photoWm < 100 ? `tpm-${m.photoWm}` : "") }) : ""}<h3 data-ed-sub="name" data-ts="about/name">${e(m.name)}</h3>${m.role ? `<p class="muted" data-ed-sub="role" data-ts="about/role">${e(m.role)}</p>` : ""}${m.bio ? `<p data-ed-sub="bio" data-ts="about/bio">${e(m.bio)}</p>` : ""}</li>`;
           }).join("")}
         </ul>
       </section>` : ""}
@@ -1606,4 +1626,4 @@ function notFound(site, en, he, preview, up = null) {
 `;
 }
 
-module.exports = { usedRatios, freeRules, manage, shop, product, order, home, work, project, services, about, testimonials, contact, ideas, privacy, accessibility, customPage, notFound };
+module.exports = { usedRatios, freeRules, phoneRules, manage, shop, product, order, home, work, project, services, about, testimonials, contact, ideas, privacy, accessibility, customPage, notFound };

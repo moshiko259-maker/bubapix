@@ -286,6 +286,7 @@ function parseVideo(url) {
   return null;
 }
 
+const phoneW = (v) => { const n = Number(v); return Number.isFinite(n) && n >= 20 ? Math.min(100, Math.round(n)) : 0; };
 function contentFor(lang) {
   const s = raw.site;
   const imgWithAlt = (value, alt, where) => {
@@ -322,6 +323,9 @@ function contentFor(lang) {
     // page editor (empty = the automatic layout).
     const fw = Number(o.fw);
     im.fw = Number.isFinite(fw) && fw >= 10 ? Math.min(100, Math.round(fw)) : 0;
+    // Its own size on phones (fw_m, % of the screen; set by dragging in the page
+    // editor on a phone). Empty = the usual phone layout.
+    im.fwm = phoneW(o.fw_m);
     return im;
   };
 
@@ -442,6 +446,8 @@ function contentFor(lang) {
         // Width of its picture on the projects page (computers), set in the page editor.
         // Width of its poster on the homepage (computers), set in the page editor.
         posterW: Number(p.poster_w) >= 10 && Number(p.poster_w) <= 100 ? Math.round(Number(p.poster_w)) : 0,
+        // The same three sizes on phones (…_w_m), set in the page editor on a phone.
+        posterWm: phoneW(p.poster_w_m), listWm: phoneW(p.list_w_m), coverWm: phoneW(p.cover_w_m),
         listW: Number(p.list_w) >= 10 && Number(p.list_w) <= 100 ? Math.round(Number(p.list_w)) : 0,
         coverW: Number(p.cover_w) >= 20 && Number(p.cover_w) < 100 ? Math.round(Number(p.cover_w)) : 0,
         // The picture that represents the project in galleries.
@@ -641,6 +647,7 @@ function contentFor(lang) {
       // Free widths of the two opening pictures, in % of the page (computers).
       heroW: Number(s.hero_w) >= 20 && Number(s.hero_w) < 100 ? Math.round(Number(s.hero_w)) : 0,
       featureW: Number(s.feature_w) >= 15 && Number(s.feature_w) <= 100 ? Math.round(Number(s.feature_w)) : 0,
+      heroWm: phoneW(s.hero_w_m), featureWm: phoneW(s.feature_w_m),
     },
     intro: pick(s, "intro", lang),
     seoDescription: pick(s, "seo_description", lang) || pick(s, "intro", lang),
@@ -665,6 +672,7 @@ function contentFor(lang) {
           photo: imgWithAlt(m.photo, lang === "he" ? String(m.name_he || "").trim() || m.name : m.name, `team member ${i + 1}`),
           // Width of the picture in its card (computers), set by dragging in the page editor.
           photoW: Number(m.photo_w) >= 20 && Number(m.photo_w) < 100 ? Math.round(Number(m.photo_w)) : 0,
+          photoWm: phoneW(m.photo_w_m),
           i,
         })),
     },
@@ -796,7 +804,8 @@ outputs.set(
     "\n" +
     // Free sizes chosen in the page editor: computers only (phones keep the
     // automatic two-by-two layout).
-    (render.freeRules.size ? `@media (min-width: 701px){\n${[...render.freeRules.values()].join("\n")}\n}\n` : "")
+    (render.freeRules.size ? `@media (min-width: 701px){\n${[...render.freeRules.values()].join("\n")}\n}\n` : "") +
+    (render.phoneRules.size ? `@media (max-width: 700px){\n${[...render.phoneRules.values()].join("\n")}\n}\n` : "")
 );
 
 const today = new Date().toISOString().slice(0, 10);

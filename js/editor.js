@@ -353,7 +353,7 @@
   var pageAdds = {}; // project slug -> pictures to add to that project's page gallery
   var hasPageAdds = function () { return Object.keys(pageAdds).some(function (k) { return pageAdds[k].length; }); };
   // Existing projects changed here: names, cover (poster) or the posters row.
-  var renamed = function () { return projects.filter(function (p) { return !p.isNew && (p.title_he !== p.orig_he || p.title_en !== p.orig_en || !!p.cover || p.in_posters !== p.orig_in_posters || p.order !== p.orig_order || p.poster_w !== p.orig_poster_w || JSON.stringify(p.cap || {}) !== (p.origCap || JSON.stringify(p.cap || {}))); }); };
+  var renamed = function () { return projects.filter(function (p) { return !p.isNew && (p.title_he !== p.orig_he || p.title_en !== p.orig_en || !!p.cover || p.in_posters !== p.orig_in_posters || p.order !== p.orig_order || p.poster_w !== p.orig_poster_w || p.poster_w_m !== p.orig_poster_w_m || JSON.stringify(p.cap || {}) !== (p.origCap || JSON.stringify(p.cap || {}))); }); };
   var created = function () { return projects.filter(function (p) { return p.isNew; }); };
   // Texts kept in other files: interface texts (content/labels.json) and the
   // services list (content/services.json). Changed here in the page's language.
@@ -372,7 +372,7 @@
             var d = {};
             try { d = JSON.parse(b64ToUtf8(res.content)); } catch (e) { d = {}; }
             var slug = f.name.replace(/\.json$/, "");
-            return { slug: slug, title_he: d.title_he || "", title_en: d.title_en || "", orig_he: d.title_he || "", orig_en: d.title_en || "", name: (he ? d.title_he || d.title_en : d.title_en || d.title_he) || slug, order: Number(d.order) || 99, orig_order: Number(d.order) || 99, poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, orig_poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, in_posters: d.in_posters !== false, orig_in_posters: d.in_posters !== false, origCover: d.cover || "", cover: null, cap: capOf(d), origCap: JSON.stringify(capOf(d)) };
+            return { slug: slug, title_he: d.title_he || "", title_en: d.title_en || "", orig_he: d.title_he || "", orig_en: d.title_en || "", name: (he ? d.title_he || d.title_en : d.title_en || d.title_he) || slug, order: Number(d.order) || 99, orig_order: Number(d.order) || 99, poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, orig_poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, poster_w_m: Number(d.poster_w_m) >= 20 ? Math.round(Number(d.poster_w_m)) : 0, orig_poster_w_m: Number(d.poster_w_m) >= 20 ? Math.round(Number(d.poster_w_m)) : 0, in_posters: d.in_posters !== false, orig_in_posters: d.in_posters !== false, origCover: d.cover || "", cover: null, cap: capOf(d), origCap: JSON.stringify(capOf(d)) };
           });
         }));
       })
@@ -444,10 +444,10 @@
   // Every change keeps a copy of the state before it, in this tab only.
   var past = [], last = "";
   // A project's fields that say what is saved on GitHub (not edits).
-  var SAVED_KEYS = ["isNew", "orig_he", "orig_en", "orig_order", "orig_poster_w", "orig_in_posters", "origCover", "origCap"];
+  var SAVED_KEYS = ["isNew", "orig_he", "orig_en", "orig_order", "orig_poster_w", "orig_poster_w_m", "orig_in_posters", "origCover", "origCap"];
   var addedSaved = {}; // "slug|/picture" already added to a project's page by a save
   function snapshot() {
-    return JSON.stringify({ data: data, projects: projects.map(function (p) { return { slug: p.slug, isNew: !!p.isNew, title_he: p.title_he, title_en: p.title_en, orig_he: p.orig_he, orig_en: p.orig_en, order: p.order, orig_order: p.orig_order, poster_w: p.poster_w || 0, orig_poster_w: p.orig_poster_w || 0, name: p.name, cover: p.cover || null, in_posters: p.in_posters !== false, orig_in_posters: p.orig_in_posters !== false, origCover: p.origCover || "", cap: p.cap || capOf(null), origCap: p.origCap || JSON.stringify(capOf(null)) }; }), pageAdds: pageAdds, texts: texts });
+    return JSON.stringify({ data: data, projects: projects.map(function (p) { return { slug: p.slug, isNew: !!p.isNew, title_he: p.title_he, title_en: p.title_en, orig_he: p.orig_he, orig_en: p.orig_en, order: p.order, orig_order: p.orig_order, poster_w: p.poster_w || 0, orig_poster_w: p.orig_poster_w || 0, poster_w_m: p.poster_w_m || 0, orig_poster_w_m: p.orig_poster_w_m || 0, name: p.name, cover: p.cover || null, in_posters: p.in_posters !== false, orig_in_posters: p.orig_in_posters !== false, origCover: p.origCover || "", cap: p.cap || capOf(null), origCap: p.origCap || JSON.stringify(capOf(null)) }; }), pageAdds: pageAdds, texts: texts });
   }
   function commit() {
     if (!data) return;
@@ -627,11 +627,13 @@
     featureBox = opening.querySelector(".opening-feature");
     shownHero = norm(data.hero_image); shownFeature = norm(data.feature_image);
     var openingWidth = function () { return opening.getBoundingClientRect().width || 1; };
+    // On a phone the dots set the phone sizes (hero_w_m, feature_w_m); computers keep hero_w, feature_w.
+    var heroKey = phone.matches ? "hero_w_m" : "hero_w", featureKey = phone.matches ? "feature_w_m" : "feature_w";
     if (heroBox) frame(heroBox, {
       start: function () { return heroBox.getBoundingClientRect().width / openingWidth() * 100; },
       area: openingWidth, centred: true, min: 20, max: 100,
       live: function (pct) { heroBox.style.maxWidth = pct + "%"; heroBox.style.marginInline = "auto"; },
-      done: function (pct) { if (pct >= 100) delete data.hero_w; else data.hero_w = pct; changed(); syncPage(); },
+      done: function (pct) { if (pct >= 100) delete data[heroKey]; else data[heroKey] = pct; changed(); syncPage(); },
     });
     if (heroBox) {
       heroBox.classList.add("pe-holder");
@@ -689,9 +691,9 @@
     featureBox.classList.add("pe-holder");
     frame(featureBox, {
       start: function () { return featureBox.getBoundingClientRect().width / openingWidth() * 100; },
-      area: openingWidth, centred: true, min: 15, max: 100,
+      area: openingWidth, centred: true, min: phone.matches ? 20 : 15, max: 100,
       live: function (pct) { featureBox.style.maxWidth = pct + "%"; },
-      done: function (pct) { data.feature_w = pct; changed(); syncPage(); },
+      done: function (pct) { if (phone.matches && pct >= 100) delete data[featureKey]; else data[featureKey] = pct; changed(); syncPage(); },
     });
     (data.feature_image ? featureBox : opening).appendChild(featureTools);
     drawFeatureTools();
@@ -754,7 +756,18 @@
       var img = item.querySelector("img");
       posterEls[slug].r = img && Number(img.getAttribute("width")) && Number(img.getAttribute("height")) ? Number(img.getAttribute("width")) / Number(img.getAttribute("height")) : 1.5;
       item.setAttribute("draggable", "true");
-      if (!phone.matches) frame(item, {
+      // Phones: the poster's own phone size (poster_w_m), with the same dots.
+      if (phone.matches) {
+        var pMedia = item.querySelector(".jg-media");
+        if (p.poster_w_m >= 20 && pMedia) phoneLine(item, pMedia, p.poster_w_m);
+        if (pMedia) frame(item, {
+          start: function () { return pMedia.getBoundingClientRect().width / (posterBox.getBoundingClientRect().width || 1) * 100; },
+          area: function () { return posterBox.getBoundingClientRect().width; },
+          live: function (pct) { phoneLine(item, pMedia, pct); },
+          done: function (pct) { p.poster_w_m = pct; changed(); syncPage(); },
+          min: 20, max: 100,
+        });
+      } else frame(item, {
         start: function () { return item.getBoundingClientRect().width / (posterBox.getBoundingClientRect().width || 1) * 100; },
         area: function () { return posterBox.getBoundingClientRect().width; },
         live: function (pct) { item.style.flex = "none"; item.style.width = pct + "%"; },
@@ -905,8 +918,10 @@
     ]));
   }
   function syncPage() {
-    if (heroBox) { heroBox.style.maxWidth = data.hero_w ? data.hero_w + "%" : ""; heroBox.style.marginInline = data.hero_w ? "auto" : ""; }
-    if (featureBox) featureBox.style.maxWidth = data.feature_w ? data.feature_w + "%" : "";
+    // The sizes for this screen: phone sizes on a phone, computer sizes on a computer.
+    var hw = phone.matches ? data.hero_w_m : data.hero_w, fw = phone.matches ? data.feature_w_m : data.feature_w;
+    if (heroBox) { heroBox.style.maxWidth = hw ? hw + "%" : ""; heroBox.style.marginInline = hw ? "auto" : ""; }
+    if (featureBox) { featureBox.style.maxWidth = fw ? fw + "%" : ""; if (phone.matches) featureBox.style.marginInline = fw ? "auto" : ""; }
     if (featureBox) ["medium", "large", "full"].forEach(function (k) { featureBox.classList.toggle("feature-" + k, data.feature_size === k); });
     drawPosters();
     if (layoutSelects.cols) layoutSelects.cols.value = data.gallery_columns || "mixed";
@@ -1063,6 +1078,11 @@
     if (elsewhere.length) editArea.appendChild(strip(T.elsewhereTitle, elsewhere, false));
   }
 
+  // A picture with its own phone size: its own line, that wide, centred (as on the site).
+  function phoneLine(fig, media, pct) {
+    fig.style.flex = "1 1 100%"; fig.style.width = "100%"; fig.style.maxWidth = "none";
+    media.style.width = pct + "%"; media.style.marginInline = "auto";
+  }
   function cell(item) {
     var g = item.g, idx = item.idx;
     var media = el("span", { "class": "jg-media" }, [picture(g.image, "30vw", render)]);
@@ -1073,7 +1093,16 @@
     else if (item.free) { fig.classList.add("pe-free"); fig.style.flexGrow = String(item.free.grow); fig.style.minWidth = "0"; media.style.aspectRatio = String(item.free.ar); media.classList.add("pe-crop"); }
     else if (item.alone && item.r < 1.3) { fig.classList.add("pe-alone"); fig.style.width = "min(100%, calc(80vh * " + item.r + "))"; }
     if (uploads[norm(g.image)]) fig.appendChild(el("span", { "class": "pe-badge", text: T.newBadge }));
-    frame(fig, {
+    // Phones: the picture's own phone size (fw_m), with the same dots; computers keep fw.
+    if (phone.matches) {
+      if (Number(g.fw_m) >= 20) phoneLine(fig, media, Number(g.fw_m));
+      frame(fig, {
+        start: function () { return media.getBoundingClientRect().width / (editArea.getBoundingClientRect().width || 1) * 100; },
+        live: function (pct) { phoneLine(fig, media, pct); },
+        done: function (pct) { g.fw_m = pct; selected = idx; changed(); },
+        min: 20, max: 100, selectedNow: selected === idx,
+      });
+    } else frame(fig, {
       start: function () { return fig.getBoundingClientRect().width / (editArea.getBoundingClientRect().width || 1) * 100; },
       live: function (pct) { fig.style.flex = "none"; fig.style.width = pct + "%"; },
       done: function (pct) { if (!isFree()) startFree(); g.fw = pct; selected = idx; changed(); },
@@ -1473,7 +1502,7 @@
   }
   // A poster's fields as they are now (what this save sends for that project).
   function posterFields(p) {
-    return { title_he: p.title_he, title_en: p.title_en, cover: p.cover, in_posters: p.in_posters, order: p.order, poster_w: p.poster_w, cap: JSON.parse(JSON.stringify(p.cap || capOf(null))) };
+    return { title_he: p.title_he, title_en: p.title_en, cover: p.cover, in_posters: p.in_posters, order: p.order, poster_w: p.poster_w, poster_w_m: p.poster_w_m, cap: JSON.parse(JSON.stringify(p.cap || capOf(null))) };
   }
   // After a project's file is written: what was sent is now what is saved
   // (a change made while saving stays unsaved).
@@ -1482,7 +1511,7 @@
     p.orig_he = f.title_he; p.orig_en = f.title_en;
     if (f.cover) p.origCover = "/" + f.cover.path;
     if (p.cover === f.cover) p.cover = null;
-    p.orig_in_posters = f.in_posters; p.orig_order = f.order; p.orig_poster_w = f.poster_w;
+    p.orig_in_posters = f.in_posters; p.orig_order = f.order; p.orig_poster_w = f.poster_w; p.orig_poster_w_m = f.poster_w_m;
     p.origCap = JSON.stringify(f.cap);
   }
   function saveNow() {
@@ -1513,6 +1542,7 @@
       };
       if (f.in_posters === false) d.in_posters = false;
       if (f.poster_w) d.poster_w = f.poster_w;
+      if (f.poster_w_m) d.poster_w_m = f.poster_w_m;
       CAP_KEYS.forEach(function (k) { if (f.cap[k] && f.cap[k] !== "hidden") d[k] = f.cap[k]; });
       if (adds.length) addPictures(d, adds);
       files.push({ path: "content/projects/" + p.slug + ".json", sha: "", text: JSON.stringify(d, null, 2) + "\n", message: "New project: " + (f.title_en || f.title_he || p.slug) + " (created on the homepage)", saved: function () { markSaved(p, f); savedAdds(p.slug, adds); } });
@@ -1539,6 +1569,7 @@
           if (f.in_posters === false) d.in_posters = false; else delete d.in_posters;
           if (f.order !== origOrder) d.order = f.order;
           if (f.poster_w) d.poster_w = f.poster_w; else delete d.poster_w;
+          if (f.poster_w_m) d.poster_w_m = f.poster_w_m; else delete d.poster_w_m;
           // The poster's title and text: written only when there is one (or there was one).
           CAP_KEYS.forEach(function (k) {
             // The description is written only when changed here (the project's
