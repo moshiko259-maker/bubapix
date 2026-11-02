@@ -124,7 +124,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 39
+          "fw": 48
         },
         {
           "image": "/assets/uploads/pompoms/1783179003346-png-6d8bfc58-mvzrv1yp.jpg",
@@ -240,7 +240,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 43
         },
         {
           "image": "/assets/uploads/pompoms/1783181342453-png-e572eeec-mvzs5i8y.jpg",
@@ -408,7 +409,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 26
         },
         {
           "image": "/assets/uploads/pompoms/1783183600749-png-b41d69f5-mvzsag46.jpg",
@@ -492,7 +494,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 46
         },
         {
           "image": "/assets/uploads/pompoms/1783187711754-png-d61d39eb-mvzscr1m.jpg",
@@ -576,7 +579,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 52
         },
         {
           "image": "/assets/uploads/pompoms/1783259139201-png-49f4ee9f-mvzshnbd.jpg",
@@ -618,7 +622,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 58
         },
         {
           "image": "/assets/uploads/pompoms/untitled-161ab916-mvzsj2wy.jpg",
@@ -744,7 +749,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 57
         },
         {
           "image": "/assets/uploads/pompoms/untitled-62c38862-mvzsnsht.jpg",
