@@ -29,7 +29,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 2)) {
+  if (!core || !(core.version >= 3)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -93,6 +93,7 @@
     uploadNote: "תמונה שמעלים כאן נשמרת בתיקיית הפרויקט.",
     signIn: "כדי לערוך צריך להיכנס פעם אחת לכלי הניהול בדפדפן הזה (״כל הניהול״ ← ״פתיחת העריכה המתקדמת״), ואז לחזור לכאן.",
     openManage: "לכלי הניהול",
+    addProject: "+ הוספת פרויקט", addProjectTip: "פותח את יצירת הפרויקט בכלי הניהול, בלשונית חדשה. השינויים שלא נשמרו כאן נשארים בדף הזה.",
     errLoad: "לא הצלחתי לטעון את עמוד הפרויקטים מ־GitHub.",
     errSave: "השמירה נכשלה. שום דבר לא נשמר, והאתר לא השתנה.",
     errPartial: "חלק מהשינויים נשמרו וחלק לא. רעננו את הדף ובדקו.",
@@ -163,6 +164,7 @@
     uploadNote: "A picture uploaded here is stored in the project's folder.",
     signIn: "To edit, sign in once to the admin panel in this browser (\"All management\" → \"Open advanced editing\"), then come back here.",
     openManage: "Open the admin panel",
+    addProject: "+ Add a project", addProjectTip: "Opens project creation in the admin panel, in a new tab. Unsaved changes here stay on this page.",
     errLoad: "Could not load the projects page from GitHub.",
     errSave: "Saving failed. Nothing was saved, and the site did not change.",
     errPartial: "Some changes were saved and some were not. Reload the page and check.",
@@ -298,8 +300,15 @@
     el("strong", { "class": "pe-bar-title", text: T.title }),
     el("span", { "class": "pe-bar-layout" }, [button("? " + T.help, function () { showTip(true); }, "pe-btn pe-ghost"), histBtn]),
     status,
-    el("span", { "class": "pe-bar-actions" }, [undoBtn, saveBtn, button(T.cancel, quit, "pe-btn pe-ghost")]),
+    el("span", { "class": "pe-bar-actions" }, [addProjectLink(), undoBtn, saveBtn, button(T.cancel, quit, "pe-btn pe-ghost")]),
   ]);
+  // "+ Add a project": the admin panel's own project creation (the same as
+  // "Add a project" in the edit bar and on the Manage page), in a new tab.
+  function addProjectLink() {
+    var href = launcher.getAttribute("data-new-project");
+    if (!href) return null;
+    return el("a", { "class": "pe-btn pe-add-project", href: href, target: "_blank", rel: "noopener", title: T.addProjectTip, text: T.addProject });
+  }
   // Phones: one row of buttons; the other choices open with "More".
   (function () {
     var lay = bar.querySelector(".pe-bar-layout");
@@ -978,6 +987,8 @@
       .catch(function (err) {
         busy = false;
         saveBtn.disabled = false;
+        // A save that was checked and found wrong, or could not be checked (js/editor-core.js).
+        if (core.saveErrorText(err)) { setStatus(core.saveErrorText(err) + (wrote || err.wrote ? " " + T.errPartial : ""), "error"); return; }
         if (wrote || err.wrote) { setStatus(T.errPartial, "error"); return; }
         setStatus(err.changed || err.status === 409 ? T.errChanged : err.status === 401 || err.status === 403 ? T.errAuth : T.errSave, "error");
       });

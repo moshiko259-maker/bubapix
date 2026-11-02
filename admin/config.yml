@@ -290,6 +290,17 @@ collections:
                     pattern: ['^$|^https://(www\.|m\.)?(youtube\.com|youtu\.be|vimeo\.com)/', "Use a YouTube or Vimeo address / כתובת YouTube או Vimeo"]
                   - { name: file, label: "Or a short MP4 file, up to 25 MB / או קובץ MP4 קצר", widget: file, required: false, accept: "video/mp4,video/webm" }
                   - { name: shape, label: "Shape / צורה", widget: select, required: false, default: "wide", options: [{ label: "Wide 16:9 / רחב", value: "wide" }, { label: "Upright, phone format / אנכי (טלפון)", value: "tall" }] }
+                  - name: poster
+                    label: "Picture before playing / תמונת התצוגה לפני ההפעלה"
+                    widget: select
+                    required: false
+                    default: "cover"
+                    hint: "YouTube picture: the video's own picture from YouTube (only for a YouTube link; if YouTube has none, the cover is shown). Own picture: choose or upload it below. / תמונה מיוטיוב: התמונה של הסרטון ביוטיוב (רק לקישור יוטיוב; אם אין, מוצגת תמונת השער). תמונה משלכם: בוחרים או מעלים למטה."
+                    options:
+                      - { label: "The project's cover / תמונת השער של הפרויקט", value: "cover" }
+                      - { label: "YouTube's picture of the video / התמונה של הסרטון ביוטיוב", value: "youtube" }
+                      - { label: "Own picture (below) / תמונה משלכם (למטה)", value: "custom" }
+                  - { name: poster_image, label: "Own picture before playing / תמונת תצוגה משלכם", widget: image, required: false, accept: "image/jpeg,image/png,image/webp", hint: "Used when \"Own picture\" is chosen above. / משמשת כשבוחרים למעלה ״תמונה משלכם״." }
                   - { name: title_en, label: "Title, English (optional) / כותרת, אנגלית", widget: string, required: false }
                   - { name: title_he, label: "Title, Hebrew (optional) / כותרת, עברית", widget: string, required: false }
           - name: text

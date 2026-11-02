@@ -17,13 +17,14 @@
  *   BubaCore.describe(T, he, en, done)       "Description for blind visitors" window
  *   BubaCore.captionDialog(T, g, lang, choices, done, pre)  "Title and text" window for a picture
  *   BubaCore.frame(box, o, T)                size by dragging a dot (computers): o.start, area, live, done, min, max
- *   BubaCore.saveFiles(opts)                 saving: check every file first, then write (see below)
+ *   BubaCore.saveFiles(opts)                 saving: check every file first, then write and verify (see below)
+ *   BubaCore.saveErrorText(err)              the message for a save that was not verified
  *   BubaCore.version                         editors that need a newer copy load it again (a browser
  *                                            can keep an older copy of this file for a few minutes)
  */
 (function () {
   "use strict";
-  var VERSION = 2;
+  var VERSION = 3;
   if (window.BubaCore && window.BubaCore.version >= VERSION) return;
 
   function el(tag, attrs, kids) {
@@ -296,19 +297,101 @@
   //      a file that is only added to (merge) is read now, as it is now;
   //   2. pictures chosen on this computer go up;
   //   3. the files are written, one after the other.
+  // Every write is verified before it counts as saved (read after write):
+  //   - the editor works out the file's git fingerprint (blob sha) from the
+  //     exact bytes it sends;
+  //   - GitHub's answer must name that same fingerprint, and the file read
+  //     back from the work branch must have it too.
+  // When GitHub's answer is lost (no answer, or a server error), the file is
+  // read back instead of being sent again (a second write could double a
+  // save that did happen): the right fingerprint = saved; another one = not
+  // saved; the file cannot be read = the result is unknown (err.uncertain).
   // opts: api, branch,
   //   uploads: [{ path, file, message, done() }],
   //   files: [{ path, sha ("" = a new file), text (the whole file) or
   //             merge(currentData) -> data (only some fields change; the
   //             rest of the file as it is now), message, saved(newSha) }]
-  // Resolves to { wrote }; on failure err.wrote says how many files were
-  // already written (so the editor can say "some changes were saved").
+  // Resolves to { wrote, verified } only when every write was verified. On
+  // failure err.wrote says how many files were already written and verified
+  // (so the editor can say "some changes were saved"); err.uncertain (the
+  // result could not be checked) or err.verifyFailed (GitHub kept something
+  // else) say more, with err.path. saveErrorText(err) gives the message.
+  function bytesToB64(bytes) {
+    var bin = "";
+    for (var i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+  // git's fingerprint of a file: sha1("blob <size>\0" + bytes), as GitHub reports it.
+  function blobSha(bytes) {
+    if (!window.crypto || !window.crypto.subtle) return Promise.resolve("");
+    var head = new TextEncoder().encode("blob " + bytes.length + "\0");
+    var all = new Uint8Array(head.length + bytes.length);
+    all.set(head, 0); all.set(bytes, head.length);
+    return window.crypto.subtle.digest("SHA-1", all).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+    }, function () { return ""; });
+  }
+  function fileBytes(file) {
+    if (file.arrayBuffer) return file.arrayBuffer().then(function (b) { return new Uint8Array(b); });
+    return readB64(file).then(function (b64) { var bin = atob(b64), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; });
+  }
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function saveErr(kind, path, cause) {
+    var e = new Error(kind + ": " + path);
+    e[kind] = true; e.path = path;
+    if (cause && cause.status) e.status = cause.status;
+    return e;
+  }
+
   function saveFiles(opts) {
     var api = opts.api, ref = "?ref=" + encodeURIComponent(opts.branch);
     var enc = function (p) { return p.split("/").map(encodeURIComponent).join("/"); };
     var files = opts.files || [], uploads = opts.uploads || [];
-    var wrote = 0;
+    var wrote = 0, verified = 0;
     var changedErr = function () { var e = new Error("changed"); e.changed = true; return e; };
+    // The sha of the file on the work branch now ("" = no such file); a read that fails rejects.
+    function readSha(path) {
+      return api("/contents/" + enc(path) + ref).then(function (cur) { return cur && cur.sha ? cur.sha : ""; }, function (err) {
+        if (err.status === 404) return "";
+        throw err;
+      });
+    }
+    // Reads back until the file has the expected fingerprint (GitHub can take
+    // a moment to show a new version): true / false / rejects when unreadable.
+    function readBack(path, want) {
+      var tries = 0;
+      var once = function () {
+        return readSha(path).then(function (got) {
+          if (got === want) return true;
+          if (++tries >= 3) return false;
+          return wait(1500 * tries).then(once);
+        });
+      };
+      return once();
+    }
+    // One verified write. bytes: exactly what is sent.
+    function put(path, body, bytes) {
+      return blobSha(bytes).then(function (want) {
+        return api("/contents/" + enc(path), { method: "PUT", body: body }).then(function (res) {
+          var got = res && res.content ? res.content.sha : "";
+          if (want && got && got !== want) throw saveErr("verifyFailed", path);
+          if (!want) return got; // no fingerprint in this browser: GitHub's answer is what there is
+          return readBack(path, want).then(function (ok) {
+            if (!ok) throw saveErr("uncertain", path);
+            return got || want;
+          }, function (err) { throw saveErr("uncertain", path, err); });
+        }, function (err) {
+          // A clear "no" from GitHub (sign-in, permission, conflict, bad request): nothing was saved.
+          if (err.status && err.status < 500) throw err;
+          // No answer, or a server error: the write may still have happened. Look, do not send again.
+          if (!want) throw saveErr("uncertain", path, err);
+          return readBack(path, want).then(function (ok) {
+            if (ok) return want;
+            throw err;
+          }, function (e2) { throw saveErr("uncertain", path, e2); });
+        });
+      });
+    }
     var check = Promise.all(files.map(function (f) {
       return api("/contents/" + enc(f.path) + ref)
         .then(function (cur) {
@@ -324,27 +407,44 @@
     return check.then(function (found) {
       var chain = Promise.resolve();
       uploads.forEach(function (u) {
-        chain = chain.then(function () { return readB64(u.file); })
-          .then(function (b64) { return api("/contents/" + enc(u.path), { method: "PUT", body: { message: u.message, content: b64, branch: opts.branch } }); })
-          .then(function () { if (u.done) u.done(); });
+        chain = chain.then(function () { return fileBytes(u.file); })
+          .then(function (bytes) { return put(u.path, { message: u.message, content: bytesToB64(bytes), branch: opts.branch }, bytes); })
+          .then(function () { verified++; if (u.done) u.done(); });
       });
       files.forEach(function (f, i) {
         chain = chain.then(function () {
           var text = f.merge ? JSON.stringify(f.merge(found[i].data), null, 2) + "\n" : f.text;
-          var body = { message: f.message, content: utf8ToB64(text), branch: opts.branch };
+          var bytes = new TextEncoder().encode(text);
+          var body = { message: f.message, content: bytesToB64(bytes), branch: opts.branch };
           if (found[i].sha) body.sha = found[i].sha;
-          return api("/contents/" + enc(f.path), { method: "PUT", body: body });
-        }).then(function (res) {
-          wrote++;
-          if (f.saved) f.saved(res && res.content ? res.content.sha : "");
+          return put(f.path, body, bytes);
+        }).then(function (newSha) {
+          wrote++; verified++;
+          if (f.saved) f.saved(newSha || "");
         });
       });
       return chain;
-    }).then(function () { return { wrote: wrote }; }, function (err) { err.wrote = wrote; throw err; });
+    }).then(function () { return { wrote: wrote, verified: verified }; }, function (err) { err.wrote = wrote; throw err; });
+  }
+
+  // The message for a save whose result was checked and found wrong or could
+  // not be checked ("" for the other errors, which each editor words itself).
+  function saveErrorText(err) {
+    if (!err || !(err.uncertain || err.verifyFailed)) return "";
+    var he = document.documentElement.lang === "he";
+    var name = String(err.path || "").split("/").pop();
+    if (err.verifyFailed) {
+      return he
+        ? "השמירה לא אומתה: GitHub שמר תוכן שונה ממה שנשלח (" + name + "). צאו מהעריכה, טענו את הדף מחדש ובדקו את השינוי."
+        : "The save could not be verified: GitHub kept different content from what was sent (" + name + "). Leave editing, reload the page and check the change.";
+    }
+    return he
+      ? "לא ברור אם השמירה הצליחה: הקשר עם GitHub נקטע ולא הצלחנו לבדוק את הקובץ (" + name + "). לא שלחנו שוב, כדי לא לשמור פעמיים. בדקו את החיבור, טענו את הדף מחדש ובדקו אם השינוי נשמר לפני שמנסים שוב."
+      : "It is not clear whether the save worked: the connection to GitHub was cut and the file could not be checked (" + name + "). Nothing was sent again, so nothing is saved twice. Check the connection, reload the page and see whether the change is there before trying again.";
   }
 
   window.BubaCore = {
-    version: VERSION, saveFiles: saveFiles,
+    version: VERSION, saveFiles: saveFiles, saveErrorText: saveErrorText, blobSha: blobSha,
     el: el, button: button, token: token,
     utf8ToB64: utf8ToB64, b64ToUtf8: b64ToUtf8, readB64: readB64,
     github: github, loadStyles: loadStyles, history: history, siteWatch: siteWatch,

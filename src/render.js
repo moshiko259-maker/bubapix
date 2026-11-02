@@ -122,7 +122,9 @@ function csp(ctx, inlineScripts, pageEditor = false, githubCheck = false) {
     // Only preview builds allow that address; the live site stays 'self'.
     // Pages with the owner's "Edit on the page" also show pictures chosen on
     // this computer before they are saved (blob:).
-    `img-src 'self' data:${pageEditor ? " blob:" : ""}${ctx.preview ? " https://raw.githubusercontent.com" : ""}`,
+    // YouTube's own video pictures (i.ytimg.com): when a video is set to show one, and on
+    // project pages, whose editor shows that picture when the owner chooses it.
+    `img-src 'self' data:${pageEditor ? " blob:" : ""}${ctx.preview ? " https://raw.githubusercontent.com" : ""}${usesYtThumbs(ctx.data) || pageEditor === "project" ? " https://i.ytimg.com" : ""}`,
     `media-src 'self'${ctx.preview ? " https://raw.githubusercontent.com" : ""}`,
     // The owner's page editor reads and saves the page settings in the
     // GitHub repository, with the owner's own sign-in.
@@ -364,7 +366,7 @@ function editBar(ctx, edits, pageEditor = false) {
   // Project pages have their own editor (js/project-editor.js).
   const src = pageEditor === "project" ? `js/project-editor.js?v=${ctx.v.projectEditor}` : pageEditor === "work" ? `js/work-editor.js?v=${ctx.v.workEditor}` : pageEditor === "page" ? `js/page-editor.js?v=${ctx.v.pageEditor}` : `js/editor.js?v=${ctx.v.editor}`;
   const onPage = pageEditor && ctx.site.repo
-    ? `<button type="button" class="edit-bar-page" data-page-editor data-src="${ctx.assetBase}${src}" data-repo="${e(ctx.site.repo)}" data-branch="${e(ctx.site.branch)}" data-tr-src="${ctx.assetBase}js/auto-translate.js?v=${ctx.v.autoTranslate}" data-ts-src="${ctx.assetBase}js/text-style.js?v=${ctx.v.textStyle}" data-pp-src="${ctx.assetBase}js/preview-publish.js?v=${ctx.v.previewPublish}" data-core-src="${ctx.assetBase}js/editor-core.js?v=${ctx.v.editorCore}" data-hist-src="${ctx.assetBase}js/history.js?v=${ctx.v.history}" data-manage="${makeLink(ctx)("manage/")}">${icon("edit")}<span>${e(t.edit.onPage)}</span></button>`
+    ? `<button type="button" class="edit-bar-page" data-page-editor data-src="${ctx.assetBase}${src}" data-repo="${e(ctx.site.repo)}" data-branch="${e(ctx.site.branch)}" data-tr-src="${ctx.assetBase}js/auto-translate.js?v=${ctx.v.autoTranslate}" data-ts-src="${ctx.assetBase}js/text-style.js?v=${ctx.v.textStyle}" data-pp-src="${ctx.assetBase}js/preview-publish.js?v=${ctx.v.previewPublish}" data-core-src="${ctx.assetBase}js/editor-core.js?v=${ctx.v.editorCore}" data-hist-src="${ctx.assetBase}js/history.js?v=${ctx.v.history}" data-manage="${makeLink(ctx)("manage/")}" data-new-project="${e(adminHref(ctx, ed.newProject))}">${icon("edit")}<span>${e(t.edit.onPage)}</span></button>`
     : "";
   const items = edits
     .map(([label, hash, community]) => `<li><a href="${e(community ? communityHref(ctx) : adminHref(ctx, hash))}" target="_blank" rel="noopener">${icon("edit")}<span>${e(label)}</span></a></li>`)
@@ -404,7 +406,8 @@ function manage(ctx) {
       <section class="manage-box manage-main">
         <h2>${e(t.edit.onPageTitle)}</h2>
         <p>${e(t.edit.onPageText)}</p>
-        <a class="button button-large" href="${makeLink(ctx)("")}#edit">${e(t.edit.onPageButton)}</a>${data.projects.length ? `
+        <p class="manage-actions"><a class="button button-large" href="${makeLink(ctx)("")}#edit">${e(t.edit.onPageButton)}</a>
+          <a class="button button-large manage-add-project" href="${e(adminHref(ctx, ed.newProject))}" target="_blank" rel="noopener">+ ${e(t.edit.newProject)}</a></p>${data.projects.length ? `
         <p class="manage-projects-title">${e(t.edit.onPageProjects)}</p>
         <ul class="manage-projects">
           <li><a href="${makeLink(ctx)("work/")}#edit"><strong>${e(t.edit.onPageWorkPage)}</strong></a></li>
@@ -751,7 +754,8 @@ function work(ctx) {
       </div>`
       : gallery(items, "jg-work");
   return layout(ctx, {
-    edits: [...data.projects.map((p) => [t.edit.project.replace("{name}", p.title), ed.project(p.slug)]), [t.edit.newProject, ed.newProject]],
+    // "Add a project" first, so it is not lost at the end of a long list.
+    edits: [[t.edit.newProject, ed.newProject], ...data.projects.map((p) => [t.edit.project.replace("{name}", p.title), ed.project(p.slug)])],
     title: pageTitle(ctx, t.work.title),
     description: data.projects.length ? clip(`${t.work.title} — BubaPix: ${data.projects.map((p) => p.name).join(", ")}.`) : data.seoDescription,
     current: "work",
@@ -765,13 +769,29 @@ function work(ctx) {
   });
 }
 
-function videoBlock(ctx, v, projectTitle, poster) {
+// YouTube's own picture for a video. hqdefault exists for every public
+// video (maxresdefault does not); js/main.js swaps in the fallback when it fails.
+const ytThumb = (id) => `https://i.ytimg.com/vi/${encodeURIComponent(id)}/hqdefault.jpg`;
+// Does any video on the site use YouTube's own picture? (Content-Security-Policy, privacy page.)
+const usesYtThumbs = (data) => !!data && (data.projects || []).some((p) => (p.sections || []).some((sec) => sec.type === "videos" && sec.videos.some((v) => v.poster && v.poster.kind === "youtube")));
+
+// cover: the project's cover, the poster when the video has no poster of its own.
+function videoBlock(ctx, v, projectTitle, cover) {
   const { t } = ctx;
   const title = `${projectTitle} — ${v.title || t.work.video}`;
   let player = "";
-  // YouTube and Vimeo: nothing is loaded from them until the visitor presses
-  // play (a picture from this site and a play button, js/main.js swaps in the
-  // player). Without JavaScript the button opens the video on its own site.
+  // The picture before playing, chosen per video (build.js): its own uploaded
+  // picture, YouTube's picture (falls back to the cover) or the cover.
+  const own = v.poster && v.poster.kind === "custom" ? v.poster.image : null;
+  const poster = own || cover;
+  const yt = v.poster && v.poster.kind === "youtube" && v.embed && v.embed.kind === "youtube" ? v.embed.id : "";
+  const posterImg = yt
+    ? `<img class="video-poster" src="${e(ytThumb(yt))}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-yt-thumb${cover ? ` data-fallback="${ctx.assetBase}${e(cover.full || cover.src)}"` : ""}>`
+    : poster ? img(ctx, { ...poster, alt: "" }, { sizes: "(max-width: 700px) 100vw, 60vw", cls: "video-poster" }) : "";
+  // YouTube and Vimeo: the player is not loaded until the visitor presses
+  // play (a picture and a play button, js/main.js swaps in the player).
+  // Only a video set to show YouTube's own picture loads that picture from
+  // YouTube before play. Without JavaScript the button opens the video on its own site.
   const embed = v.embed && v.embed.kind === "youtube"
     ? { site: "YouTube", src: `https://www.youtube-nocookie.com/embed/${v.embed.id}?autoplay=1`, href: `https://www.youtube.com/watch?v=${v.embed.id}`, allow: "accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" }
     : v.embed && v.embed.kind === "vimeo"
@@ -779,7 +799,7 @@ function videoBlock(ctx, v, projectTitle, poster) {
       : null;
   if (embed) {
     const from = t.work.playFrom.replace("{site}", embed.site);
-    player = `<a class="video-play" href="${e(embed.href)}" target="_blank" rel="noopener" data-embed="${e(embed.src)}" data-embed-allow="${e(embed.allow)}" data-embed-title="${e(title)}" aria-label="${e(`${t.work.play}: ${title}. ${from}`)}">${poster ? img(ctx, { ...poster, alt: "" }, { sizes: "(max-width: 700px) 100vw, 60vw", cls: "video-poster" }) : ""}<span class="video-play-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span><span class="video-play-from" aria-hidden="true">${e(from)}</span></a>`;
+    player = `<a class="video-play" href="${e(embed.href)}" target="_blank" rel="noopener" data-embed="${e(embed.src)}" data-embed-allow="${e(embed.allow)}" data-embed-title="${e(title)}" aria-label="${e(`${t.work.play}: ${title}. ${from}`)}">${posterImg}<span class="video-play-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span><span class="video-play-from" aria-hidden="true">${e(from)}</span></a>`;
   } else if (v.file) {
     player = `<video controls preload="metadata" playsinline${poster ? ` poster="${ctx.assetBase}${e(poster.src)}"` : ""}><source src="${ctx.assetBase}${e(v.file)}" type="${/\.webm$/i.test(v.file) ? "video/webm" : "video/mp4"}"></video>`;
   }
@@ -1206,7 +1226,7 @@ function privacy(ctx) {
   // Videos from YouTube (only when the site has one), and how long messages are kept (before "Your rights").
   const tube = (data.showreel && data.showreel.kind === "youtube") || data.projects.some((p) => (p.sections || []).some((sec) => sec.type === "videos" && sec.videos.some((v) => v.embed && v.embed.kind === "youtube")));
   const rights = items.indexOf(t.privacy.items[t.privacy.items.length - 1]);
-  items.splice(rights, 0, ...(tube ? [t.privacy.videos] : []), t.privacy.retention);
+  items.splice(rights, 0, ...(tube ? [usesYtThumbs(data) ? t.privacy.videosThumbs : t.privacy.videos] : []), t.privacy.retention);
   return layout(ctx, {
     title: pageTitle(ctx, t.privacy.title),
     description: t.privacy.items[0],

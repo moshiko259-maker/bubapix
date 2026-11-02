@@ -418,8 +418,31 @@
     if (closeHelp) closeHelp.addEventListener("click", function () { installHelp.close(); });
   }
 
+  // ---------- Videos: YouTube's own picture, with a fallback ----------
+  // A video set to show YouTube's picture (img[data-yt-thumb]). When YouTube
+  // has no picture (the request fails, or YouTube answers with its small
+  // 120 x 90 "no picture" image), the project's cover is shown instead
+  // (data-fallback); without a cover the picture is removed and the play
+  // button stays on the plain frame.
+  function ytFallback(img) {
+    if (img.getAttribute("data-yt-done")) return;
+    img.setAttribute("data-yt-done", "1");
+    var fb = img.getAttribute("data-fallback");
+    if (fb) { img.removeAttribute("srcset"); img.src = fb; } else img.remove();
+  }
+  function ytCheck(img) {
+    if (img.getAttribute("data-yt-done")) return;
+    if (!img.complete) return;
+    if (!img.naturalWidth || img.naturalWidth <= 120) ytFallback(img);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("img[data-yt-thumb]"), function (img) {
+    img.addEventListener("error", function () { ytFallback(img); });
+    img.addEventListener("load", function () { ytCheck(img); });
+    ytCheck(img);
+  });
+
   // ---------- Videos: the player loads only after "play" ----------
-  // Until then nothing is loaded from YouTube or Vimeo (see the privacy page).
+  // Until then the player is not loaded from YouTube or Vimeo (see the privacy page).
   // Without this script the button opens the video on its own site.
   document.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest("a.video-play[data-embed]");

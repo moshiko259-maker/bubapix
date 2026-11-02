@@ -985,6 +985,10 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .pe-btn, .pe-icon, .pe-select { min-height: 34px; padding: 0 0.7rem; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: inherit; font: inherit; font-size: 0.8125rem; cursor: pointer; }
 .pe-btn:hover, .pe-icon:hover { background: rgba(255, 255, 255, 0.22); }
 .pe-btn:disabled { opacity: 0.45; cursor: default; }
+/* A link styled as a toolbar button (Projects page: "+ Add a project"). */
+a.pe-btn { display: inline-flex; align-items: center; text-decoration: none; }
+.pe-add-project { font-weight: 600; border-color: rgba(255, 255, 255, 0.6); }
+.pe-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .pe-primary { background: var(--paper); color: var(--ink); border-color: var(--paper); font-weight: 600; }
 .pe-primary:hover { background: #fff; }
 .pe-ghost { background: transparent; }
@@ -1170,6 +1174,10 @@ h1.pe-editable { min-width: 4ch; }
 .pe-detail dt.pe-editable, .pe-detail dd.pe-editable { display: block; min-height: 1.4em; }
 .pe-detail .pe-tools { width: max-content; max-width: 100%; margin-top: 0.3rem; }
 .pe-video-msg:empty { display: none; }
+/* The picture a video shows before playing (project page editor). */
+.pe-poster-preview { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.5rem; }
+.pe-poster-preview img { width: 160px; height: auto; max-height: 120px; object-fit: cover; border-radius: 6px; }
+.pe-poster-preview:empty { display: none; }
 .manage-projects-title { margin: 1rem 0 0.4rem; font-weight: 600; }
 .manage-projects { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0; padding: 0; list-style: none; }
 .manage-projects a { color: var(--ink); }
@@ -1177,6 +1185,7 @@ h1.pe-editable { min-width: 4ch; }
 .manage-signin.is-ok { background: #e3f3e6; }
 .manage-signin.is-warn { background: #fde2e1; }
 .manage-main { margin-bottom: 1.25rem; border-width: 2px; border-color: var(--ink); }
+.manage-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 0; }
 .pe-sizes { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.2rem; }
 .pe-size { padding: 0 0.3rem; }
 .pe-size[aria-pressed="true"] { background: var(--paper); color: var(--ink); border-color: var(--paper); font-weight: 600; }

@@ -357,7 +357,22 @@ function contentFor(lang) {
         if (!parsed && !local) return null;
         // Upright videos (phone format, YouTube Shorts) get an upright frame.
         const tall = typeof v === "string" ? /youtube\.com\/shorts\//.test(url) : v.shape === "tall" || (!v.shape && /youtube\.com\/shorts\//.test(url || ""));
-        return { embed: parsed, file: local, title: typeof v === "string" ? "" : pick(v, "title", lang), tall };
+        // The picture shown before the video plays, chosen per video:
+        //   poster: "youtube" (YouTube's own thumbnail), "custom" (poster_image,
+        //   an uploaded picture) or "cover"/empty (the project's cover, as before).
+        // A choice that cannot be used (no YouTube link, a missing picture)
+        // falls back to the cover.
+        let poster = { kind: "cover" };
+        const want = typeof v === "string" ? "" : String(v.poster || "");
+        if (want === "youtube") {
+          if (parsed && parsed.kind === "youtube") poster = { kind: "youtube", id: parsed.id };
+          else images.warnings.push(`${where}: video ${i + 1} asks for the YouTube picture but has no YouTube link; the cover is used`);
+        } else if (want === "custom") {
+          const im = v.poster_image ? images.image(v.poster_image, `${where} video ${i + 1} poster`) : null;
+          if (im) { im.alt = ""; poster = { kind: "custom", image: im }; }
+          else images.warnings.push(`${where}: video ${i + 1} has no poster picture yet; the cover is used`);
+        }
+        return { embed: parsed, file: local, title: typeof v === "string" ? "" : pick(v, "title", lang), tall, poster };
       };
 
       // Optional sections, in the order chosen in the admin.

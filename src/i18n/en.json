@@ -166,6 +166,7 @@
     "gmail": "The {gmail} mailbox is a Google Gmail mailbox.",
     "and": " and ",
     "videos": "Videos: the videos on the site are shown from YouTube (Google). Nothing is loaded from YouTube until you press play; after that, Google's privacy policy applies.",
+    "videosThumbs": "Videos: the videos on the site are shown from YouTube (Google). The YouTube player is not loaded until you press play. Some videos show their preview picture from YouTube, which your browser loads from Google when the page opens; after you press play, Google's privacy policy applies.",
     "retention": "How long we keep it: a private consultation is deleted one year after our last contact with you. A published comment, question or idea is kept as long as it is shown on the site. Comments, questions and ideas that are not published, and spam, are deleted within 30 days of review."
   },
   "viewer": {

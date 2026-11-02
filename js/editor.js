@@ -24,7 +24,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 2)) {
+  if (!core || !(core.version >= 3)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -1572,6 +1572,8 @@
         busy = false;
         saveBtn.disabled = false;
         render();
+        // A save that was checked and found wrong, or could not be checked (js/editor-core.js).
+        if (core.saveErrorText(err)) { setStatus(core.saveErrorText(err) + (wrote || err.wrote ? " " + T.errPartial : ""), "error"); return; }
         if (wrote || err.wrote) { setStatus(T.errPartial, "error"); return; }
         setStatus(err.changed || err.status === 409 ? T.errChanged : err.status === 401 || err.status === 403 ? T.errAuth : T.errSave, "error");
       });
