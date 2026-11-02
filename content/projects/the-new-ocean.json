@@ -111,7 +111,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 49
         },
         {
           "image": "/assets/work/new-ocean-research-vessel.jpg",
@@ -126,7 +126,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 41
+          "fw": 19
         },
         {
           "image": "/assets/work/new-ocean-deck-festival.jpg",
@@ -156,7 +156,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 62
         },
         {
           "image": "/assets/work/new-ocean-diver-descends.jpg",
@@ -171,7 +171,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 26
         },
         {
           "image": "/assets/work/new-ocean-island-bar.jpg",
@@ -186,7 +186,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 80
         },
         {
           "image": "/assets/work/new-ocean-yacht-party.jpg",
@@ -246,7 +246,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 30
         },
         {
           "image": "/assets/work/new-ocean-trash-sinking.jpg",
@@ -261,7 +261,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 75
         },
         {
           "image": "/assets/work/new-ocean-cup-hull.jpg",
@@ -321,7 +321,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 24
         },
         {
           "image": "/assets/work/new-ocean-bag-whale-wide.jpg",
@@ -336,7 +336,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 61
         },
         {
           "image": "/assets/work/new-ocean-bag-jellyfish-diver.jpg",
