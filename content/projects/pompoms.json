@@ -5,7 +5,7 @@
   "visible": true,
   "in_posters": true,
   "featured": true,
-  "order": 10,
+  "order": 7,
   "title_in_gallery": false,
   "cover": "/assets/uploads/1783259304345-png_32868221.webp",
   "cover_alt_en": "",
@@ -19,5 +19,6 @@
   "seo_title_he": "",
   "seo_description_en": "",
   "seo_description_he": "",
-  "comments": true
+  "comments": true,
+  "list_w": 41
 }
