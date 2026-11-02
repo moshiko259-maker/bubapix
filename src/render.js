@@ -602,7 +602,7 @@ function home(ctx) {
     ? `
     <section class="opening" aria-label="BubaPix">${opening ? `
       <div class="opening-hero${openW("h", lay.heroW)}">${cell(0, 1)}</div>` : ""}${feature ? `
-      <div class="opening-feature${lay.feature ? ` feature-${lay.feature}` : ""}${openW("f", lay.featureW)}">${feature}</div>` : ""}${data.tagline ? `
+      <div class="opening-feature${lay.feature ? ` feature-${lay.feature}` : ""}${openW("f", lay.featureW)}">${feature}</div>` : ""}${data.tagline && !data.taglineTop ? `
       <p class="tagline opening-tagline" data-ts="home/tagline">${e(data.tagline)}</p>` : ""}
     </section>`
     : "";
@@ -655,7 +655,7 @@ function home(ctx) {
       </div>
     </section>`
     : "";
-  const tagline = data.tagline && !openingBlock ? `
+  const tagline = data.tagline && !openingBlock && !data.taglineTop ? `
     <p class="tagline" data-ts="home/tagline">${e(data.tagline)}</p>` : "";
   // Showreel: only when a video link is set in the admin.
   const showreel = data.showreel
@@ -687,6 +687,15 @@ function home(ctx) {
       <a class="button button-large" href="${link("contact/")}">${e(t.home.startProject)}</a>
     </section>`
     : "";
+  // The page heading at the top (admin: "Where the tagline is shown" = top):
+  // the tagline, edited in the admin and on the page, and "Start a project".
+  const head = data.tagline && data.taglineTop
+    ? `
+    <header class="home-head">
+      <h1 class="tagline home-title" data-ts="home/tagline">${e(data.tagline)}</h1>${canContact ? `
+      <a class="button button-large home-cta" href="${link("contact/")}">${e(t.home.startProject)}</a>` : ""}
+    </header>`
+    : "";
   const intro = data.intro
     ? `
     <section class="section intro" aria-label="${e(t.nav.about)}">
@@ -711,7 +720,7 @@ function home(ctx) {
       sameAs: ((data.contact && data.contact.social) || []).map((x) => x.url),
     },
     description: data.seoDescription || data.intro,
-    main: `    <h1 class="visually-hidden">BubaPix</h1>${openingBlock}${tagline}${posters}${showreel}${work}${services}${intro}${start}${hint ? `
+    main: `${head || `    <h1 class="visually-hidden">BubaPix</h1>`}${openingBlock}${tagline}${posters}${showreel}${work}${services}${intro}${start}${hint ? `
     <p class="page-hint bottom-hint" data-ts="home/hint">${e(hint)}</p>` : ""}`,
   });
 }

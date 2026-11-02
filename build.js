@@ -621,6 +621,10 @@ function contentFor(lang) {
     participation,
     analytics: Boolean(site.analyticsHead),
     tagline: pick(s, "tagline", lang),
+    // Where the tagline goes: "top" (the page heading, above the opening
+    // pictures, with the "Start a project" button; the default) or "below"
+    // (under the opening pictures, as before).
+    taglineTop: s.tagline_place !== "below",
     showreel: parseVideo(s.showreel_url),
     // Homepage gallery layout chosen in the admin (Homepage > "Gallery
     // layout"). Unknown or empty values keep the usual mixed rhythm.

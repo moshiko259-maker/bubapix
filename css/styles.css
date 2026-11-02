@@ -214,6 +214,36 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .opening-feature .jg-media { border-radius: 14px; box-shadow: 0 18px 50px rgba(22, 22, 29, 0.12); }
 .opening-tagline { padding: clamp(1.75rem, 4vw, 2.75rem) 0 0; text-align: center; font-weight: 600; font-size: clamp(1.5rem, 3.4vw, 2.5rem); color: var(--ink); }
 
+/* Homepage heading at the top (admin: tagline shown at the top): the
+   tagline as the page's main heading and "Start a project", above the
+   opening pictures. Short, so the pictures still start on the first screen. */
+.home-head {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: clamp(0.75rem, 2.5vw, 1.75rem) var(--gutter) clamp(1.25rem, 3vw, 2rem);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+}
+.home-title {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 22rem;
+  font-weight: 600;
+  font-size: clamp(1.625rem, 3.6vw, 2.75rem);
+  line-height: 1.15;
+  color: var(--ink);
+}
+.home-cta { flex: none; }
+@media (max-width: 560px) {
+  .home-head { justify-content: center; text-align: center; }
+  .home-title { flex-basis: 100%; }
+  .home-cta { min-height: 46px; padding: 0.7rem 1.75rem; }
+}
+
 /* Homepage: one poster per project, two side by side (one on phones). */
 .home-posters { padding-top: clamp(2.5rem, 6vw, 4.5rem); }
 .poster-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: clamp(0.75rem, 2vw, 1.25rem); }
