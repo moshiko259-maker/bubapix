@@ -3,7 +3,6 @@
   "title_he": "פונפונים",
   "show_title": true,
   "visible": true,
-  "in_posters": true,
   "featured": true,
   "order": 7,
   "title_in_gallery": false,
@@ -774,5 +773,6 @@
   "seo_description_en": "",
   "seo_description_he": "",
   "comments": true,
-  "list_w": 41
+  "list_w": 41,
+  "poster_w_m": 29
 }
