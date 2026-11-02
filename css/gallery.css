@@ -7,6 +7,8 @@
 .mrow.n1>.ar-62{flex:none!important;width:min(100%,calc(80vh * 0.62));margin-inline:auto}
 .ar-67{flex-grow:67;flex-basis:calc(var(--row-h) * 0.67)}.ar-67 .jg-media{aspect-ratio:0.67}
 .mrow.n1>.ar-67{flex:none!important;width:min(100%,calc(80vh * 0.67));margin-inline:auto}
+.ar-68{flex-grow:68;flex-basis:calc(var(--row-h) * 0.68)}.ar-68 .jg-media{aspect-ratio:0.68}
+.mrow.n1>.ar-68{flex:none!important;width:min(100%,calc(80vh * 0.68));margin-inline:auto}
 .ar-69{flex-grow:69;flex-basis:calc(var(--row-h) * 0.69)}.ar-69 .jg-media{aspect-ratio:0.69}
 .mrow.n1>.ar-69{flex:none!important;width:min(100%,calc(80vh * 0.69));margin-inline:auto}
 .ar-70{flex-grow:70;flex-basis:calc(var(--row-h) * 0.7)}.ar-70 .jg-media{aspect-ratio:0.7}
@@ -17,6 +19,8 @@
 .mrow.n1>.ar-73{flex:none!important;width:min(100%,calc(80vh * 0.73));margin-inline:auto}
 .ar-75{flex-grow:75;flex-basis:calc(var(--row-h) * 0.75)}.ar-75 .jg-media{aspect-ratio:0.75}
 .mrow.n1>.ar-75{flex:none!important;width:min(100%,calc(80vh * 0.75));margin-inline:auto}
+.ar-77{flex-grow:77;flex-basis:calc(var(--row-h) * 0.77)}.ar-77 .jg-media{aspect-ratio:0.77}
+.mrow.n1>.ar-77{flex:none!important;width:min(100%,calc(80vh * 0.77));margin-inline:auto}
 .ar-79{flex-grow:79;flex-basis:calc(var(--row-h) * 0.79)}.ar-79 .jg-media{aspect-ratio:0.79}
 .mrow.n1>.ar-79{flex:none!important;width:min(100%,calc(80vh * 0.79));margin-inline:auto}
 .ar-80{flex-grow:80;flex-basis:calc(var(--row-h) * 0.8)}.ar-80 .jg-media{aspect-ratio:0.8}
@@ -46,11 +50,14 @@
 .ar-149{flex-grow:149;flex-basis:calc(var(--row-h) * 1.49)}.ar-149 .jg-media{aspect-ratio:1.49}
 .ar-150{flex-grow:150;flex-basis:calc(var(--row-h) * 1.5)}.ar-150 .jg-media{aspect-ratio:1.5}
 .ar-151{flex-grow:151;flex-basis:calc(var(--row-h) * 1.51)}.ar-151 .jg-media{aspect-ratio:1.51}
+.ar-175{flex-grow:175;flex-basis:calc(var(--row-h) * 1.75)}.ar-175 .jg-media{aspect-ratio:1.75}
 .ar-178{flex-grow:178;flex-basis:calc(var(--row-h) * 1.78)}.ar-178 .jg-media{aspect-ratio:1.78}
 .ar-179{flex-grow:179;flex-basis:calc(var(--row-h) * 1.79)}.ar-179 .jg-media{aspect-ratio:1.79}
 .ar-181{flex-grow:181;flex-basis:calc(var(--row-h) * 1.81)}.ar-181 .jg-media{aspect-ratio:1.81}
 .ar-183{flex-grow:183;flex-basis:calc(var(--row-h) * 1.83)}.ar-183 .jg-media{aspect-ratio:1.83}
 .ar-184{flex-grow:184;flex-basis:calc(var(--row-h) * 1.84)}.ar-184 .jg-media{aspect-ratio:1.84}
+.ar-198{flex-grow:198;flex-basis:calc(var(--row-h) * 1.98)}.ar-198 .jg-media{aspect-ratio:1.98}
+.ar-200{flex-grow:200;flex-basis:calc(var(--row-h) * 2)}.ar-200 .jg-media{aspect-ratio:2}
 .ar-240{flex-grow:240;flex-basis:calc(var(--row-h) * 2.4)}.ar-240 .jg-media{aspect-ratio:2.4}
 .ar-250{flex-grow:250;flex-basis:calc(var(--row-h) * 2.5)}.ar-250 .jg-media{aspect-ratio:2.5}
 .ar-264{flex-grow:264;flex-basis:calc(var(--row-h) * 2.64)}.ar-264 .jg-media{aspect-ratio:2.64}
@@ -116,6 +123,15 @@
 .mrow>.fr-182-0_61{flex:182 1 0!important;min-width:0}.mrow>.fr-182-0_61 .jg-media{aspect-ratio:0.61}.mrow>.fr-182-0_61 .jg-media img{object-fit:cover}
 .mrow>.fr-485-1_62{flex:485 1 0!important;min-width:0}.mrow>.fr-485-1_62 .jg-media{aspect-ratio:1.62}.mrow>.fr-485-1_62 .jg-media img{object-fit:cover}
 .mrow>.fr-333-1_11{flex:333 1 0!important;min-width:0}.mrow>.fr-333-1_11 .jg-media{aspect-ratio:1.11}.mrow>.fr-333-1_11 .jg-media img{object-fit:cover}
+.mrow>.fr-333-0_79{flex:333 1 0!important;min-width:0}.mrow>.fr-333-0_79 .jg-media{aspect-ratio:0.79}.mrow>.fr-333-0_79 .jg-media img{object-fit:cover}
+.mrow>.fr-333-0_67{flex:333 1 0!important;min-width:0}.mrow>.fr-333-0_67 .jg-media{aspect-ratio:0.67}.mrow>.fr-333-0_67 .jg-media img{object-fit:cover}
+.mrow>.fr-333-1_03{flex:333 1 0!important;min-width:0}.mrow>.fr-333-1_03 .jg-media{aspect-ratio:1.03}.mrow>.fr-333-1_03 .jg-media img{object-fit:cover}
+.mrow>.fr-333-0_86{flex:333 1 0!important;min-width:0}.mrow>.fr-333-0_86 .jg-media{aspect-ratio:0.86}.mrow>.fr-333-0_86 .jg-media img{object-fit:cover}
+.mrow>.fr-333-0_82{flex:333 1 0!important;min-width:0}.mrow>.fr-333-0_82 .jg-media{aspect-ratio:0.82}.mrow>.fr-333-0_82 .jg-media img{object-fit:cover}
+.mrow>.fr-333-1_79{flex:333 1 0!important;min-width:0}.mrow>.fr-333-1_79 .jg-media{aspect-ratio:1.79}.mrow>.fr-333-1_79 .jg-media img{object-fit:cover}
+.mrow>.fr-333-1_58{flex:333 1 0!important;min-width:0}.mrow>.fr-333-1_58 .jg-media{aspect-ratio:1.58}.mrow>.fr-333-1_58 .jg-media img{object-fit:cover}
+.mrow>.fr-333-1_74{flex:333 1 0!important;min-width:0}.mrow>.fr-333-1_74 .jg-media{aspect-ratio:1.74}.mrow>.fr-333-1_74 .jg-media img{object-fit:cover}
+.mrow>.fr-500-1_87{flex:500 1 0!important;min-width:0}.mrow>.fr-500-1_87 .jg-media{aspect-ratio:1.87}.mrow>.fr-500-1_87 .jg-media img{object-fit:cover}
 .mrow>.fr-237-0_67{flex:237 1 0!important;min-width:0}.mrow>.fr-237-0_67 .jg-media{aspect-ratio:0.67}.mrow>.fr-237-0_67 .jg-media img{object-fit:cover}
 .mrow>.fr-526-1_49{flex:526 1 0!important;min-width:0}.mrow>.fr-526-1_49 .jg-media{aspect-ratio:1.49}.mrow>.fr-526-1_49 .jg-media img{object-fit:cover}
 .mrow>.fr-237-0_56{flex:237 1 0!important;min-width:0}.mrow>.fr-237-0_56 .jg-media{aspect-ratio:0.56}.mrow>.fr-237-0_56 .jg-media img{object-fit:cover}
@@ -132,9 +148,7 @@
 .mrow>.fr-333-0_8{flex:333 1 0!important;min-width:0}.mrow>.fr-333-0_8 .jg-media{aspect-ratio:0.8}.mrow>.fr-333-0_8 .jg-media img{object-fit:cover}
 .mrow>.fr-656-1_1{flex:656 1 0!important;min-width:0}.mrow>.fr-656-1_1 .jg-media{aspect-ratio:1.1}.mrow>.fr-656-1_1 .jg-media img{object-fit:cover}
 .mrow>.fr-344-0_58{flex:344 1 0!important;min-width:0}.mrow>.fr-344-0_58 .jg-media{aspect-ratio:0.58}.mrow>.fr-344-0_58 .jg-media img{object-fit:cover}
-.mrow>.fr-333-0_79{flex:333 1 0!important;min-width:0}.mrow>.fr-333-0_79 .jg-media{aspect-ratio:0.79}.mrow>.fr-333-0_79 .jg-media img{object-fit:cover}
 .mrow>.fr-333-0_99{flex:333 1 0!important;min-width:0}.mrow>.fr-333-0_99 .jg-media{aspect-ratio:0.99}.mrow>.fr-333-0_99 .jg-media img{object-fit:cover}
-.mrow>.fr-333-1_79{flex:333 1 0!important;min-width:0}.mrow>.fr-333-1_79 .jg-media{aspect-ratio:1.79}.mrow>.fr-333-1_79 .jg-media img{object-fit:cover}
 .mrow>.fr-566-1_99{flex:566 1 0!important;min-width:0}.mrow>.fr-566-1_99 .jg-media{aspect-ratio:1.99}.mrow>.fr-566-1_99 .jg-media img{object-fit:cover}
 .mrow>.fr-434-1_53{flex:434 1 0!important;min-width:0}.mrow>.fr-434-1_53 .jg-media{aspect-ratio:1.53}.mrow>.fr-434-1_53 .jg-media img{object-fit:cover}
 .mrow>.fr-611-2_08{flex:611 1 0!important;min-width:0}.mrow>.fr-611-2_08 .jg-media{aspect-ratio:2.08}.mrow>.fr-611-2_08 .jg-media img{object-fit:cover}
