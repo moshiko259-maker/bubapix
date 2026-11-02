@@ -120,7 +120,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 29
         },
         {
           "image": "/assets/work/white-creatures-rope.jpg",
@@ -136,7 +136,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 55
         },
         {
           "image": "/assets/work/pink-creature-speech-bubbles.jpg",
@@ -152,7 +152,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 34
         },
         {
           "image": "/assets/work/grumpy-white-creature-views.jpg",
@@ -168,7 +168,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 36
         },
         {
           "image": "/assets/work/pink-bow-creature-turnaround.jpg",
@@ -184,7 +184,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 30
         },
         {
           "image": "/assets/work/mohawk-creature-sheet.jpg",
@@ -200,7 +200,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 52
         },
         {
           "image": "/assets/work/sphere-creature-sheet.jpg",
@@ -216,7 +216,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 53
         },
         {
           "image": "/assets/work/bradley-expressions.png",
@@ -232,7 +232,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 17
         },
         {
           "image": "/assets/work/scientist-creature-turnaround.jpg",
@@ -248,7 +248,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 33
         },
         {
           "image": "/assets/work/pilot-creature-sheet.jpg",
@@ -264,7 +264,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 28
         },
         {
           "image": "/assets/work/glasses-creature-sheet.jpg",
@@ -376,7 +376,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 67
         },
         {
           "image": "/assets/work/chef-creature-turnaround.jpg",
@@ -392,7 +392,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 32
         },
         {
           "image": "/assets/work/star-glasses-creature-turnaround.jpg",
@@ -440,7 +440,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 41
         },
         {
           "image": "/assets/work/beanie-creature-sheet.jpg",
@@ -456,7 +456,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 24
         },
         {
           "image": "/assets/work/grumples-village.jpg",
@@ -488,7 +488,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 41
         },
         {
           "image": "/assets/work/meditating-creature-sheet.jpg",
@@ -504,7 +504,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 22
         },
         {
           "image": "/assets/work/spherical-creature-sheet.jpg",
@@ -520,7 +520,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 40
         },
         {
           "image": "/assets/work/astronaut-creature-sheet.jpg",
@@ -552,7 +552,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 44
         },
         {
           "image": "/assets/work/tambourine-creature-turnaround.jpg",
@@ -568,7 +568,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 33
         },
         {
           "image": "/assets/work/creatures-tow-boat-sea.jpg",
@@ -584,7 +584,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 46
         },
         {
           "image": "/assets/work/bow-creature-gray-turnaround.png",
@@ -600,7 +600,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 27
         },
         {
           "image": "/assets/work/zoo-lollipop-scene.jpg",
@@ -648,7 +648,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 33
         },
         {
           "image": "/assets/work/zoo-map-scene.jpg",
@@ -664,7 +664,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 38
         },
         {
           "image": "/assets/work/bradley-binoculars.jpg",
@@ -680,7 +680,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 34
         },
         {
           "image": "/assets/work/furry-characters-lineup.png",
@@ -712,7 +712,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 38
         },
         {
           "image": "/assets/work/plush-characters-lineup-2.png",
@@ -728,7 +728,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 40
         },
         {
           "image": "/assets/work/character-lineup.png",
@@ -760,7 +760,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 18
         },
         {
           "image": "/assets/work/plush-characters-lineup-4.png",
@@ -776,7 +776,7 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center",
-          "fw": 100
+          "fw": 48
         }
       ]
     }
