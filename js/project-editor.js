@@ -115,6 +115,8 @@
     altNew: "תמונה חדשה צריכה תיאור חדש. כתבו בקצרה מה רואים בתמונה (רשות, אפשר גם אחר כך).",
     altEdit: "כתבו בקצרה מה רואים בתמונה. קוראי מסך מקריאים את זה לגולשים עיוורים.",
     choose: "בחירה",
+    pickMany: "אפשר לבחור כמה תמונות: לוחצים על כל תמונה שרוצים (לחיצה נוספת מבטלת), או מעלים כמה קבצים יחד. כל התמונות שנבחרו נוספות בבת אחת.",
+    manyAlt: "כשנבחרו כמה תמונות, את התיאור לעיוורים כותבים אחר כך לכל תמונה (״תיאור לעיוורים״).",
     ok: "אישור",
     newBadge: "חדשה",
     uploadNote: "תמונה שמעלים כאן נשמרת בתיקיית הפרויקט הזה.",
@@ -224,6 +226,8 @@
     altNew: "A new picture needs a new description. Say briefly what the picture shows (optional, can be done later).",
     altEdit: "Say briefly what the picture shows. Screen readers read it to blind visitors.",
     choose: "Choose",
+    pickMany: "You can choose several pictures: tap each picture you want (tap again to unselect), or upload several files at once. All the chosen pictures are added together.",
+    manyAlt: "With several pictures chosen, write each picture's description for blind visitors afterwards (\"Description for blind visitors\").",
     ok: "OK",
     newBadge: "new",
     uploadNote: "A picture uploaded here is stored in this project's folder.",
@@ -728,10 +732,12 @@
     }
     box.appendChild(grid);
     box.appendChild(el("div", { "class": "pe-add" }, [button("+ " + T.add, function () {
-      pick(function (path, alts) {
-        sec.images.push({ image: "/" + path, link: "", alt_en: alts.en, alt_he: alts.he, title_en: "", title_he: "", note_en: "", note_he: "", caption: "hidden", on_home: false, frame: "natural", focus: "center" });
+      pick(function (paths, alts) {
+        paths.forEach(function (path) {
+          sec.images.push({ image: "/" + path, link: "", alt_en: alts.en, alt_he: alts.he, title_en: "", title_he: "", note_en: "", note_he: "", caption: "hidden", on_home: false, frame: "natural", focus: "center" });
+        });
         changed();
-      }, T.altNew);
+      }, T.altNew, { many: true });
     })]));
     if (hiddenIdx.length) {
       var row = el("div", { "class": "pe-strip-row" });
@@ -1179,39 +1185,55 @@
       return out;
     });
   }
-  function pick(done, note) {
-    var chosen = "";
+  // Choosing pictures. opts.many: several pictures at once (tap to select or
+  // unselect, or upload several files); done is then called once with a list
+  // of paths, so one "undo" takes them all back.
+  function pick(done, note, opts) {
+    opts = opts || {};
+    var chosen = [];
     var grid = el("div", { "class": "pe-pick-grid" }, [el("p", { text: T.pickLoading })]);
     var altHe = el("input", { type: "text", dir: "rtl", "class": "pe-input" });
     var altEn = el("input", { type: "text", dir: "ltr", "class": "pe-input" });
     var chooseBtn = button(T.choose, function () {
-      if (!chosen) return;
+      if (!chosen.length) return;
       close();
-      done(chosen, { he: altHe.value.trim(), en: altEn.value.trim() });
+      // A description written here belongs to one picture only.
+      var alts = chosen.length === 1 ? { he: altHe.value.trim(), en: altEn.value.trim() } : { he: "", en: "" };
+      if (opts.many) done(chosen.slice(), alts); else done(chosen[0], alts);
     }, "pe-btn pe-primary");
     chooseBtn.disabled = true;
+    var altBox = el("div", { "class": "pe-alt-box" }, [
+      el("p", { "class": "pe-note", text: note || T.altEdit }),
+      el("label", {}, [document.createTextNode(T.altHe), altHe]),
+      el("label", {}, [document.createTextNode(T.altEn), altEn]),
+    ]);
     var file = el("input", { type: "file", accept: "image/jpeg,image/png,image/webp", "class": "pe-file" });
+    if (opts.many) file.multiple = true;
     file.addEventListener("change", function () {
-      var f = file.files && file.files[0];
-      if (!f) return;
-      var safe = f.name.toLowerCase().replace(/\.[^.]+$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "picture";
-      var ext = (f.name.match(/\.(jpe?g|png|webp)$/i) || [".jpg"])[0].toLowerCase();
-      // Stored in this project's folder.
-      var path = "assets/uploads/" + SLUG + "/" + safe + "-" + Date.now().toString(36) + ext;
-      uploads[path] = { file: f, blobUrl: URL.createObjectURL(f) };
-      if (imageList) imageList.unshift(path);
-      choose(path);
+      var list = Array.prototype.slice.call(file.files || []);
+      if (!list.length) return;
+      var stamp = Date.now().toString(36);
+      list.forEach(function (f, k) {
+        var safe = f.name.toLowerCase().replace(/\.[^.]+$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "picture";
+        var ext = (f.name.match(/\.(jpe?g|png|webp)$/i) || [".jpg"])[0].toLowerCase();
+        // Stored in this project's folder; each file gets its own name, also when several come at once.
+        var path = "assets/uploads/" + SLUG + "/" + safe + "-" + stamp + (list.length > 1 ? "-" + (k + 1) : "") + ext;
+        uploads[path] = { file: f, blobUrl: URL.createObjectURL(f) };
+        if (imageList) imageList.unshift(path);
+        if (opts.many) { if (chosen.indexOf(path) < 0) chosen.push(path); } else chosen = [path];
+      });
+      update();
       draw();
     });
     var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": T.pickTitle }, [
       el("div", { "class": "pe-modal-box" }, [
         el("div", { "class": "pe-modal-head" }, [el("strong", { text: T.pickTitle }), button(T.close, function () { close(); }, "pe-btn pe-ghost")]),
         el("label", { "class": "pe-upload" }, [document.createTextNode(T.pickUpload + " "), file, el("span", { "class": "pe-note", text: " " + T.uploadNote })]),
+        opts.many ? el("p", { "class": "pe-note pe-pick-many", text: T.pickMany }) : null,
         grid,
         el("div", { "class": "pe-modal-foot" }, [
-          el("p", { "class": "pe-note", text: note || T.altEdit }),
-          el("label", {}, [document.createTextNode(T.altHe), altHe]),
-          el("label", {}, [document.createTextNode(T.altEn), altEn]),
+          altBox,
+          opts.many ? el("p", { "class": "pe-note pe-many-alt", text: T.manyAlt }) : null,
           chooseBtn,
         ]),
       ]),
@@ -1219,16 +1241,24 @@
     function close() { dialog.remove(); document.removeEventListener("keydown", onKey); }
     function onKey(e) { if (e.key === "Escape") close(); }
     document.addEventListener("keydown", onKey);
+    function update() {
+      chooseBtn.disabled = !chosen.length;
+      chooseBtn.textContent = opts.many && chosen.length > 1 ? T.choose + " (" + chosen.length + ")" : T.choose;
+      altBox.hidden = chosen.length > 1;
+      Array.prototype.forEach.call(grid.querySelectorAll("button[data-path]"), function (b) { b.setAttribute("aria-pressed", String(chosen.indexOf(b.getAttribute("data-path")) >= 0)); });
+    }
     function choose(path) {
-      chosen = path; chooseBtn.disabled = false;
-      Array.prototype.forEach.call(grid.querySelectorAll("button[data-path]"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-path") === path)); });
+      if (!opts.many) chosen = [path];
+      else if (chosen.indexOf(path) >= 0) chosen.splice(chosen.indexOf(path), 1);
+      else chosen.push(path);
+      update();
     }
     function draw() {
       grid.textContent = "";
       (imageList || []).forEach(function (p) {
-        var b = el("button", { type: "button", "class": "pe-pick", "data-path": p, "aria-pressed": String(p === chosen), title: p.split("/").pop(), "aria-label": p.split("/").pop() }, [picture(p, "160px")]);
+        var b = el("button", { type: "button", "class": "pe-pick", "data-path": p, "aria-pressed": String(chosen.indexOf(p) >= 0), title: p.split("/").pop(), "aria-label": p.split("/").pop() }, [picture(p, "160px")]);
         b.addEventListener("click", function () { choose(p); });
-        b.addEventListener("dblclick", function () { choose(p); chooseBtn.click(); });
+        if (!opts.many) b.addEventListener("dblclick", function () { choose(p); chooseBtn.click(); });
         grid.appendChild(b);
       });
     }

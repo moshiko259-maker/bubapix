@@ -119,7 +119,7 @@
     frameTip: "לחצו על התמונה כדי לבחור אותה, וגררו נקודה כחולה כדי לשנות גודל", widthLabel: "רוחב", photoSizeNote: "גודל התמונה במחשב: לוחצים על תמונה וגוררים נקודה כחולה. בטלפון יש גודל נפרד, שקובעים מהטלפון.", photoSizePhone: "גודל התמונה בטלפון: לוחצים על תמונה וגוררים נקודה כחולה. הגודל הזה חל רק על טלפונים.",
     photoAdd: "הוספת תמונה", photoChange: "החלפת התמונה", photoRemove: "הסרת התמונה", photoRemoved: "התמונה הוסרה. אפשר לבטל עם ״ביטול פעולה״.",
     pickTitle: "בחירת תמונה", pickLoading: "טוען תמונות…", pickUpload: "העלאה מהמחשב או מהטלפון:", uploadNote: "(תישמר באתר רק בלחיצה על ״שמירה״)",
-    choose: "בחירה", close: "סגירה", newBadge: "חדשה — תישמר בשמירה",
+    choose: "בחירה", pickMany: "אפשר לבחור כמה תמונות: לוחצים על כל תמונה שרוצים (לחיצה נוספת מבטלת), או מעלים כמה קבצים יחד. כל התמונות שנבחרו נוספות בבת אחת.", close: "סגירה", newBadge: "חדשה — תישמר בשמירה",
     bodyHint2: "טקסט (לחצו כדי לכתוב; Enter = שורה חדשה, שורה ריקה = פסקה חדשה)",
     hint_email: "כתובת מייל (לחצו כדי לכתוב)", hint_email_2: "מייל נוסף (לא חובה)", hint_phone: "טלפון או וואטסאפ (לא חובה)", hint_location: "אזור (לא חובה), למשל: צפון וכל הארץ",
     badEmail: "זו לא כתובת מייל תקינה. הכתובת הקודמת נשארה.", badPhone: "מספר טלפון יכול לכלול ספרות, רווחים, מקפים, סוגריים ו־+ בהתחלה. המספר הקודם נשאר.",
@@ -181,7 +181,7 @@
     frameTip: "Click the picture to choose it, and drag a blue dot to change its size", widthLabel: "Width", photoSizeNote: "Picture size on computers: click a picture and drag a blue dot. Phones have their own size, set from a phone.", photoSizePhone: "Picture size on phones: tap a picture and drag a blue dot. This size applies to phones only.",
     photoAdd: "Add a picture", photoChange: "Replace the picture", photoRemove: "Remove the picture", photoRemoved: "Picture removed. You can undo it.",
     pickTitle: "Choose a picture", pickLoading: "Loading pictures…", pickUpload: "Upload from your computer or phone:", uploadNote: "(saved on the site only when you press \"Save\")",
-    choose: "Choose", close: "Close", newBadge: "New — saved when you save",
+    choose: "Choose", pickMany: "You can choose several pictures: tap each picture you want (tap again to unselect), or upload several files at once. All the chosen pictures are added together.", close: "Close", newBadge: "New — saved when you save",
     bodyHint2: "Text (click to write; Enter = new line, an empty line = new paragraph)",
     hint_email: "Email address (click to write)", hint_email_2: "Another email (optional)", hint_phone: "Phone or WhatsApp (optional)", hint_location: "Area (optional), e.g. North and all of Israel",
     badEmail: "That is not a valid email address. The previous address was kept.", badPhone: "A phone number can have digits, spaces, dashes, brackets and a + at the start. The previous number was kept.",
@@ -540,8 +540,12 @@
             var last = L.node.lastElementChild && L.node.lastElementChild.querySelector("[data-ed-sub]");
             if (last && !L.photoMain) last.focus();
           };
-          // A list of pictures: the new item starts with choosing its picture.
-          if (L.photoMain) pickPicture(function (path) { blank[L.photo] = "/" + path; push(); });
+          // A list of pictures: the new items start with choosing their pictures (several at once).
+          if (L.photoMain) pickPicture(function (paths) {
+            var list = Array.isArray(state.file[L.field]) ? state.file[L.field] : (state.file[L.field] = []);
+            paths.forEach(function (path) { var item = JSON.parse(JSON.stringify(blank)); item[L.photo] = "/" + path; list.push(item); });
+            changed();
+          }, true);
           else push();
         }, "pe-btn pe-primary")]);
         L.node.parentNode.insertBefore(addBox, L.node.nextSibling);
@@ -751,26 +755,34 @@
       return out;
     });
   }
-  function pickPicture(done) {
-    var chosen = "";
+  // many: several pictures at once (tap to select or unselect, or upload
+  // several files); done then gets a list of paths, once.
+  function pickPicture(done, many) {
+    var chosen = [];
     var grid = el("div", { "class": "pe-pick-grid" }, [el("p", { text: T.pickLoading })]);
-    var chooseBtn = button(T.choose, function () { if (!chosen) return; close(); done(chosen); }, "pe-btn pe-primary");
+    var chooseBtn = button(T.choose, function () { if (!chosen.length) return; close(); if (many) done(chosen.slice()); else done(chosen[0]); }, "pe-btn pe-primary");
     chooseBtn.disabled = true;
     var file = el("input", { type: "file", accept: "image/jpeg,image/png,image/webp", "class": "pe-file" });
+    if (many) file.multiple = true;
     file.addEventListener("change", function () {
-      var f = file.files && file.files[0];
-      if (!f) return;
-      var safe = f.name.toLowerCase().replace(/\.[^.]+$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "picture";
-      var ext = (f.name.match(/\.(jpe?g|png|webp)$/i) || [".jpg"])[0].toLowerCase();
-      var path = "assets/uploads/" + PAGE + "/" + safe + "-" + Date.now().toString(36) + ext;
-      uploads[path] = { file: f, blobUrl: URL.createObjectURL(f) };
-      if (imageList) imageList.unshift(path);
-      choosePath(path); draw();
+      var list = Array.prototype.slice.call(file.files || []);
+      if (!list.length) return;
+      var stamp = Date.now().toString(36);
+      list.forEach(function (f, k) {
+        var safe = f.name.toLowerCase().replace(/\.[^.]+$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "picture";
+        var ext = (f.name.match(/\.(jpe?g|png|webp)$/i) || [".jpg"])[0].toLowerCase();
+        var path = "assets/uploads/" + PAGE + "/" + safe + "-" + stamp + (list.length > 1 ? "-" + (k + 1) : "") + ext;
+        uploads[path] = { file: f, blobUrl: URL.createObjectURL(f) };
+        if (imageList) imageList.unshift(path);
+        if (many) { if (chosen.indexOf(path) < 0) chosen.push(path); } else chosen = [path];
+      });
+      update(); draw();
     });
     var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": T.pickTitle }, [
       el("div", { "class": "pe-modal-box" }, [
         el("div", { "class": "pe-modal-head" }, [el("strong", { text: T.pickTitle }), button(T.close, function () { close(); }, "pe-btn pe-ghost")]),
         el("label", { "class": "pe-upload" }, [document.createTextNode(T.pickUpload + " "), file, el("span", { "class": "pe-note", text: " " + T.uploadNote })]),
+        many ? el("p", { "class": "pe-note pe-pick-many", text: T.pickMany }) : null,
         grid,
         el("div", { "class": "pe-modal-foot" }, [chooseBtn]),
       ]),
@@ -778,16 +790,23 @@
     function close() { dialog.remove(); document.removeEventListener("keydown", onKey); }
     function onKey(e) { if (e.key === "Escape") close(); }
     document.addEventListener("keydown", onKey);
+    function update() {
+      chooseBtn.disabled = !chosen.length;
+      chooseBtn.textContent = many && chosen.length > 1 ? T.choose + " (" + chosen.length + ")" : T.choose;
+      Array.prototype.forEach.call(grid.querySelectorAll("button[data-path]"), function (b) { b.setAttribute("aria-pressed", String(chosen.indexOf(b.getAttribute("data-path")) >= 0)); });
+    }
     function choosePath(path) {
-      chosen = path; chooseBtn.disabled = false;
-      Array.prototype.forEach.call(grid.querySelectorAll("button[data-path]"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-path") === path)); });
+      if (!many) chosen = [path];
+      else if (chosen.indexOf(path) >= 0) chosen.splice(chosen.indexOf(path), 1);
+      else chosen.push(path);
+      update();
     }
     function draw() {
       grid.textContent = "";
       (imageList || []).forEach(function (p) {
-        var b = el("button", { type: "button", "class": "pe-pick", "data-path": p, "aria-pressed": String(p === chosen), title: p.split("/").pop(), "aria-label": p.split("/").pop() }, [picture(p)]);
+        var b = el("button", { type: "button", "class": "pe-pick", "data-path": p, "aria-pressed": String(chosen.indexOf(p) >= 0), title: p.split("/").pop(), "aria-label": p.split("/").pop() }, [picture(p)]);
         b.addEventListener("click", function () { choosePath(p); });
-        b.addEventListener("dblclick", function () { choosePath(p); chooseBtn.click(); });
+        if (!many) b.addEventListener("dblclick", function () { choosePath(p); chooseBtn.click(); });
         grid.appendChild(b);
       });
     }
