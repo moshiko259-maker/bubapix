@@ -142,6 +142,7 @@
     "link": "Send an idea or a collaboration proposal"
   },
   "consult": {
+    "nameLabel": "Your name",
     "title": "Private consultation",
     "intro": "Ask a question or tell us about a project. Your message goes only to the studio and is never published.",
     "emailLabel": "Email (required, for our reply)",

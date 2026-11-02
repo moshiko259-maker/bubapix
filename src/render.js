@@ -87,7 +87,10 @@ function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = fa
   const { cls, ratio } = ratioClass(im);
   const isLead = lead && ratio >= 1.2;
   const sz = sizes || (isLead ? FULL : "(max-width: 560px) 92vw, (max-width: 1100px) 46vw, 40vw");
-  const picture = `<span class="jg-media">${img(ctx, im, { sizes: sz, attrs: eager ? 'fetchpriority="high" decoding="async"' : soon ? 'decoding="async"' : 'loading="lazy" decoding="async"' })}</span>`;
+  // A description that only repeats the name written right next to it is read
+  // twice by screen readers: the picture then counts as decorative (alt="").
+  const same = caption && caption.title && String(im.alt || "").trim() === String(caption.title).trim();
+  const picture = `<span class="jg-media">${img(ctx, same ? { ...im, alt: "" } : im, { sizes: sz, attrs: eager ? 'fetchpriority="high" decoding="async"' : soon ? 'decoding="async"' : 'loading="lazy" decoding="async"' })}</span>`;
   const capInner = caption && (caption.title || caption.note)
     ? `${caption.title ? `<span class="jg-title"${heLang(ctx, caption.title)}>${e(caption.title)}</span>` : ""}${caption.note ? `<span class="jg-note">${e(caption.note)}</span>` : ""}`
     : "";
@@ -951,7 +954,7 @@ function participationForm(ctx, kind, { project = "" } = {}) {
   // The email label already says whether it is required, so no mark there.
   const id = `${kind}${project ? `-${project}` : ""}`;
   return `<form class="cform" data-form="${kind}"${project ? ` data-project="${e(project)}"` : ""} novalidate>${type}
-          <label class="field"><span>${e(c.nameLabel)}${requiredMark(ctx)}</span><input name="name" maxlength="60" required autocomplete="nickname"></label>
+          <label class="field"><span>${e(kind === "consult" ? t.consult.nameLabel : c.nameLabel)}${requiredMark(ctx)}</span><input name="name" maxlength="60" required autocomplete="${kind === "consult" ? "name" : "nickname"}"></label>
           <p class="field-error" id="err-${e(id)}-name" hidden></p>
           <label class="field"><span>${e(messageLabel)}${requiredMark(ctx)}</span><textarea name="message" maxlength="2000" rows="5" required></textarea></label>
           <p class="field-error" id="err-${e(id)}-message" hidden></p>
@@ -1105,7 +1108,7 @@ function about(ctx) {
             // Picture size set by dragging in the page editor (computers): a class with its own rule.
             if (m.photoW) freeRules.set(`tw-${m.photoW}`, `.team .tw-${m.photoW}{width:${m.photoW}%;margin-inline:auto;display:block}`);
             return `
-          <li data-ed-item="${m.i}">${m.photo ? img(ctx, m.photo, { sizes: "(max-width: 560px) 100vw, 25vw", cls: m.photoW ? `tw-${m.photoW}` : "" }) : ""}<h3 data-ed-sub="name" data-ts="about/name">${e(m.name)}</h3>${m.role ? `<p class="muted" data-ed-sub="role" data-ts="about/role">${e(m.role)}</p>` : ""}${m.bio ? `<p data-ed-sub="bio" data-ts="about/bio">${e(m.bio)}</p>` : ""}</li>`;
+          <li data-ed-item="${m.i}">${m.photo ? img(ctx, String(m.photo.alt || "").trim() === String(m.name || "").trim() ? { ...m.photo, alt: "" } : m.photo, { sizes: "(max-width: 560px) 100vw, 25vw", cls: m.photoW ? `tw-${m.photoW}` : "" }) : ""}<h3 data-ed-sub="name" data-ts="about/name">${e(m.name)}</h3>${m.role ? `<p class="muted" data-ed-sub="role" data-ts="about/role">${e(m.role)}</p>` : ""}${m.bio ? `<p data-ed-sub="bio" data-ts="about/bio">${e(m.bio)}</p>` : ""}</li>`;
           }).join("")}
         </ul>
       </section>` : ""}
