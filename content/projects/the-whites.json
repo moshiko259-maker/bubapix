@@ -677,6 +677,34 @@
           "on_home": false,
           "frame": "natural",
           "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/img-20261102-wa0028-1-mvzsv8m9.jpg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/img-20261102-wa0032-3-mvzswq4j.jpg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
         }
       ]
     },
