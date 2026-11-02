@@ -357,20 +357,28 @@ function contentFor(lang) {
         if (!parsed && !local) return null;
         // Upright videos (phone format, YouTube Shorts) get an upright frame.
         const tall = typeof v === "string" ? /youtube\.com\/shorts\//.test(url) : v.shape === "tall" || (!v.shape && /youtube\.com\/shorts\//.test(url || ""));
-        // The picture shown before the video plays, chosen per video:
-        //   poster: "youtube" (YouTube's own thumbnail), "custom" (poster_image,
-        //   an uploaded picture) or "cover"/empty (the project's cover, as before).
-        // A choice that cannot be used (no YouTube link, a missing picture)
-        // falls back to the cover.
+        // The picture shown until "play", chosen per video (poster):
+        //   "youtube" or empty (the default for a YouTube video): the video's own
+        //     picture from YouTube, downloaded when the site is built and kept on
+        //     this site (scripts/fetch-video-posters.js), so nothing is loaded from
+        //     YouTube before "play";
+        //   "cover": the project's poster;
+        //   "custom": a picture the owner chose (poster_image).
+        // Vimeo and video files show the project's poster. A YouTube picture that
+        // is not here yet (a local build without internet, a video without one)
+        // or a missing chosen picture also falls back to the project's poster.
         let poster = { kind: "cover" };
         const want = typeof v === "string" ? "" : String(v.poster || "");
-        if (want === "youtube") {
-          if (parsed && parsed.kind === "youtube") poster = { kind: "youtube", id: parsed.id };
-          else images.warnings.push(`${where}: video ${i + 1} asks for the YouTube picture but has no YouTube link; the cover is used`);
-        } else if (want === "custom") {
+        if (want === "custom") {
           const im = v.poster_image ? images.image(v.poster_image, `${where} video ${i + 1} poster`) : null;
           if (im) { im.alt = ""; poster = { kind: "custom", image: im }; }
-          else images.warnings.push(`${where}: video ${i + 1} has no poster picture yet; the cover is used`);
+          else images.warnings.push(`${where}: video ${i + 1} has no chosen picture yet; the project's poster is used`);
+        } else if (want !== "cover" && parsed && parsed.kind === "youtube") {
+          const yt = `assets/video-posters/youtube-${parsed.id}.jpg`;
+          if (fs.existsSync(path.join(root, yt))) {
+            const im = images.image(yt, `${where} video ${i + 1} YouTube picture`);
+            if (im) { im.alt = ""; poster = { kind: "youtube", image: im }; }
+          }
         }
         return { embed: parsed, file: local, title: typeof v === "string" ? "" : pick(v, "title", lang), tall, poster };
       };

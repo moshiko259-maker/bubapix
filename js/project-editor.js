@@ -30,7 +30,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 3)) {
+  if (!core || !(core.version >= 4)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -150,9 +150,9 @@
     videoTitle: "כותרת לסרטון (לא חובה)", videoUrl: "קישור לסרטון ביוטיוב או ב־Vimeo",
     videoUrlHint: "ביוטיוב: ״שיתוף״ ← ״העתקה״, ומדביקים כאן. גם סרטון ״לא רשום״ (Unlisted) מוצג באתר.",
     badVideo: "זה לא קישור של יוטיוב או של Vimeo. בדקו את הקישור ונסו שוב.", changeLink: "שינוי הקישור",
-    poster: "תמונת התצוגה לפני ההפעלה", posterCover: "תמונת השער של הפרויקט", posterYoutube: "התמונה של הסרטון ביוטיוב", posterCustom: "תמונה משלכם",
-    posterChoose: "בחירת תמונת תצוגה", posterChange: "החלפת תמונת התצוגה", posterNone: "עוד לא נבחרה תמונה, ובינתיים מוצגת תמונת השער.",
-    posterYtNote: "אם אין לסרטון תמונה ביוטיוב, מוצגת תמונת השער.",
+    poster: "תמונה לפני הניגון", posterCover: "הפוסטר של הפרויקט", posterYoutube: "התמונה של הסרטון מיוטיוב", posterCustom: "תמונה שבחרתי",
+    posterChoose: "בחירת תמונה לסרטון", posterNone: "עוד לא נבחרה תמונה, ובינתיים מוצג הפוסטר של הפרויקט.", posterNote: "התמונה מוצגת עד שלוחצים על ״נגן״. אין צורך בתיאור לעיוורים: הכפתור כבר נקרא בשם הסרטון.",
+    posterYtNote: "תמונת יוטיוב נשמרת באתר עצמו בזמן הבנייה, ומופיעה אחרי העדכון. עד אז, או אם אין לסרטון תמונה ביוטיוב, מוצג הפוסטר של הפרויקט.",
     wide: "רחב (16:9)", tall: "אנכי (טלפון)", shape: "צורת המסגרת", videoFile: "קובץ וידאו שהועלה בכלי הניהול:",
     sectionUp: "↑ האזור למעלה", sectionDown: "↓ האזור למטה", sectionUpTip: "הזזת אזור הסרטונים מעל האזור שלפניו", sectionDownTip: "הזזת אזור הסרטונים מתחת לאזור שאחריו",
     videosNote: "הסרטון עצמו נשאר ביוטיוב; באתר נשמר רק הקישור. אזור בלי סרטונים לא מוצג באתר.",
@@ -258,9 +258,9 @@
     videoTitle: "Title of the video (optional)", videoUrl: "Link to the video on YouTube or Vimeo",
     videoUrlHint: "On YouTube: \"Share\" → \"Copy\", then paste here. An unlisted video also shows on the site.",
     badVideo: "That is not a YouTube or Vimeo link. Check the link and try again.", changeLink: "Change the link",
-    poster: "Picture before playing", posterCover: "The project's cover", posterYoutube: "YouTube's picture of the video", posterCustom: "Own picture",
-    posterChoose: "Choose the picture", posterChange: "Change the picture", posterNone: "No picture chosen yet; the cover is shown meanwhile.",
-    posterYtNote: "If YouTube has no picture for the video, the cover is shown.",
+    poster: "Picture before playing", posterCover: "The project's poster", posterYoutube: "The video's picture from YouTube", posterCustom: "A picture I chose",
+    posterChoose: "Choose a picture for the video", posterNone: "No picture chosen yet; the project's poster shows meanwhile.", posterNote: "The picture shows until \"play\" is pressed. No description for blind visitors is needed: the button already reads the video's name.",
+    posterYtNote: "The YouTube picture is saved on the site itself when the site is built, and shows after the update. Until then, or if YouTube has no picture for the video, the project's poster shows.",
     wide: "Wide (16:9)", tall: "Upright (phone)", shape: "Frame shape", videoFile: "A video file uploaded in the admin panel:",
     sectionUp: "↑ Area up", sectionDown: "↓ Area down", sectionUpTip: "Move the videos area above the area before it", sectionDownTip: "Move the videos area below the area after it",
     videosNote: "The video itself stays on YouTube; the site keeps only the link. An area without videos is not shown on the site.",
@@ -843,25 +843,27 @@
     }, "pe-btn pe-add-detail")]));
     return box;
   }
-  // Which picture a video shows before playing: "cover" (also when nothing is
-  // set, as before), "youtube" (only with a YouTube link) or "custom".
+  // Which picture a video shows before playing (build.js: poster, poster_image):
+  // "youtube" (the default for a YouTube video: its picture from YouTube, kept
+  // on the site), "cover" (the project's poster; also Vimeo and video files)
+  // or "custom" (a chosen picture).
   function posterKind(v, pv) {
     if (v.poster === "custom") return "custom";
-    if (v.poster === "youtube" && pv && pv.kind === "youtube") return "youtube";
-    return "cover";
+    if (v.poster === "cover" || !pv || pv.kind !== "youtube") return "cover";
+    return "youtube";
   }
   function choosePoster(v) {
-    pick(function (path) { v.poster = "custom"; v.poster_image = "/" + path; changed(); });
+    pick(function (path) { v.poster = "custom"; v.poster_image = "/" + path; changed(); }, T.posterNote);
   }
-  // A small view of the chosen picture under the video's tools.
+  // A small view of the picture under the video's tools.
   function posterPreview(v, pv, kind) {
     var box = el("div", { "class": "pe-poster-preview", "data-poster-kind": kind });
     if (kind === "custom" && v.poster_image) box.appendChild(picture(v.poster_image, "160px"));
     else if (kind === "custom") box.appendChild(el("span", { "class": "pe-note", text: T.posterNone }));
     else if (kind === "youtube") {
-      // The editor's page allows pictures from YouTube only when the site already uses one;
-      // otherwise the picture just does not show here (the note still explains it).
-      var im = el("img", { src: "https://i.ytimg.com/vi/" + encodeURIComponent(pv.id) + "/hqdefault.jpg", alt: "", width: "160", height: "120", loading: "lazy", referrerpolicy: "no-referrer" });
+      // The picture kept on the site (nothing is loaded from YouTube); until the
+      // build has downloaded it, only the note shows.
+      var im = el("img", { src: url("assets/video-posters/youtube-" + pv.id + ".jpg"), alt: "", width: "160", height: "90", loading: "lazy" });
       im.addEventListener("error", function () { im.remove(); });
       box.appendChild(im);
       box.appendChild(el("span", { "class": "pe-note", text: T.posterYtNote }));
@@ -898,16 +900,21 @@
         tools.push(selectBox(T.shape, isTall(v) ? "tall" : "wide", [["wide", T.wide], ["tall", T.tall]], function (val) { v.shape = val; changed(); }));
       }
       // The picture before playing, for this video only (build.js: poster, poster_image).
-      var posterOpts = [["cover", T.posterCover]].concat(pv && pv.kind === "youtube" ? [["youtube", T.posterYoutube]] : []).concat([["custom", T.posterCustom]]);
+      var posterOpts = (pv && pv.kind === "youtube" ? [["youtube", T.posterYoutube]] : []).concat([["cover", T.posterCover], ["custom", T.posterCustom]]);
       var posterNow = posterKind(v, pv);
       var psel = selectBox(T.poster, posterNow, posterOpts, function (val) {
-        if (val === "cover") delete v.poster; else v.poster = val;
-        if (val === "custom" && !v.poster_image) { choosePoster(v); return; }
+        if (val === "custom") {
+          if (v.poster_image) { v.poster = "custom"; changed(); } else { psel.value = posterNow; choosePoster(v); }
+          return;
+        }
+        // YouTube's picture is the default (no field); a picture chosen before is let go.
+        if (val === "youtube") delete v.poster; else v.poster = val;
+        delete v.poster_image;
         changed();
       });
       psel.setAttribute("data-video-poster", "");
       tools.push(psel);
-      if (posterNow === "custom") tools.push(button(v.poster_image ? T.posterChange : T.posterChoose, function () { choosePoster(v); }, "pe-btn pe-poster-btn"));
+      tools.push(button(T.posterChoose, function () { choosePoster(v); }, "pe-btn pe-poster-btn"));
       tools.push(button(T.remove.split(" ")[0], function () { sec.items.splice(i, 1); changed(); setStatus(T.videoRemoved, "warn"); }, "pe-btn pe-danger"));
       list.appendChild(el("figure", { "class": "video-item pe-video" + (isTall(v) ? " is-tall" : ""), "data-video": String(i) }, [player(v), cap, el("div", { "class": "pe-tools pe-video-tools" }, tools), posterPreview(v, pv, posterNow)]));
     });

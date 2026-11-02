@@ -99,7 +99,10 @@ function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = fa
   if (!href) {
     return `<figure class="${classes}">${picture}${capInner ? `<figcaption class="jg-caption">${capInner}</figcaption>` : ""}</figure>`;
   }
-  return `<a class="${classes}" href="${href}"${label ? ` aria-label="${e(label)}"` : ""}${viewer ? " data-viewer" : ""}${external ? ' target="_blank" rel="noopener"' : ""}>${picture}${capInner ? `<span class="jg-caption">${capInner}</span>` : ""}</a>`;
+  // The link's name (aria-label) hides the text shown under the picture, so a
+  // screen reader also reads that text as the link's description.
+  const capId = capInner ? `cap-${(ctx.capSeq = (ctx.capSeq || 0) + 1)}` : "";
+  return `<a class="${classes}" href="${href}"${label ? ` aria-label="${e(label)}"` : ""}${capId ? ` aria-describedby="${capId}"` : ""}${viewer ? " data-viewer" : ""}${external ? ' target="_blank" rel="noopener"' : ""}>${picture}${capInner ? `<span class="jg-caption" id="${capId}">${capInner}</span>` : ""}</a>`;
 }
 
 function gallery(items, extraClass = "") {
@@ -125,9 +128,7 @@ function csp(ctx, inlineScripts, pageEditor = false, githubCheck = false) {
     // Only preview builds allow that address; the live site stays 'self'.
     // Pages with the owner's "Edit on the page" also show pictures chosen on
     // this computer before they are saved (blob:).
-    // YouTube's own video pictures (i.ytimg.com): when a video is set to show one, and on
-    // project pages, whose editor shows that picture when the owner chooses it.
-    `img-src 'self' data:${pageEditor ? " blob:" : ""}${ctx.preview ? " https://raw.githubusercontent.com" : ""}${usesYtThumbs(ctx.data) || pageEditor === "project" ? " https://i.ytimg.com" : ""}`,
+    `img-src 'self' data:${pageEditor ? " blob:" : ""}${ctx.preview ? " https://raw.githubusercontent.com" : ""}`,
     `media-src 'self'${ctx.preview ? " https://raw.githubusercontent.com" : ""}`,
     // The owner's page editor reads and saves the page settings in the
     // GitHub repository, with the owner's own sign-in.
@@ -772,29 +773,18 @@ function work(ctx) {
   });
 }
 
-// YouTube's own picture for a video. hqdefault exists for every public
-// video (maxresdefault does not); js/main.js swaps in the fallback when it fails.
-const ytThumb = (id) => `https://i.ytimg.com/vi/${encodeURIComponent(id)}/hqdefault.jpg`;
-// Does any video on the site use YouTube's own picture? (Content-Security-Policy, privacy page.)
-const usesYtThumbs = (data) => !!data && (data.projects || []).some((p) => (p.sections || []).some((sec) => sec.type === "videos" && sec.videos.some((v) => v.poster && v.poster.kind === "youtube")));
-
 // cover: the project's cover, the poster when the video has no poster of its own.
 function videoBlock(ctx, v, projectTitle, cover) {
   const { t } = ctx;
   const title = `${projectTitle} — ${v.title || t.work.video}`;
   let player = "";
-  // The picture before playing, chosen per video (build.js): its own uploaded
-  // picture, YouTube's picture (falls back to the cover) or the cover.
-  const own = v.poster && v.poster.kind === "custom" ? v.poster.image : null;
-  const poster = own || cover;
-  const yt = v.poster && v.poster.kind === "youtube" && v.embed && v.embed.kind === "youtube" ? v.embed.id : "";
-  const posterImg = yt
-    ? `<img class="video-poster" src="${e(ytThumb(yt))}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-yt-thumb${cover ? ` data-fallback="${ctx.assetBase}${e(cover.full || cover.src)}"` : ""}>`
-    : poster ? img(ctx, { ...poster, alt: "" }, { sizes: "(max-width: 700px) 100vw, 60vw", cls: "video-poster" }) : "";
-  // YouTube and Vimeo: the player is not loaded until the visitor presses
-  // play (a picture and a play button, js/main.js swaps in the player).
-  // Only a video set to show YouTube's own picture loads that picture from
-  // YouTube before play. Without JavaScript the button opens the video on its own site.
+  // The picture before playing, chosen per video (build.js): the video's
+  // picture from YouTube (kept on this site), a chosen picture, or the cover.
+  const poster = (v.poster && v.poster.image) || cover;
+  const posterImg = poster ? img(ctx, { ...poster, alt: "" }, { sizes: "(max-width: 700px) 100vw, 60vw", cls: "video-poster" }) : "";
+  // YouTube and Vimeo: nothing is loaded from them until the visitor presses
+  // play (a picture from this site and a play button, js/main.js swaps in the
+  // player). Without JavaScript the button opens the video on its own site.
   const embed = v.embed && v.embed.kind === "youtube"
     ? { site: "YouTube", src: `https://www.youtube-nocookie.com/embed/${v.embed.id}?autoplay=1`, href: `https://www.youtube.com/watch?v=${v.embed.id}`, allow: "accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" }
     : v.embed && v.embed.kind === "vimeo"
@@ -1229,7 +1219,7 @@ function privacy(ctx) {
   // Videos from YouTube (only when the site has one), and how long messages are kept (before "Your rights").
   const tube = (data.showreel && data.showreel.kind === "youtube") || data.projects.some((p) => (p.sections || []).some((sec) => sec.type === "videos" && sec.videos.some((v) => v.embed && v.embed.kind === "youtube")));
   const rights = items.indexOf(t.privacy.items[t.privacy.items.length - 1]);
-  items.splice(rights, 0, ...(tube ? [usesYtThumbs(data) ? t.privacy.videosThumbs : t.privacy.videos] : []), t.privacy.retention);
+  items.splice(rights, 0, ...(tube ? [t.privacy.videos] : []), t.privacy.retention);
   return layout(ctx, {
     title: pageTitle(ctx, t.privacy.title),
     description: t.privacy.items[0],

@@ -259,6 +259,22 @@
         var a = approx(sum, c0);
         totalEl.textContent = (physical && !(ship && ship.currency === c0) ? t.total : t.totalPay) + ": " + money(sum, c0) + (a ? " (" + a + ")" : "");
       } else {
+        // Items in different currencies: a subtotal for each currency (and its
+        // VAT when VAT is added), and the shipping price as it is set. The total
+        // is confirmed with the visitor (no exchange at a guessed rate).
+        var physicalM = items.some(function (i) { return i.ships !== "digital"; });
+        var shipM = dest() === "abroad" ? cfg.shipAbroad : cfg.shipIsrael;
+        codes.forEach(function (c) {
+          addLine(t.subtotal + " (" + c + ")", money(totals[c], c));
+          if (cfg.vat && cfg.vat.mode === "added") {
+            var vc = Math.round(totals[c] * cfg.vat.rate) / 100;
+            addLine(t.vatLine + " (" + cfg.vat.rate + "%, " + c + ")", money(vc, c));
+            payTotals[c] = totals[c] + vc;
+          }
+        });
+        if (cfg.vat && cfg.vat.mode === "included" && codes.length) addLine(t.vatLine + " (" + cfg.vat.rate + "%)", t.vatIncluded);
+        if (codes.length && !physicalM) addLine(t.shippingLine, t.noShipping);
+        else if (codes.length && shipM) addLine(t.shippingLine, money(shipM.amount, shipM.currency));
         totalEl.textContent = codes.length > 1 ? t.mixed : "";
       }
       lastTotals = payTotals;

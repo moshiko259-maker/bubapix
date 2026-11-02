@@ -19,12 +19,14 @@
  *   BubaCore.frame(box, o, T)                size by dragging a dot (computers): o.start, area, live, done, min, max
  *   BubaCore.saveFiles(opts)                 saving: check every file first, then write and verify (see below)
  *   BubaCore.saveErrorText(err)              the message for a save that was not verified
+ *   (every editor window, class "pe-modal": keyboard focus moves into it, Tab stays
+ *    inside it, and closing it brings focus back to where it was; see dialogFocus)
  *   BubaCore.version                         editors that need a newer copy load it again (a browser
  *                                            can keep an older copy of this file for a few minutes)
  */
 (function () {
   "use strict";
-  var VERSION = 3;
+  var VERSION = 4;
   if (window.BubaCore && window.BubaCore.version >= VERSION) return;
 
   function el(tag, attrs, kids) {
@@ -178,6 +180,65 @@
     }
     return { watch: watch, follow: follow };
   }
+
+  // Keyboard focus in the editor windows (every element with class "pe-modal", in
+  // all the editors and in "Earlier versions"), in one place:
+  //  - when a window opens and focus is not inside it, focus moves to its first
+  //    field or button (not "Close" in the title row, when there is anything else);
+  //  - Tab and Shift+Tab stay inside the top window;
+  //  - when the window closes and focus was lost (left on the page body), it goes
+  //    back to the button that opened the window.
+  function dialogFocus() {
+    if (window.__bubaDialogFocus) return;
+    window.__bubaDialogFocus = true;
+    var SEL = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    var recent = [];
+    var openers = [];
+    function topModal() { var all = document.querySelectorAll(".pe-modal"); return all.length ? all[all.length - 1] : null; }
+    function focusables(box) {
+      return Array.prototype.filter.call(box.querySelectorAll(SEL), function (n) { return !n.closest("[hidden]") && n.getClientRects().length; });
+    }
+    // The last places focus was in, newest first: the opener of a window is the
+    // newest one outside it (it can be inside another window under it).
+    document.addEventListener("focusin", function (e) {
+      if (e.target === document.body) return;
+      recent.unshift(e.target);
+      if (recent.length > 20) recent.length = 20;
+    }, true);
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Tab") return;
+      var box = topModal();
+      if (!box) return;
+      var list = focusables(box);
+      if (!list.length) return;
+      var first = list[0], last = list[list.length - 1], cur = document.activeElement;
+      if (!box.contains(cur)) { e.preventDefault(); (e.shiftKey ? last : first).focus(); }
+      else if (e.shiftKey && cur === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && cur === last) { e.preventDefault(); first.focus(); }
+    }, true);
+    new MutationObserver(function (records) {
+      records.forEach(function (r) {
+        Array.prototype.forEach.call(r.addedNodes, function (n) {
+          if (n.nodeType !== 1 || !n.classList.contains("pe-modal")) return;
+          openers.push({ box: n, from: recent.filter(function (f) { return !n.contains(f); })[0] || null });
+          if (n.contains(document.activeElement)) return;
+          var list = focusables(n);
+          var inBody = list.filter(function (b) { return !b.closest(".pe-modal-head"); });
+          var go = inBody[0] || list[0];
+          if (go) go.focus();
+        });
+        Array.prototype.forEach.call(r.removedNodes, function (n) {
+          if (n.nodeType !== 1 || !n.classList.contains("pe-modal")) return;
+          var i = openers.map(function (o) { return o.box; }).indexOf(n);
+          if (i < 0) return;
+          var from = openers.splice(i, 1)[0].from;
+          var lost = !document.activeElement || document.activeElement === document.body;
+          if (lost && from && document.contains(from)) from.focus();
+        });
+      });
+    }).observe(document.body, { childList: true });
+  }
+  dialogFocus();
 
   function modal(label, kids, focus) {
     var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": label }, [

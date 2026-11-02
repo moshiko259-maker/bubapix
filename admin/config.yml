@@ -291,16 +291,16 @@ collections:
                   - { name: file, label: "Or a short MP4 file, up to 25 MB / או קובץ MP4 קצר", widget: file, required: false, accept: "video/mp4,video/webm" }
                   - { name: shape, label: "Shape / צורה", widget: select, required: false, default: "wide", options: [{ label: "Wide 16:9 / רחב", value: "wide" }, { label: "Upright, phone format / אנכי (טלפון)", value: "tall" }] }
                   - name: poster
-                    label: "Picture before playing / תמונת התצוגה לפני ההפעלה"
+                    label: "Picture before playing / תמונה לפני הניגון"
                     widget: select
                     required: false
-                    default: "cover"
-                    hint: "YouTube picture: the video's own picture from YouTube (only for a YouTube link; if YouTube has none, the cover is shown). Own picture: choose or upload it below. / תמונה מיוטיוב: התמונה של הסרטון ביוטיוב (רק לקישור יוטיוב; אם אין, מוצגת תמונת השער). תמונה משלכם: בוחרים או מעלים למטה."
+                    default: "youtube"
+                    hint: "The video's picture from YouTube is saved on the site itself when the site is built, and shows after the update (Vimeo and video files show the project's poster). / תמונת יוטיוב נשמרת באתר עצמו בזמן הבנייה, ומופיעה אחרי העדכון (ב־Vimeo ובקובץ וידאו מוצג הפוסטר של הפרויקט)."
                     options:
-                      - { label: "The project's cover / תמונת השער של הפרויקט", value: "cover" }
-                      - { label: "YouTube's picture of the video / התמונה של הסרטון ביוטיוב", value: "youtube" }
-                      - { label: "Own picture (below) / תמונה משלכם (למטה)", value: "custom" }
-                  - { name: poster_image, label: "Own picture before playing / תמונת תצוגה משלכם", widget: image, required: false, accept: "image/jpeg,image/png,image/webp", hint: "Used when \"Own picture\" is chosen above. / משמשת כשבוחרים למעלה ״תמונה משלכם״." }
+                      - { label: "The video's picture from YouTube / התמונה של הסרטון מיוטיוב", value: "youtube" }
+                      - { label: "The project's poster / הפוסטר של הפרויקט", value: "cover" }
+                      - { label: "A picture I chose (below) / תמונה שבחרתי (למטה)", value: "custom" }
+                  - { name: poster_image, label: "My picture for this video / התמונה שלי לסרטון", widget: image, required: false, accept: "image/jpeg,image/png,image/webp,image/gif", hint: "Used when \"A picture I chose\" is selected above. / משמשת כשבוחרים למעלה ״תמונה שבחרתי״." }
                   - { name: title_en, label: "Title, English (optional) / כותרת, אנגלית", widget: string, required: false }
                   - { name: title_he, label: "Title, Hebrew (optional) / כותרת, עברית", widget: string, required: false }
           - name: text

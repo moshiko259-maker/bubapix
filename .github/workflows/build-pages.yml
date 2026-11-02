@@ -63,6 +63,13 @@ jobs:
       - name: Update exchange rates (approximate prices in other currencies)
         run: node scripts/fetch-rates.js
 
+      # Each YouTube video's own picture, downloaded once and kept on the site
+      # (assets/video-posters/), so visitors load nothing from YouTube before
+      # "play". A failed download never stops the build: that video shows the
+      # project's poster until a later build gets its picture.
+      - name: Keep each YouTube video's picture on the site (shown until play)
+        run: node scripts/fetch-video-posters.js
+
       - name: Build the site
         run: |
           if [ "$BRANCH" = "main" ]; then
