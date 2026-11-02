@@ -35,7 +35,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/whites-character-sheet-2.png",
@@ -49,7 +50,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 63
         },
         {
           "image": "/assets/work/whites-father.png",
@@ -63,7 +65,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 35
         },
         {
           "image": "/assets/work/whites-mother.png",
@@ -77,7 +80,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 23
         },
         {
           "image": "/assets/work/whites-mother-glow.png",
@@ -91,7 +95,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 51
         },
         {
           "image": "/assets/work/whites-child.png",
@@ -105,7 +110,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 23
         },
         {
           "image": "/assets/work/whites-forehead-chip.jpg",
@@ -119,7 +125,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 23
         },
         {
           "image": "/assets/work/whites-forehead-plate.jpg",
@@ -133,7 +140,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 23
         },
         {
           "image": "/assets/work/whites-family-ponchos.png",
@@ -147,7 +155,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 51
         },
         {
           "image": "/assets/work/whites-family-robes.png",
@@ -161,7 +170,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 49
         },
         {
           "image": "/assets/work/whites-family-white-robes.png",
@@ -175,7 +185,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 49
         },
         {
           "image": "/assets/work/whites-family-robot-creature.png",
@@ -189,7 +200,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 58
         },
         {
           "image": "/assets/work/whites-body-expressions.png",
@@ -203,7 +215,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 40
         },
         {
           "image": "/assets/work/whites-spaceship.jpg",
@@ -217,7 +230,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 100
         },
         {
           "image": "/assets/work/family-with-robot.jpg",
@@ -231,7 +245,8 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 69
         },
         {
           "image": "/assets/work/whites-dog.jpg",
@@ -245,13 +260,415 @@
           "caption": "hidden",
           "on_home": false,
           "frame": "natural",
-          "focus": "center"
+          "focus": "center",
+          "fw": 29
         },
         {
           "image": "/assets/work/whites-base-lineup.png",
           "link": "",
           "alt_en": "Base models of the family from tallest to the dog.",
           "alt_he": "מודלי הבסיס של המשפחה, מהגבוה ביותר ועד הכלב.",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center",
+          "fw": 72
+        },
+        {
+          "image": "/assets/uploads/the-whites/a-front-facing-full-body-portrait-of-202607151608-1-mvyuuh7g.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center",
+          "fw": 26
+        },
+        {
+          "image": "/assets/uploads/the-whites/character-202607151610-1-mvyuuua6.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center",
+          "fw": 23
+        },
+        {
+          "image": "/assets/uploads/the-whites/character-202607151610-mvyuv3vy.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center",
+          "fw": 23
+        },
+        {
+          "image": "/assets/uploads/the-whites/character-202607151614-mvyuvmcg.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/character-202607151614-1-mvyuw180.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/character-202607151617-mvyuwdmu.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/character-202607151630-1-mvyuxl0k.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/character-202607151617-2-mvyuyf8m.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center",
+          "fw": 63
+        },
+        {
+          "image": "/assets/uploads/the-whites/gemini-generated-image-7xmicw7xmicw7xmi-mvyuyu8k.png",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/1783240440747-png-202607121425-mvyv04g9.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/1783241222017-png-202607121425-mvyv0n0j.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/character-202607151639-mvyv1xli.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/generated-image-4-1-mvyv2h3r.png",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/group-of-fluffy-white-creatures-202607151622-mvyv2yk2.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/202607151556-mvyv490r.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/202607151620-mvyv4p39.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/202607151612-2-mvyv5c2c.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/generated-image-4-mvyv5qwo.png",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/202607151624-mvyv696u.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/202607151622-mvyv6qsz.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/202607151635-mvyv7jwx.jpeg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/family-b662cc3c-mvyv96y6.jpg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center",
+          "fw": 43
+        },
+        {
+          "image": "/assets/uploads/the-whites/alien-pet-cub-character-standing-7b552749-mvyv9fxe.jpg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/alien-pet-cub-character-standing-1ac90656-mvyv9t0q.jpg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center"
+        },
+        {
+          "image": "/assets/uploads/the-whites/girl-alien-child-standing-alone-415f4ea1-mvyva1j9.jpg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center",
+          "fw": 21
+        },
+        {
+          "image": "/assets/uploads/the-whites/family-portrait-with-a2ad5c0f-mvyvafpq.jpg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center",
+          "fw": 99
+        },
+        {
+          "image": "/assets/uploads/the-whites/family-alien-robot-selfie-a097e43f-mvyvckdm.jpg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
+          "title_en": "",
+          "title_he": "",
+          "note_en": "",
+          "note_he": "",
+          "caption": "hidden",
+          "on_home": false,
+          "frame": "natural",
+          "focus": "center",
+          "fw": 54
+        },
+        {
+          "image": "/assets/uploads/the-whites/family-alien-robot-selfie-b7fa6561-mvyvd1r8.jpg",
+          "link": "",
+          "alt_en": "",
+          "alt_he": "",
           "title_en": "",
           "title_he": "",
           "note_en": "",
