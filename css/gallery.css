@@ -3,6 +3,8 @@
 .mrow.n1>.ar-56{flex:none!important;width:min(100%,calc(80vh * 0.56));margin-inline:auto}
 .ar-67{flex-grow:67;flex-basis:calc(var(--row-h) * 0.67)}.ar-67 .jg-media{aspect-ratio:0.67}
 .mrow.n1>.ar-67{flex:none!important;width:min(100%,calc(80vh * 0.67));margin-inline:auto}
+.ar-69{flex-grow:69;flex-basis:calc(var(--row-h) * 0.69)}.ar-69 .jg-media{aspect-ratio:0.69}
+.mrow.n1>.ar-69{flex:none!important;width:min(100%,calc(80vh * 0.69));margin-inline:auto}
 .ar-71{flex-grow:71;flex-basis:calc(var(--row-h) * 0.71)}.ar-71 .jg-media{aspect-ratio:0.71}
 .mrow.n1>.ar-71{flex:none!important;width:min(100%,calc(80vh * 0.71));margin-inline:auto}
 .ar-73{flex-grow:73;flex-basis:calc(var(--row-h) * 0.73)}.ar-73 .jg-media{aspect-ratio:0.73}
