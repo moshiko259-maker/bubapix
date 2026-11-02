@@ -898,8 +898,12 @@ self.addEventListener("fetch", (e) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin || url.pathname.includes("/admin/")) return;
   if (req.mode === "navigate") {
+    // A page is always checked with the site first ("no-cache"), so a page
+    // updated a minute ago is shown at once, never a copy the browser kept
+    // (GitHub lets browsers keep pages for 10 minutes). The kept copy is used
+    // only without a connection.
     e.respondWith(
-      fetch(req)
+      fetch(new Request(req.url, { cache: "no-cache", credentials: "same-origin", redirect: "follow" }))
         .then((res) => {
           if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
           return res;
