@@ -4,7 +4,7 @@
   "show_title": true,
   "visible": true,
   "featured": true,
-  "order": 1,
+  "order": 2,
   "title_in_gallery": false,
   "cover": "/assets/work/bradley-poster.png",
   "cover_alt_en": "Poster of Bradley & the Grumples: The First Adventure. The orange character steers a sailboat full of white furry creatures.",
@@ -1169,5 +1169,5 @@
   "video_file": "",
   "video_url": "",
   "list_w": 35,
-  "poster_w": 47
+  "poster_w": 80
 }
