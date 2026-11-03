@@ -24,7 +24,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 6)) {
+  if (!core || !(core.version >= 7)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -73,7 +73,7 @@
     frame: "צורה",
     frameNatural: "טבעית", frameWide: "קולנוע רחב", frameLandscape: "רוחבית", frameSquare: "ריבועית", framePortrait: "לאורך",
     earlier: "הזזה למקום הקודם", later: "הזזה למקום הבא", prevBtn: "→ קודם", nextBtn: "הבא ←", more: "⋯ עוד", drag: "גררו כדי להזיז",
-    replace: "החלפה", alone: "לבד בשורה", aloneOff: "ביטול לבד בשורה", hide: "הסתרה", show: "הצגה", remove: "הסרה מהגלריה",
+    replace: "החלפה", cut: "גזירה", cutCancel: "ביטול גזירה", pasteHere: "הדבקה כאן", pasteEnd: "הדבקה בסוף", cutNote: "התמונה נגזרה. לחצו ״הדבקה כאן״ על התמונה שלפניה היא תיכנס, או ״הדבקה בסוף״.", alone: "לבד בשורה", aloneOff: "ביטול לבד בשורה", hide: "הסתרה", show: "הצגה", remove: "הסרה מהגלריה",
     add: "הוספת תמונה לגלריה",
     describe: "תיאור לעיוורים", noAlt: "אין תיאור לעיוורים", ok: "אישור",
     altEdit: "כתבו בקצרה מה רואים בתמונה. קוראי מסך מקריאים את זה לגולשים עיוורים.",
@@ -92,8 +92,8 @@
     textNoEmpty: "השם לא יכול להיות ריק. השם הקודם הוחזר.",
     taglineEmpty: "משפט הפתיחה לא יכול להיות ריק (אחרת יוצג במקומו המשפט בשפה השנייה). המשפט הקודם הוחזר.",
     servicesNote: "שמות השירותים והכותרת ״שירותים״ משתנים גם בדף השירותים ובתפריט. בשפת הדף בלבד.",
-    posterSizeNote: "פוסטרים: גודל — לוחצים על פוסטר וגוררים נקודה כחולה (במחשב). סדר — גוררים פוסטר או חצים. הסדר הוא גם סדר הפרויקטים בעמוד הפרויקטים.",
-    posterTouchNote: "פוסטרים: נוגעים בפוסטר כדי לבחור אותו, ואז ״→ קודם״ או ״הבא ←״ לשינוי הסדר. הסדר הוא גם סדר הפרויקטים בעמוד הפרויקטים. גודל: גוררים נקודה כחולה (לא בטלפון).",
+    posterSizeNote: "פוסטרים: גודל — לוחצים על פוסטר וגוררים נקודה כחולה (במחשב). סדר — גוררים פוסטר או חצים. הסדר כאן הוא של דף הבית בלבד.",
+    posterTouchNote: "פוסטרים: נוגעים בפוסטר כדי לבחור אותו, ואז ״→ קודם״ או ״הבא ←״ לשינוי הסדר. הסדר כאן הוא של דף הבית בלבד. גודל: גוררים נקודה כחולה (לא בטלפון).",
     posterAuto: "גודל אוטומטי לכל הפוסטרים",
     pickTitle: "בחירת תמונה",
     pickUpload: "העלאה מהמחשב",
@@ -164,7 +164,7 @@
     posterShow: "הצגה בשורה",
     posterHiddenNote: "יוסתר מהשורה אחרי שמירה",
     postersHiddenTitle: "פוסטרים מוסתרים משורת הפרויקטים",
-    posterNote: "הפוסטר הוא תמונת השער של הפרויקט. החלפה כאן מחליפה את תמונת השער.",
+    posterNote: "התמונה שנבחרת כאן היא הפוסטר של דף הבית בלבד. תמונת השער בעמוד הפרויקטים ובדף הפרויקט לא משתנה.",
     featureSize: "רוחב",
     featureSmall: "צר", featureMedium: "בינוני", featureLarge: "רחב", featureFull: "כל הרוחב",
   } : {
@@ -187,7 +187,7 @@
     frame: "Shape",
     frameNatural: "Natural", frameWide: "Cinema wide", frameLandscape: "Landscape", frameSquare: "Square", framePortrait: "Portrait",
     earlier: "Move to the previous place", later: "Move to the next place", prevBtn: "← Earlier", nextBtn: "Later →", more: "⋯ More", drag: "Drag to move",
-    replace: "Replace", alone: "Alone in its row", aloneOff: "Undo alone in row", hide: "Hide", show: "Show", remove: "Remove from gallery",
+    replace: "Replace", cut: "Cut", cutCancel: "Cancel cut", pasteHere: "Paste here", pasteEnd: "Paste at the end", cutNote: "Picture cut. Press \"Paste here\" on the picture it should go before, or \"Paste at the end\".", alone: "Alone in its row", aloneOff: "Undo alone in row", hide: "Hide", show: "Show", remove: "Remove from gallery",
     add: "Add a picture to the gallery",
     describe: "Description for blind visitors", noAlt: "No description for blind visitors", ok: "OK",
     altEdit: "Say briefly what the picture shows. Screen readers read it to blind visitors.",
@@ -206,8 +206,8 @@
     textNoEmpty: "The name cannot be empty. The previous name is back.",
     taglineEmpty: "The opening sentence cannot be empty (the other language's sentence would show instead). The previous sentence is back.",
     servicesNote: "Service names and the \"Services\" heading also change on the services page and in the menu, in this language only.",
-    posterSizeNote: "Posters: size — click a poster and drag a blue dot (on computers). Order — drag a poster or use the arrows. This is also the order of projects on the projects page.",
-    posterTouchNote: "Posters: tap a poster to choose it, then \"← Earlier\" or \"Later →\" to change the order. This is also the order of projects on the projects page. Size: drag a blue dot (not on phones).",
+    posterSizeNote: "Posters: size — click a poster and drag a blue dot (on computers). Order — drag a poster or use the arrows. This order is for the homepage only.",
+    posterTouchNote: "Posters: tap a poster to choose it, then \"← Earlier\" or \"Later →\" to change the order. This order is for the homepage only. Size: drag a blue dot (not on phones).",
     posterAuto: "Automatic size for all posters",
     pickTitle: "Choose a picture",
     pickUpload: "Upload from this computer",
@@ -278,7 +278,7 @@
     posterShow: "Show in the row",
     posterHiddenNote: "Hidden from the row after saving",
     postersHiddenTitle: "Posters hidden from the projects row",
-    posterNote: "The poster is the project's cover image. Replacing it here replaces the cover.",
+    posterNote: "The picture chosen here is the homepage poster only. The cover on the projects page and the project page stays.",
     featureSize: "Width",
     featureSmall: "Narrow", featureMedium: "Medium", featureLarge: "Wide", featureFull: "Full width",
   };
@@ -376,7 +376,7 @@
             var d = {};
             try { d = JSON.parse(b64ToUtf8(res.content)); } catch (e) { d = {}; }
             var slug = f.name.replace(/\.json$/, "");
-            return { slug: slug, title_he: d.title_he || "", title_en: d.title_en || "", orig_he: d.title_he || "", orig_en: d.title_en || "", name: (he ? d.title_he || d.title_en : d.title_en || d.title_he) || slug, order: Number(d.order) || 99, orig_order: Number(d.order) || 99, poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, orig_poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, poster_w_m: Number(d.poster_w_m) >= 20 ? Math.round(Number(d.poster_w_m)) : 0, orig_poster_w_m: Number(d.poster_w_m) >= 20 ? Math.round(Number(d.poster_w_m)) : 0, in_posters: d.in_posters !== false, orig_in_posters: d.in_posters !== false, origCover: d.cover || "", cover: null, cap: capOf(d), origCap: JSON.stringify(capOf(d)) };
+            return { slug: slug, title_he: d.title_he || "", title_en: d.title_en || "", orig_he: d.title_he || "", orig_en: d.title_en || "", name: (he ? d.title_he || d.title_en : d.title_en || d.title_he) || slug, order: Number(d.poster_order) || Number(d.order) || 99, orig_order: Number(d.poster_order) || Number(d.order) || 99, poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, orig_poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, poster_w_m: Number(d.poster_w_m) >= 20 ? Math.round(Number(d.poster_w_m)) : 0, orig_poster_w_m: Number(d.poster_w_m) >= 20 ? Math.round(Number(d.poster_w_m)) : 0, in_posters: d.in_posters !== false, orig_in_posters: d.in_posters !== false, origCover: d.poster_image || d.cover || "", cover: null, cap: capOf(d), origCap: JSON.stringify(capOf(d)) };
           });
         }));
       })
@@ -739,7 +739,7 @@
   }
   // ---------- posters row: each poster is a project's cover ----------
   var posterEls = {}; // slug -> { el, media, original }
-  var posterBox = null, posterOrig = null, posterDrag = "";
+  var posterBox = null, posterOrig = null, posterDrag = "", posterClip = "";
   function setupPosters() {
     posterOrig = document.querySelector(".home-posters [data-mosaic]");
     if (posterOrig) {
@@ -755,6 +755,9 @@
       var media = item.querySelector(".jg-media");
       posterEls[slug] = { el: item, media: media, original: media ? media.innerHTML : "" };
       item.classList.add("pe-holder", "pe-poster");
+      // The built page's size classes (fs-, fr-, pm-, pb-) carry !important rules
+      // that would override the editor's arrangement; the editor lays the posters out itself.
+      Array.prototype.slice.call(item.classList).forEach(function (c) { if (/^(fs|fr|pm|pb)-/.test(c)) item.classList.remove(c); });
       // In editing the poster never opens its page; its buttons still work.
       item.addEventListener("click", function (e) { e.preventDefault(); }, true);
       touchPick(item, "poster:" + slug);
@@ -778,13 +781,17 @@
       } else frame(item, {
         start: function () { return item.getBoundingClientRect().width / (posterBox.getBoundingClientRect().width || 1) * 100; },
         area: function () { return posterBox.getBoundingClientRect().width; },
-        live: function (pct) { item.style.flex = "none"; item.style.width = pct + "%"; },
+        live: function (pct) { core.liveWidth(item, pct); },
         done: function (pct) {
           // The first resize keeps every other poster at its current size.
           if (!postersFree()) {
             var bw = posterBox.getBoundingClientRect().width || 1;
             shownPosters().forEach(function (q) { var n = posterEls[q.slug].el; if (q !== p) q.poster_w = Math.max(10, Math.min(100, Math.round(n.getBoundingClientRect().width / bw * 100))); });
           }
+          core.rowWidths(item, posterBox.getBoundingClientRect().width, function (n, w) {
+            var q = projects.filter(function (x) { return x.slug === n.getAttribute("data-project"); })[0];
+            if (q && q !== p) q.poster_w = w;
+          });
           p.poster_w = pct; changed(); syncPage();
         },
         min: 10, max: 100,
@@ -880,7 +887,7 @@
       pe.tools.appendChild(button(T.prevBtn, function () { movePoster(slug, -1); }, "pe-btn pe-move", T.earlier));
       pe.tools.appendChild(el("span", { "class": "pe-tools-label", text: displayName(p) }));
       pe.tools.appendChild(button(T.posterReplace, function () {
-        pick(function (path, alts) { p.cover = { path: path, alts: alts }; if (!p.cap) p.cap = capOf(null); p.cap.cover_alt_he = alts.he || ""; p.cap.cover_alt_en = alts.en || ""; changed(); syncPage(); }, "", { noProject: true, note: T.posterNote });
+        pick(function (path, alts) { p.cover = { path: path, alts: alts }; changed(); syncPage(); }, "", { noProject: true, note: T.posterNote });
       }));
       pe.tools.appendChild(p.in_posters === false
         ? button(T.posterShow, function () { p.in_posters = true; changed(); syncPage(); })
@@ -900,6 +907,18 @@
         ab.setAttribute("aria-pressed", String(pOn));
         pe.tools.appendChild(ab);
       }
+      // Cut and paste for posters: the order of the homepage posters.
+      Array.prototype.forEach.call(pe.el.querySelectorAll(":scope > .pe-paste-bar"), function (n) { n.remove(); });
+      pe.el.classList.toggle("pe-cut", posterClip === slug);
+      if (p.in_posters !== false) {
+        if (posterClip === slug) pe.tools.appendChild(button(T.cutCancel, function () { posterClip = ""; drawPosters(); }, "pe-btn pe-cut-btn"));
+        else if (!posterClip) pe.tools.appendChild(button(T.cut, function () { posterClip = slug; setStatus(T.cutNote); drawPosters(); }, "pe-btn pe-cut-btn"));
+        else pe.el.appendChild(el("div", { "class": "pe-paste-bar" }, [button(T.pasteHere, function () {
+          var list = shownPosters().map(function (q) { return q.slug; }).filter(function (x) { return x !== posterClip; });
+          list.splice(list.indexOf(slug), 0, posterClip); posterClip = "";
+          reorderPosters(list); changed(); syncPage();
+        }, "pe-btn pe-primary pe-paste-btn")]));
+      }
       if (p.poster_w) pe.tools.appendChild(button(T.posterAuto, function () { projects.forEach(function (q) { q.poster_w = 0; }); changed(); syncPage(); }));
       if (!p.cap) p.cap = capOf(null);
       pe.tools.appendChild(button(T.caption, function () {
@@ -916,6 +935,14 @@
       if (p.cap.poster_caption === "everywhere" && (pt || pn) && pe.media) pe.el.insertBefore(el("span", { "class": "jg-caption pe-caption" }, [pt ? el("span", { "class": "jg-title", text: pt }) : null, pn ? el("span", { "class": "jg-note", text: pn }) : null]), pe.media.parentNode === pe.el ? pe.media.nextSibling : null);
       pe.tools.appendChild(button(T.nextBtn, function () { movePoster(slug, 1); }, "pe-btn pe-move", T.later));
     });
+    // "Paste at the end" under the posters while one is cut.
+    var endBar = posterBox && posterBox.parentNode ? posterBox.parentNode.querySelector(".pe-poster-paste-end") : null;
+    if (endBar) endBar.remove();
+    if (posterClip && posterBox) posterBox.parentNode.insertBefore(el("div", { "class": "pe-add pe-poster-paste-end" }, [button(T.pasteEnd, function () {
+      var list = shownPosters().map(function (q) { return q.slug; }).filter(function (x) { return x !== posterClip; });
+      list.push(posterClip); posterClip = "";
+      reorderPosters(list); changed(); syncPage();
+    }, "pe-btn pe-primary pe-paste-btn")]), posterBox.nextSibling);
     layoutPosters();
   }
 
@@ -1077,6 +1104,7 @@
       box.appendChild(r);
     });
     editArea.appendChild(box);
+    if (clip) editArea.appendChild(el("div", { "class": "pe-add" }, [button(T.pasteEnd, function () { pasteAt(null); }, "pe-btn pe-primary pe-paste-btn")]));
     editArea.appendChild(el("div", { "class": "pe-add" }, [button("+ " + T.add, function () {
       pick(function (paths, alts, choice) {
         paths.forEach(function (path) {
@@ -1130,8 +1158,12 @@
       });
     } else frame(fig, {
       start: function () { return fig.getBoundingClientRect().width / (editArea.getBoundingClientRect().width || 1) * 100; },
-      live: function (pct) { fig.style.flex = "none"; fig.style.width = pct + "%"; },
-      done: function (pct) { if (!isFree()) startFree(); g.fw = pct; selected = idx; changed(); },
+      live: function (pct) { core.liveWidth(fig, pct); },
+      done: function (pct) {
+        if (!isFree()) startFree();
+        core.rowWidths(fig, editArea.getBoundingClientRect().width, function (n, w) { var o = data.gallery[Number(n.getAttribute("data-idx"))]; if (o && o !== g) o.fw = w; });
+        g.fw = pct; selected = idx; changed();
+      },
       min: 10, max: 100, selectedNow: selected === idx,
     });
     touchPick(fig, g);
@@ -1150,6 +1182,8 @@
         }, g.project || "");
       }),
       aloneButton(g, idx),
+      clip === g ? button(T.cutCancel, function () { clip = null; render(); }, "pe-btn pe-cut-btn")
+        : clip ? null : button(T.cut, function () { clip = g; setStatus(T.cutNote); render(); }, "pe-btn pe-cut-btn"),
       button(T.hide, function () { g.visible = false; changed(); }),
       button(T.remove, function () { data.gallery.splice(data.gallery.indexOf(g), 1); changed(); }, "pe-btn pe-danger"),
       button(T.describe, function () {
@@ -1161,6 +1195,8 @@
       button(T.nextBtn, function () { move(idx, 1); }, "pe-btn pe-move", T.later),
     ]));
     if (!g["alt_" + lang]) fig.appendChild(el("span", { "class": "pe-missing", text: T.noAlt }));
+    if (clip === g) fig.classList.add("pe-cut");
+    else if (clip) fig.appendChild(el("div", { "class": "pe-paste-bar" }, [button(T.pasteHere, function () { pasteAt(g); }, "pe-btn pe-primary pe-paste-btn")]));
     // The title and text as visitors will see them (only when chosen to be shown).
     var capTitle = g["title_" + lang] || "", capNote = g["note_" + lang] || "";
     if (g.caption === "everywhere" && (capTitle || capNote)) {
@@ -1199,6 +1235,17 @@
     var tmp = data.gallery[idx];
     data.gallery[idx] = data.gallery[other];
     data.gallery[other] = tmp;
+    changed();
+  }
+  // Cut and paste: a picture moves to another place in the gallery.
+  var clip = null;
+  function pasteAt(before) {
+    if (!clip) return;
+    var g = clip; clip = null;
+    var k = data.gallery.indexOf(g); if (k < 0) { render(); return; } // the gallery changed (undo)
+    data.gallery.splice(k, 1);
+    var at = before ? data.gallery.indexOf(before) : -1;
+    if (at < 0) data.gallery.push(g); else data.gallery.splice(at, 0, g);
     changed();
   }
   // "Alone in its row": the whole row on this screen size (fw on computers, fw_m on phones).
@@ -1602,7 +1649,7 @@
       var f = posterFields(p);
       var adds = (pageAdds[p.slug] || []).slice();
       var d = {
-        title_en: f.title_en, title_he: f.title_he, show_title: true, visible: true, featured: true, order: f.order, title_in_gallery: false,
+        title_en: f.title_en, title_he: f.title_he, show_title: true, visible: true, featured: true, order: f.order, poster_order: f.order, title_in_gallery: false,
         categories: [], text_en: "", text_he: "", description_en: "", description_he: "",
         cover: f.cover ? "/" + f.cover.path : "", cover_alt_en: f.cover ? f.cover.alts.en : "", cover_alt_he: f.cover ? f.cover.alts.he : "",
         video_url: "", video_file: "", gallery: [], details: [], sections: [],
@@ -1632,9 +1679,10 @@
         path: "content/projects/" + p.slug + ".json",
         merge: function (d) {
           d.title_he = f.title_he; d.title_en = f.title_en;
-          if (f.cover) { d.cover = "/" + f.cover.path; d.cover_alt_he = f.cover.alts.he; d.cover_alt_en = f.cover.alts.en; }
+          // The homepage's own poster picture and order: the projects page keeps its cover and order.
+          if (f.cover) { d.poster_image = "/" + f.cover.path; d.poster_alt_he = f.cover.alts.he; d.poster_alt_en = f.cover.alts.en; }
           if (f.in_posters === false) d.in_posters = false; else delete d.in_posters;
-          if (f.order !== origOrder) d.order = f.order;
+          if (f.order !== origOrder) d.poster_order = f.order;
           if (f.poster_w) d.poster_w = f.poster_w; else delete d.poster_w;
           if (f.poster_w_m) d.poster_w_m = f.poster_w_m; else delete d.poster_w_m;
           // The poster's title and text: written only when there is one (or there was one).

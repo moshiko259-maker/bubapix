@@ -30,7 +30,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 6)) {
+  if (!core || !(core.version >= 7)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -99,7 +99,7 @@
     gallery: "תמונות",
     behind: "מאחורי הקלעים",
     earlier: "הזזה למקום הקודם", later: "הזזה למקום הבא", prevBtn: "→ קודם", nextBtn: "הבא ←", more: "⋯ עוד", drag: "גררו כדי לשנות את הסדר",
-    replace: "החלפה", alone: "לבד בשורה", aloneOff: "ביטול לבד בשורה", hide: "הסתרה", show: "הצגה", remove: "הסרה מהגלריה",
+    replace: "החלפה", cut: "גזירה", cutCancel: "ביטול גזירה", pasteHere: "הדבקה כאן", pasteEnd: "הדבקה בסוף", cutNote: "התמונה נגזרה. לחצו ״הדבקה כאן״ על התמונה שלפניה היא תיכנס, או ״הדבקה בסוף״.", alone: "לבד בשורה", aloneOff: "ביטול לבד בשורה", hide: "הסתרה", show: "הצגה", remove: "הסרה מהגלריה",
     describe: "תיאור לעיוורים",
     noAlt: "אין תיאור לעיוורים",
     add: "הוספת תמונה",
@@ -210,7 +210,7 @@
     gallery: "Images",
     behind: "Behind the scenes",
     earlier: "Move to the previous place", later: "Move to the next place", prevBtn: "← Earlier", nextBtn: "Later →", more: "⋯ More", drag: "Drag to change the order",
-    replace: "Replace", alone: "Alone in its row", aloneOff: "Undo alone in row", hide: "Hide", show: "Show", remove: "Remove from gallery",
+    replace: "Replace", cut: "Cut", cutCancel: "Cancel cut", pasteHere: "Paste here", pasteEnd: "Paste at the end", cutNote: "Picture cut. Press \"Paste here\" on the picture it should go before, or \"Paste at the end\".", alone: "Alone in its row", aloneOff: "Undo alone in row", hide: "Hide", show: "Show", remove: "Remove from gallery",
     describe: "Description for blind visitors",
     noAlt: "No description for blind visitors",
     add: "Add a picture",
@@ -734,6 +734,7 @@
       shownList.forEach(function (it) { grid.appendChild(cell(sec, s, it.g, it.i, null, grid)); });
     }
     box.appendChild(grid);
+    if (clip) box.appendChild(el("div", { "class": "pe-add" }, [button(T.pasteEnd, function () { pasteAt(sec, null); }, "pe-btn pe-primary pe-paste-btn")]));
     box.appendChild(el("div", { "class": "pe-add" }, [button("+ " + T.add, function () {
       pick(function (paths, alts) {
         paths.forEach(function (path) {
@@ -962,6 +963,23 @@
     b.setAttribute("aria-pressed", String(on));
     return b;
   }
+  // Cut and paste: a picture moves to another place, also into another gallery on this page.
+  var clip = null;
+  function cutTools(sec, g) {
+    if (clip === g) return [button(T.cutCancel, function () { clip = null; redraw(); }, "pe-btn pe-cut-btn")];
+    if (clip) return [];
+    return [button(T.cut, function () { clip = g; setStatus(T.cutNote); redraw(); }, "pe-btn pe-cut-btn")];
+  }
+  function pasteAt(sec, before) {
+    if (!clip) return;
+    var g = clip; clip = null;
+    var found = data.sections.some(function (o) { return o && Array.isArray(o.images) && o.images.indexOf(g) >= 0; });
+    if (!found) { redraw(); return; } // the page changed (undo)
+    data.sections.forEach(function (o) { if (o && Array.isArray(o.images)) { var k = o.images.indexOf(g); if (k >= 0) o.images.splice(k, 1); } });
+    var at = before ? sec.images.indexOf(before) : -1;
+    if (at < 0) sec.images.push(g); else sec.images.splice(at, 0, g);
+    selected = g; changed();
+  }
   function removeAt(sec, g) {
     var at = sec.images.indexOf(g);
     if (at < 0) return;
@@ -997,7 +1015,7 @@
     } else frame(fig, {
       start: function () { return fig.getBoundingClientRect().width / (grid.getBoundingClientRect().width || 1) * 100; },
       area: function () { return grid.getBoundingClientRect().width; },
-      live: function (pct) { fig.style.flex = "none"; fig.style.width = pct + "%"; },
+      live: function (pct) { core.liveWidth(fig, pct); },
       done: function (pct) {
         // The first resize keeps every other picture at its current size.
         if (!isFree(sec)) {
@@ -1007,6 +1025,7 @@
             if (other && other !== g) other.fw = Math.max(10, Math.min(100, Math.round(n.getBoundingClientRect().width / gw * 100)));
           });
         }
+        core.rowWidths(fig, grid.getBoundingClientRect().width, function (n, w) { if (n.__pic && n.__pic !== g) n.__pic.fw = w; });
         g.fw = pct; selected = g; changed();
       },
       selectedNow: selected === g,
@@ -1027,9 +1046,13 @@
       }),
       button(T.caption, function () { captionDialog(g); }, "pe-btn pe-caption-btn"),
       aloneButton(sec, grid, g),
+    ].concat(cutTools(sec, g), [
       button(T.hide, function () { g.visible = false; changed(); }),
       button(T.remove, function () { removeAt(sec, g); }, "pe-btn pe-danger"),
-    ]));
+    ])));
+    if (clip === g) fig.classList.add("pe-cut");
+    // While a picture is cut, every other picture shows "Paste here" (always visible, also on phones).
+    else if (clip) fig.appendChild(el("div", { "class": "pe-paste-bar" }, [button(T.pasteHere, function () { pasteAt(sec, g); }, "pe-btn pe-primary pe-paste-btn")]));
     fig.addEventListener("dragstart", function (e) {
       if (e.target && e.target.closest && e.target.closest("button, select, input, textarea, label, .pe-dot, .pe-resize")) { e.preventDefault(); return; }
       dragFrom = { s: s, g: g }; fig.classList.add("is-dragging");

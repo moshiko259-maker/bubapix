@@ -27,7 +27,7 @@
  */
 (function () {
   "use strict";
-  var VERSION = 6;
+  var VERSION = 7;
   if (window.BubaCore && window.BubaCore.version >= VERSION) return;
 
   function el(tag, attrs, kids) {
@@ -331,6 +331,28 @@
     document.addEventListener("touchcancel", end, { passive: false });
   }
   touchDrag();
+  // While a picture's dot is dragged (computers): the picture takes that width at
+  // once, so the change is seen. "important" beats the gallery rules
+  // (.mrow .jg-item { flex-basis: 0 !important } and the built fs-/fr- classes),
+  // which otherwise shrank it to nothing or kept it as it was until the release.
+  // On release: the other pictures in the same row keep the width they had while
+  // dragging (they filled the rest of the row), so nothing jumps afterwards.
+  // set(node, pct) writes each one's width; area is the gallery's width.
+  function rowWidths(node, area, set) {
+    var row = node.parentElement;
+    if (!row || !row.classList.contains("mrow")) return;
+    Array.prototype.forEach.call(row.children, function (n) {
+      if (n === node || !n.getBoundingClientRect) return;
+      var w = n.getBoundingClientRect().width;
+      if (w > 0) set(n, Math.max(10, Math.min(100, Math.round(w / (area || 1) * 100))));
+    });
+  }
+  function liveWidth(node, pct) {
+    node.style.setProperty("flex", "0 0 calc(" + pct + "% - 0.5rem)", "important");
+    node.style.setProperty("width", "calc(" + pct + "% - 0.5rem)", "important");
+    node.style.setProperty("min-width", "0", "important");
+    node.style.setProperty("max-width", "none", "important");
+  }
 
   function modal(label, kids, focus) {
     var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": label }, [
@@ -629,7 +651,7 @@
   function shrinkImages(list) { return Promise.all(Array.prototype.map.call(list || [], shrinkImage)); }
 
   window.BubaCore = {
-    version: VERSION, saveFiles: saveFiles, saveErrorText: saveErrorText, blobSha: blobSha, shrinkImage: shrinkImage, shrinkImages: shrinkImages,
+    version: VERSION, liveWidth: liveWidth, rowWidths: rowWidths, saveFiles: saveFiles, saveErrorText: saveErrorText, blobSha: blobSha, shrinkImage: shrinkImage, shrinkImages: shrinkImages,
     el: el, button: button, token: token,
     utf8ToB64: utf8ToB64, b64ToUtf8: b64ToUtf8, readB64: readB64,
     github: github, loadStyles: loadStyles, history: history, siteWatch: siteWatch,

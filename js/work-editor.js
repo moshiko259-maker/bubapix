@@ -29,7 +29,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 6)) {
+  if (!core || !(core.version >= 7)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -72,7 +72,7 @@
     titleNote: "הכותרת הזאת היא גם שם הכפתור בתפריט, בשפת הדף בלבד.",
     titleEmpty: "הכותרת לא יכולה להיות ריקה. הכותרת הקודמת הוחזרה.",
     hint: "השורה בתחתית העמוד (לחצו כדי לכתוב). ריק = הטקסט הרגיל.",
-    orderNote: "הסדר כאן הוא גם הסדר של הפוסטרים בדף הבית ושל ״הפרויקט הקודם/הבא״.",
+    orderNote: "הסדר כאן הוא גם הסדר של ״הפרויקט הקודם/הבא״. לסדר הפוסטרים בדף הבית יש סדר משלו.",
     sizeAll: "גודל כל התמונות במחשב", sizeAuto: "אוטומטי", perRow: "בשורה", sizeFree: "גודל חופשי",
     freeNote: "גודל: לוחצים על תמונה וגוררים נקודה כחולה. סדר: גוררים את התמונה או חצים.",
     phoneNote: "גודל בטלפון: לוחצים על תמונה וגוררים נקודה כחולה. הגודל הזה חל רק על טלפונים; במחשב נשאר הגודל שנקבע במחשב.",
@@ -84,7 +84,7 @@
     caption: "כותרת ותיאור", captionTitle: "כותרת לתמונה (לא חובה)", captionNote: "תיאור קצר (לא חובה)", captionWhere: "איפה להציג", capHidden: "לא להציג (נשמר)",
     captionNoteHelp: "הכותרת והתיאור מתורגמים לאנגלית בשמירה. תיאור לעיוורים — בכפתור ״תיאור לעיוורים״.",
     capCoverWork: "מתחת לתמונה, בעמוד הפרויקטים", capCoverProject: "מתחת לתמונת השער, בדף הפרויקט", capCoverBoth: "בשניהם (עמוד הפרויקטים ודף הפרויקט)",
-    coverNote: "התמונה כאן היא תמונת השער של הפרויקט: היא מתחלפת גם בדף הפרויקט ובפוסטר בדף הבית.",
+    coverNote: "התמונה כאן היא תמונת השער של הפרויקט: היא מתחלפת גם בדף הפרויקט. בדף הבית היא משמשת כפוסטר רק אם לא נבחר שם פוסטר משלו.",
     pickTitle: "בחירת תמונה", pickUpload: "העלאה מהמחשב", pickLoading: "טוען תמונות…",
     altHe: "תיאור התמונה לעיוורים, עברית", altEn: "תיאור התמונה לעיוורים, אנגלית",
     altNew: "תמונה חדשה צריכה תיאור חדש. כתבו בקצרה מה רואים בתמונה (רשות, אפשר גם אחר כך).",
@@ -127,7 +127,7 @@
     catDeleted: "הקטגוריה נמחקה והוסרה מהפרויקטים. אפשר לבטל עם ״ביטול פעולה״.",
     catCount: "{n} פרויקטים", catCountOne: "פרויקט אחד", catCountZero: "אין פרויקטים",
     catEmptyOnly: "קטגוריה בלי שם לא נשמרת, ולא היה שינוי אחר לשמור.",
-    catsBtn: "קטגוריות", hideWork: "הסתרה מהעמוד", showWork: "הצגה בעמוד", hiddenTitle: "מוסתרים מעמוד הפרויקטים (עמוד הפרויקט עצמו נשאר)", alone: "לבד בשורה", aloneOff: "ביטול לבד בשורה", catsDialog: "הקטגוריות של {name}",
+    catsBtn: "קטגוריות", cut: "גזירה", cutCancel: "ביטול גזירה", pasteHere: "הדבקה כאן", pasteEnd: "הדבקה בסוף", cutNote: "התמונה נגזרה. לחצו ״הדבקה כאן״ על התמונה שלפניה היא תיכנס, או ״הדבקה בסוף״.", hideWork: "הסתרה מהעמוד", showWork: "הצגה בעמוד", hiddenTitle: "מוסתרים מעמוד הפרויקטים (עמוד הפרויקט עצמו נשאר)", alone: "לבד בשורה", aloneOff: "ביטול לבד בשורה", catsDialog: "הקטגוריות של {name}",
     catsPickNote: "סמנו את הקטגוריות של הפרויקט (אפשר כמה, או אף אחת).",
     catsNoneYet: "אין עדיין קטגוריות. מוסיפים קטגוריה ב״+ קטגוריה חדשה״ בראש העמוד.",
     catNoName: "(בלי שם)",
@@ -143,7 +143,7 @@
     titleNote: "This title is also the menu button's name, in this language only.",
     titleEmpty: "The title cannot be empty. The previous title is back.",
     hint: "The line at the bottom of the page (click to write). Empty = the usual text.",
-    orderNote: "This order is also the order of the posters on the homepage and of \"previous/next project\".",
+    orderNote: "This order is also the order of \"previous/next project\". The homepage posters have their own order.",
     sizeAll: "Size of all pictures on computers", sizeAuto: "Automatic", perRow: "per row", sizeFree: "Free size",
     freeNote: "Size: click a picture and drag a blue dot. Order: drag the picture or use the arrows.",
     phoneNote: "Size on phones: tap a picture and drag a blue dot. This size applies to phones only; computers keep the size set on a computer.",
@@ -155,7 +155,7 @@
     caption: "Title and text", captionTitle: "Picture title (optional)", captionNote: "Short text (optional)", captionWhere: "Where to show it", capHidden: "Not shown (kept)",
     captionNoteHelp: "The title and text are translated to Hebrew on saving. The description for blind visitors is under \"Description for blind visitors\".",
     capCoverWork: "Under the picture, on the projects page", capCoverProject: "Under the cover, on the project page", capCoverBoth: "Both (projects page and project page)",
-    coverNote: "The picture here is the project's cover: it also changes on the project page and on the homepage poster.",
+    coverNote: "The picture here is the project's cover: it also changes on the project page. On the homepage it is the poster only when no poster of its own was chosen there.",
     pickTitle: "Choose a picture", pickUpload: "Upload from this computer", pickLoading: "Loading pictures…",
     altHe: "Description for blind visitors, Hebrew", altEn: "Description for blind visitors, English",
     altNew: "A new picture needs a new description. Say briefly what the picture shows (optional, can be done later).",
@@ -198,7 +198,7 @@
     catDeleted: "The category was deleted and removed from the projects. You can undo it.",
     catCount: "{n} projects", catCountOne: "1 project", catCountZero: "No projects",
     catEmptyOnly: "A category without a name is not saved, and there was nothing else to save.",
-    catsBtn: "Categories", hideWork: "Hide from this page", showWork: "Show on this page", hiddenTitle: "Hidden from the Projects page (the project page itself stays)", alone: "Alone in its row", aloneOff: "Undo alone in row", catsDialog: "Categories of {name}",
+    catsBtn: "Categories", cut: "Cut", cutCancel: "Cancel cut", pasteHere: "Paste here", pasteEnd: "Paste at the end", cutNote: "Picture cut. Press \"Paste here\" on the picture it should go before, or \"Paste at the end\".", hideWork: "Hide from this page", showWork: "Show on this page", hiddenTitle: "Hidden from the Projects page (the project page itself stays)", alone: "Alone in its row", aloneOff: "Undo alone in row", catsDialog: "Categories of {name}",
     catsPickNote: "Tick the project's categories (several, or none).",
     catsNoneYet: "No categories yet. Add one with \"+ New category\" at the top of the page.",
     catNoName: "(no name)",
@@ -536,6 +536,7 @@
       items.forEach(function (it) { grid.appendChild(cell(it, grid)); });
     }
     area.appendChild(grid);
+    if (clip) area.appendChild(el("div", { "class": "pe-add" }, [button(T.pasteEnd, function () { pasteAt(null); }, "pe-btn pe-primary pe-paste-btn")]));
     var off = state.list.filter(function (p) { return p.data.in_work === false; });
     if (off.length) {
       var row = el("div", { "class": "pe-strip-row" });
@@ -700,6 +701,17 @@
     fig.style.setProperty("flex", "1 1 100%", "important"); fig.style.setProperty("width", "100%", "important"); fig.style.maxWidth = "none"; // as the site's pm-W rule (beats .mrow .jg-item)
     media.style.width = pct + "%"; media.style.marginInline = "auto";
   }
+  // Cut and paste: a project moves to another place in the order.
+  var clip = null;
+  function pasteAt(before) {
+    if (!clip) return;
+    var p = clip; clip = null;
+    if (state.list.indexOf(p) < 0) { render(); return; } // the list changed (undo)
+    state.list.splice(state.list.indexOf(p), 1);
+    var at = before ? state.list.indexOf(before) : -1;
+    if (at < 0) state.list.push(p); else state.list.splice(at, 0, p);
+    changed();
+  }
   // "Alone in its row": the whole row on this screen size (list_w on computers, list_w_m on phones).
   function aloneButton(fig, grid, p) {
     var d = p.data, key = narrow.matches ? "list_w_m" : "list_w", on = Number(d[key]) === 100;
@@ -738,7 +750,7 @@
     } else frame(fig, {
       start: function () { return fig.getBoundingClientRect().width / (grid.getBoundingClientRect().width || 1) * 100; },
       area: function () { return grid.getBoundingClientRect().width; },
-      live: function (pct) { fig.style.flex = "none"; fig.style.width = pct + "%"; },
+      live: function (pct) { core.liveWidth(fig, pct); },
       done: function (pct) {
         // The first resize keeps every other picture at its current size.
         if (!isFree()) {
@@ -747,11 +759,14 @@
             if (n.__p && n.__p !== p) n.__p.data.list_w = Math.max(10, Math.min(100, Math.round(n.getBoundingClientRect().width / gw * 100)));
           });
         }
+        core.rowWidths(fig, grid.getBoundingClientRect().width, function (n, w) { if (n.__p && n.__p !== p) n.__p.data.list_w = w; });
         d.list_w = pct; selected = p.slug; changed();
       },
       selectedNow: selected === p.slug,
     });
     fig.__p = p;
+    if (clip === p) fig.classList.add("pe-cut");
+    else if (clip) fig.appendChild(el("div", { "class": "pe-paste-bar" }, [button(T.pasteHere, function () { pasteAt(p); }, "pe-btn pe-primary pe-paste-btn")]));
     if (uploads[norm(d.cover)]) fig.appendChild(el("span", { "class": "pe-badge", text: T.newBadge }));
     if (!d["cover_alt_" + lang]) fig.appendChild(el("span", { "class": "pe-missing", text: T.noAlt }));
     fig.appendChild(el("span", { "class": "pe-work-name", text: nameOf(p) }));
@@ -776,6 +791,8 @@
       // Which categories this project is in (content/projects/<slug>.json, categories).
       button(T.catsBtn, function (e) { pickCats(p, e.currentTarget); }, "pe-btn pe-cats-btn"),
       aloneButton(fig, grid, p),
+      clip === p ? button(T.cutCancel, function () { clip = null; render(); }, "pe-btn pe-cut-btn")
+        : clip ? null : button(T.cut, function () { clip = p; setStatus(T.cutNote); render(); }, "pe-btn pe-cut-btn"),
       button(T.hideWork, function () { d.in_work = false; changed(); }, "pe-btn pe-danger"),
     ]));
     // Under the picture as visitors will see it: the cover's own title and text when shown here, otherwise the name if chosen.
