@@ -725,6 +725,15 @@ collections:
                   - { label: "Right / ימין", value: right }
           - { name: tagline_en, label: "Tagline, English / סלוגן באנגלית", widget: string, required: false }
           - { name: tagline_he, label: "Tagline, Hebrew / סלוגן בעברית", widget: string, required: false }
+          - name: tagline_place
+            label: "Where the tagline is shown / איפה מוצג הסלוגן"
+            widget: select
+            required: false
+            default: "top"
+            hint: "Top: the page's main heading, above the opening pictures, with the \"Start a project\" button. Under the pictures: as before. / למעלה: הכותרת הראשית של הדף, מעל תמונות הפתיחה, עם כפתור ״התחילו פרויקט״. מתחת לתמונות: כמו קודם."
+            options:
+              - { label: "Top, as the page heading / למעלה, ככותרת הדף", value: "top" }
+              - { label: "Under the opening pictures / מתחת לתמונות הפתיחה", value: "below" }
           - { name: intro_en, label: "Short intro under the gallery, English (optional) / משפט פתיחה מתחת לגלריה, אנגלית", widget: text, required: false }
           - { name: intro_he, label: "Short intro under the gallery, Hebrew (optional) / משפט פתיחה מתחת לגלריה, עברית", widget: text, required: false }
           - { name: seo_description_en, label: "Search description, English / תיאור לחיפוש באנגלית", widget: string, required: false, hint: "Shown by Google under the site name. About 150 characters." }

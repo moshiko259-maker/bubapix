@@ -594,7 +594,8 @@
   function setupTexts() {
     labelPart(document.querySelector("#home-services-title"), "nav_services");
     labelPart(document.querySelector(".home-services .section-head a"), "all_services");
-    labelPart(document.querySelector(".start-project a.button"), "start_project");
+    // "Start a project": at the bottom of the page, and next to the heading at the top.
+    Array.prototype.forEach.call(document.querySelectorAll(".start-project a.button, .home-head a.home-cta"), function (b) { labelPart(b, "start_project"); });
     labelPart(document.querySelector("main > .bottom-hint"), "home_hint");
     labelPart(document.querySelector("#showreel-title"), "showreel");
     var intro = document.querySelector(".intro-text");
