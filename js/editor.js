@@ -24,7 +24,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 4)) {
+  if (!core || !(core.version >= 5)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -1328,8 +1328,10 @@
     var file = el("input", { type: "file", accept: "image/jpeg,image/png,image/webp", "class": "pe-file" });
     if (opts.many) file.multiple = true;
     file.addEventListener("change", function () {
-      var list = Array.prototype.slice.call(file.files || []);
-      if (!list.length) return;
+      var raw = Array.prototype.slice.call(file.files || []);
+      if (!raw.length) return;
+      // Web-sized first (BubaCore.shrinkImage: as in the admin panel), then added like any picture.
+      core.shrinkImages(raw).then(function (list) {
       var stamp = Date.now().toString(36);
       list.forEach(function (f, k) {
         var safe = f.name.toLowerCase().replace(/\.[^.]+$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "picture";
@@ -1341,6 +1343,7 @@
       });
       update();
       draw();
+      });
     });
     var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": T.pickTitle }, [
       el("div", { "class": "pe-modal-box" }, [

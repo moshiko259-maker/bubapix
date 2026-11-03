@@ -29,7 +29,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 4)) {
+  if (!core || !(core.version >= 5)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -858,8 +858,10 @@
     chooseBtn.disabled = true;
     var file = el("input", { type: "file", accept: "image/jpeg,image/png,image/webp", "class": "pe-file" });
     file.addEventListener("change", function () {
-      var f = file.files && file.files[0];
-      if (!f) return;
+      var picked = file.files && file.files[0];
+      if (!picked) return;
+      // Web-sized first (BubaCore.shrinkImage: as in the admin panel), then added like any picture.
+      core.shrinkImage(picked).then(function (f) {
       var safe = f.name.toLowerCase().replace(/\.[^.]+$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "picture";
       var ext = (f.name.match(/\.(jpe?g|png|webp)$/i) || [".jpg"])[0].toLowerCase();
       var path = "assets/uploads/" + slug + "/" + safe + "-" + Date.now().toString(36) + ext;
@@ -867,6 +869,7 @@
       if (imageList) imageList.unshift(path);
       choosePath(path);
       draw();
+      });
     });
     var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": T.pickTitle }, [
       el("div", { "class": "pe-modal-box" }, [
