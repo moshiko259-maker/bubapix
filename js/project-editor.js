@@ -30,7 +30,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 5)) {
+  if (!core || !(core.version >= 6)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -99,7 +99,7 @@
     gallery: "תמונות",
     behind: "מאחורי הקלעים",
     earlier: "הזזה למקום הקודם", later: "הזזה למקום הבא", prevBtn: "→ קודם", nextBtn: "הבא ←", more: "⋯ עוד", drag: "גררו כדי לשנות את הסדר",
-    replace: "החלפה", hide: "הסתרה", show: "הצגה", remove: "הסרה מהגלריה",
+    replace: "החלפה", alone: "לבד בשורה", aloneOff: "ביטול לבד בשורה", hide: "הסתרה", show: "הצגה", remove: "הסרה מהגלריה",
     describe: "תיאור לעיוורים",
     noAlt: "אין תיאור לעיוורים",
     add: "הוספת תמונה",
@@ -210,7 +210,7 @@
     gallery: "Images",
     behind: "Behind the scenes",
     earlier: "Move to the previous place", later: "Move to the next place", prevBtn: "← Earlier", nextBtn: "Later →", more: "⋯ More", drag: "Drag to change the order",
-    replace: "Replace", hide: "Hide", show: "Show", remove: "Remove from gallery",
+    replace: "Replace", alone: "Alone in its row", aloneOff: "Undo alone in row", hide: "Hide", show: "Show", remove: "Remove from gallery",
     describe: "Description for blind visitors",
     noAlt: "No description for blind visitors",
     add: "Add a picture",
@@ -945,6 +945,23 @@
     return box;
   }
 
+  // "Alone in its row": the whole row on this screen size (fw on computers, fw_m on phones).
+  function aloneButton(sec, grid, g) {
+    var key = narrow.matches ? "fw_m" : "fw", on = Number(g[key]) === 100;
+    var b = button(on ? T.aloneOff : T.alone, function () {
+      if (on) { delete g[key]; changed(); return; }
+      if (key === "fw" && !isFree(sec)) {
+        var gw = grid.getBoundingClientRect().width || 1;
+        Array.prototype.forEach.call(grid.querySelectorAll(".pe-item"), function (n) {
+          var other = n.__pic;
+          if (other && other !== g) other.fw = Math.max(10, Math.min(100, Math.round(n.getBoundingClientRect().width / gw * 100)));
+        });
+      }
+      g[key] = 100; selected = g; changed();
+    }, "pe-btn pe-alone-btn");
+    b.setAttribute("aria-pressed", String(on));
+    return b;
+  }
   function removeAt(sec, g) {
     var at = sec.images.indexOf(g);
     if (at < 0) return;
@@ -955,7 +972,7 @@
 
   // A picture with its own phone size: its own line, that wide, centred (as on the site).
   function phoneLine(fig, media, pct) {
-    fig.style.flex = "1 1 100%"; fig.style.width = "100%"; fig.style.maxWidth = "none";
+    fig.style.setProperty("flex", "1 1 100%", "important"); fig.style.setProperty("width", "100%", "important"); fig.style.maxWidth = "none"; // as the site's pm-W rule (beats .mrow .jg-item)
     media.style.width = pct + "%"; media.style.marginInline = "auto";
   }
   function cell(sec, s, g, i, it, grid) {
@@ -1009,11 +1026,12 @@
         describe(g.alt_he, g.alt_en, function (alts) { g.alt_he = alts.he; g.alt_en = alts.en; changed(); });
       }),
       button(T.caption, function () { captionDialog(g); }, "pe-btn pe-caption-btn"),
+      aloneButton(sec, grid, g),
       button(T.hide, function () { g.visible = false; changed(); }),
       button(T.remove, function () { removeAt(sec, g); }, "pe-btn pe-danger"),
     ]));
     fig.addEventListener("dragstart", function (e) {
-      if (e.target && e.target.closest && e.target.closest(".pe-tools, .pe-dot")) { e.preventDefault(); return; }
+      if (e.target && e.target.closest && e.target.closest("button, select, input, textarea, label, .pe-dot, .pe-resize")) { e.preventDefault(); return; }
       dragFrom = { s: s, g: g }; fig.classList.add("is-dragging");
       try { e.dataTransfer.setData("text/plain", String(i)); e.dataTransfer.effectAllowed = "move"; } catch (x) { /* old browser */ }
     });
@@ -1023,8 +1041,7 @@
     fig.addEventListener("drop", function (e) {
       e.preventDefault(); fig.classList.remove("is-target");
       if (!dragFrom || dragFrom.s !== s || dragFrom.g === g) return;
-      var rect = fig.getBoundingClientRect();
-      var afterTarget = he ? e.clientX < rect.left + rect.width / 2 : e.clientX > rect.left + rect.width / 2;
+      var afterTarget = sec.images.indexOf(dragFrom.g) < sec.images.indexOf(g); // takes the target's place
       var moved = sec.images.splice(sec.images.indexOf(dragFrom.g), 1)[0];
       sec.images.splice(sec.images.indexOf(g) + (afterTarget ? 1 : 0), 0, moved);
       dragFrom = null; changed();

@@ -29,7 +29,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 5)) {
+  if (!core || !(core.version >= 6)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -127,7 +127,7 @@
     catDeleted: "הקטגוריה נמחקה והוסרה מהפרויקטים. אפשר לבטל עם ״ביטול פעולה״.",
     catCount: "{n} פרויקטים", catCountOne: "פרויקט אחד", catCountZero: "אין פרויקטים",
     catEmptyOnly: "קטגוריה בלי שם לא נשמרת, ולא היה שינוי אחר לשמור.",
-    catsBtn: "קטגוריות", catsDialog: "הקטגוריות של {name}",
+    catsBtn: "קטגוריות", hideWork: "הסתרה מהעמוד", showWork: "הצגה בעמוד", hiddenTitle: "מוסתרים מעמוד הפרויקטים (עמוד הפרויקט עצמו נשאר)", alone: "לבד בשורה", aloneOff: "ביטול לבד בשורה", catsDialog: "הקטגוריות של {name}",
     catsPickNote: "סמנו את הקטגוריות של הפרויקט (אפשר כמה, או אף אחת).",
     catsNoneYet: "אין עדיין קטגוריות. מוסיפים קטגוריה ב״+ קטגוריה חדשה״ בראש העמוד.",
     catNoName: "(בלי שם)",
@@ -198,7 +198,7 @@
     catDeleted: "The category was deleted and removed from the projects. You can undo it.",
     catCount: "{n} projects", catCountOne: "1 project", catCountZero: "No projects",
     catEmptyOnly: "A category without a name is not saved, and there was nothing else to save.",
-    catsBtn: "Categories", catsDialog: "Categories of {name}",
+    catsBtn: "Categories", hideWork: "Hide from this page", showWork: "Show on this page", hiddenTitle: "Hidden from the Projects page (the project page itself stays)", alone: "Alone in its row", aloneOff: "Undo alone in row", catsDialog: "Categories of {name}",
     catsPickNote: "Tick the project's categories (several, or none).",
     catsNoneYet: "No categories yet. Add one with \"+ New category\" at the top of the page.",
     catNoName: "(no name)",
@@ -268,7 +268,7 @@
     });
   }
   // What this page sets in each project file (the rest of the file stays as it is now).
-  var PAGE_FIELDS = ["order", "list_w", "list_w_m", "cover", "cover_alt_he", "cover_alt_en", "title_in_gallery", "cover_title_he", "cover_title_en", "cover_note_he", "cover_note_en", "cover_caption", "categories"];
+  var PAGE_FIELDS = ["order", "list_w", "list_w_m", "cover", "cover_alt_he", "cover_alt_en", "title_in_gallery", "cover_title_he", "cover_title_en", "cover_note_he", "cover_note_en", "cover_caption", "categories", "in_work"];
   function loadVersion(commitSha) {
     var at = function (path) {
       return api("/contents/" + encPath(path) + "?ref=" + encodeURIComponent(commitSha))
@@ -368,6 +368,10 @@
   Array.prototype.forEach.call(pageBox.querySelectorAll("a.jg-item[href]"), function (a) {
     var m = (a.getAttribute("href") || "").match(/work\/([a-z0-9][a-z0-9-]*)\//);
     if (m && slugs.indexOf(m[1]) < 0) slugs.push(m[1]);
+  });
+  // Projects hidden from this page (in_work: false), so they can be shown again.
+  String(pageBox.getAttribute("data-work-hidden") || "").split(/\s+/).forEach(function (s) {
+    if (/^[a-z0-9][a-z0-9-]*$/.test(s) && slugs.indexOf(s) < 0) slugs.push(s);
   });
 
   var loadLabels = api("/contents/" + encPath(LABELS) + ref)
@@ -518,7 +522,7 @@
       el("span", { "class": "pe-note", text: narrow.matches ? T.phoneNote : T.freeNote }),
     ]));
     area.appendChild(el("p", { "class": "pe-note", text: T.orderNote }));
-    var items = state.list.map(function (p, i) { return { p: p, i: i, r: ratioOf(p.data.cover) }; }).filter(function (it) { return it.p.data.cover; });
+    var items = state.list.map(function (p, i) { return { p: p, i: i, r: ratioOf(p.data.cover) }; }).filter(function (it) { return it.p.data.cover && it.p.data.in_work !== false; });
     var grid;
     if (isFree() && !narrow.matches) {
       grid = el("div", { "class": "jg-project jg-free pe-gal pe-work" });
@@ -532,6 +536,18 @@
       items.forEach(function (it) { grid.appendChild(cell(it, grid)); });
     }
     area.appendChild(grid);
+    var off = state.list.filter(function (p) { return p.data.in_work === false; });
+    if (off.length) {
+      var row = el("div", { "class": "pe-strip-row" });
+      off.forEach(function (p) {
+        row.appendChild(el("figure", { "class": "pe-thumb" }, [
+          p.data.cover ? picture(p.data.cover, "160px") : el("span", { text: nameOf(p) }),
+          el("figcaption", { "class": "pe-thumb-name", text: nameOf(p) }),
+          el("div", { "class": "pe-tools" }, [button(T.showWork, function () { delete p.data.in_work; changed(); })]),
+        ]));
+      });
+      area.appendChild(el("div", { "class": "pe-strip" }, [el("p", { "class": "pe-strip-title", text: T.hiddenTitle }), row]));
+    }
     area.appendChild(el("p", { "class": "pe-note", text: T.coverNote }));
     paintCats();
   }
@@ -681,8 +697,24 @@
   }
   // A picture with its own phone size: its own line, that wide, centred (as on the site).
   function phoneLine(fig, media, pct) {
-    fig.style.flex = "1 1 100%"; fig.style.width = "100%"; fig.style.maxWidth = "none";
+    fig.style.setProperty("flex", "1 1 100%", "important"); fig.style.setProperty("width", "100%", "important"); fig.style.maxWidth = "none"; // as the site's pm-W rule (beats .mrow .jg-item)
     media.style.width = pct + "%"; media.style.marginInline = "auto";
+  }
+  // "Alone in its row": the whole row on this screen size (list_w on computers, list_w_m on phones).
+  function aloneButton(fig, grid, p) {
+    var d = p.data, key = narrow.matches ? "list_w_m" : "list_w", on = Number(d[key]) === 100;
+    var b = button(on ? T.aloneOff : T.alone, function () {
+      if (on) { delete d[key]; changed(); return; }
+      if (key === "list_w" && !isFree()) {
+        var gw = grid.getBoundingClientRect().width || 1;
+        Array.prototype.forEach.call(grid.querySelectorAll(".pe-item"), function (n) {
+          if (n.__p && n.__p !== p) n.__p.data.list_w = Math.max(10, Math.min(100, Math.round(n.getBoundingClientRect().width / gw * 100)));
+        });
+      }
+      d[key] = 100; selected = p.slug; changed();
+    }, "pe-btn pe-alone-btn");
+    b.setAttribute("aria-pressed", String(on));
+    return b;
   }
   function cell(it, grid) {
     var p = it.p, d = p.data, r = it.r;
@@ -743,6 +775,8 @@
       button(T.caption, function () { core.captionDialog(T, d, lang, [["hidden", T.capHidden], ["work", T.capCoverWork], ["project", T.capCoverProject], ["both", T.capCoverBoth]], changed, "cover_"); }, "pe-btn pe-caption-btn"),
       // Which categories this project is in (content/projects/<slug>.json, categories).
       button(T.catsBtn, function (e) { pickCats(p, e.currentTarget); }, "pe-btn pe-cats-btn"),
+      aloneButton(fig, grid, p),
+      button(T.hideWork, function () { d.in_work = false; changed(); }, "pe-btn pe-danger"),
     ]));
     // Under the picture as visitors will see it: the cover's own title and text when shown here, otherwise the name if chosen.
     var ct = d["cover_title_" + lang] || "", cn = d["cover_note_" + lang] || "";
@@ -750,7 +784,7 @@
     if (ownCap) fig.insertBefore(el("figcaption", { "class": "jg-caption pe-caption" }, [ct ? el("span", { "class": "jg-title", text: ct }) : null, cn ? el("span", { "class": "jg-note", text: cn }) : null]), media.nextSibling);
     else if (d.title_in_gallery === true && nameOf(p)) fig.insertBefore(el("figcaption", { "class": "jg-caption pe-caption" }, [el("span", { "class": "jg-title", text: nameOf(p) })]), media.nextSibling);
     fig.addEventListener("dragstart", function (e) {
-      if (e.target && e.target.closest && e.target.closest(".pe-tools, .pe-dot")) { e.preventDefault(); return; }
+      if (e.target && e.target.closest && e.target.closest("button, select, input, textarea, label, .pe-dot, .pe-resize")) { e.preventDefault(); return; }
       dragFrom = p; fig.classList.add("is-dragging");
       try { e.dataTransfer.setData("text/plain", p.slug); e.dataTransfer.effectAllowed = "move"; } catch (x) { /* old browser */ }
     });
@@ -760,8 +794,7 @@
     fig.addEventListener("drop", function (e) {
       e.preventDefault(); fig.classList.remove("is-target");
       if (!dragFrom || dragFrom === p) return;
-      var rect = fig.getBoundingClientRect();
-      var afterTarget = he ? e.clientX < rect.left + rect.width / 2 : e.clientX > rect.left + rect.width / 2;
+      var afterTarget = state.list.indexOf(dragFrom) < state.list.indexOf(p); // takes the target's place
       var moved = state.list.splice(state.list.indexOf(dragFrom), 1)[0];
       state.list.splice(state.list.indexOf(p) + (afterTarget ? 1 : 0), 0, moved);
       dragFrom = null; changed();

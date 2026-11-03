@@ -27,7 +27,7 @@
  */
 (function () {
   "use strict";
-  var VERSION = 5;
+  var VERSION = 6;
   if (window.BubaCore && window.BubaCore.version >= VERSION) return;
 
   function el(tag, attrs, kids) {
@@ -240,6 +240,97 @@
     }).observe(document.body, { childList: true });
   }
   dialogFocus();
+
+  // Moving pictures with a finger (phones and tablets). The editors move
+  // pictures with drag and drop ([draggable="true"] and the dragstart /
+  // dragover / drop / dragend events), which browsers fire for a mouse only.
+  // Here a long press (0.4 s) on a picture starts the same drag: the picture
+  // follows the finger, and the same events are sent to the pictures under it,
+  // so every editor's own drop rules apply unchanged. A short tap still only
+  // chooses the picture; a swipe still scrolls; a press on a button, menu or
+  // blue dot is left alone.
+  function touchDrag() {
+    if (window.__bubaTouchDrag) return;
+    window.__bubaTouchDrag = true;
+    var LONG = 400, SLOP = 10;
+    var timer = 0, src = null, startX = 0, startY = 0, active = false, last = null, accepted = false, lx = 0, ly = 0, dt = null, scrollTimer = 0;
+    var NOT = "button, select, input, textarea, a, .pe-dot, .pe-resize, [contenteditable], .pe-modal";
+    function evt(type, target, x, y) {
+      var e;
+      try { e = new DragEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, dataTransfer: dt }); }
+      catch (err) { e = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y }); }
+      target.dispatchEvent(e);
+      return e;
+    }
+    function itemAt(x, y) {
+      src.style.pointerEvents = "none";
+      var n = document.elementFromPoint(x, y);
+      src.style.pointerEvents = "";
+      n = n && n.closest ? n.closest('[draggable="true"]') : null;
+      return n && n !== src ? n : null;
+    }
+    function reset() {
+      clearTimeout(timer); clearInterval(scrollTimer); timer = 0; scrollTimer = 0;
+      if (src) { src.classList.remove("pe-touch-drag"); src.style.transform = ""; src.style.zIndex = ""; }
+      if (last) last.classList.remove("is-target");
+      src = null; active = false; last = null; accepted = false;
+    }
+    function begin() {
+      timer = 0;
+      if (!src) return;
+      try { dt = new DataTransfer(); } catch (e) { dt = null; }
+      var e = evt("dragstart", src, startX, startY);
+      if (e.defaultPrevented) { reset(); return; }
+      active = true;
+      src.classList.add("pe-touch-drag");
+      src.style.zIndex = "70";
+      if (navigator.vibrate) { try { navigator.vibrate(15); } catch (x) { /* not allowed */ } }
+      // Near the top or bottom of the screen, the page scrolls by itself.
+      scrollTimer = setInterval(function () {
+        var h = window.innerHeight, edge = 70;
+        if (ly < edge) window.scrollBy(0, -12); else if (ly > h - edge) window.scrollBy(0, 12);
+      }, 30);
+    }
+    document.addEventListener("touchstart", function (e) {
+      if (e.touches.length !== 1 || !document.querySelector(".pe-bar")) return;
+      var t = e.target && e.target.closest ? e.target : null;
+      var item = t && t.closest('[draggable="true"]');
+      if (!item || t.closest(NOT)) return;
+      reset();
+      src = item; startX = lx = e.touches[0].clientX; startY = ly = e.touches[0].clientY;
+      timer = setTimeout(begin, LONG);
+    }, { passive: true });
+    document.addEventListener("touchmove", function (e) {
+      if (!src) return;
+      var x = e.touches[0].clientX, y = e.touches[0].clientY;
+      if (!active) {
+        // Moved before the long press ended: the finger is scrolling the page.
+        if (Math.abs(x - startX) > SLOP || Math.abs(y - startY) > SLOP) reset();
+        return;
+      }
+      e.preventDefault();
+      lx = x; ly = y;
+      src.style.transform = "translate(" + (x - startX) + "px, " + (y - startY) + "px) scale(0.92)";
+      // Over a gap between pictures (or a bar), the last picture stays the target.
+      var over = itemAt(x, y);
+      if (!over) return;
+      if (over !== last) { if (last) { last.classList.remove("is-target"); evt("dragleave", last, x, y); } last = over; accepted = false; }
+      accepted = evt("dragover", over, x, y).defaultPrevented;
+    }, { passive: false });
+    function end(e) {
+      if (!src) return;
+      if (!active) { reset(); return; }
+      if (e.cancelable) e.preventDefault(); // no click on the picture after a drag
+      var s = src, target = last, ok = accepted;
+      src.style.transform = "";
+      if (target && ok) evt("drop", target, lx, ly);
+      evt("dragend", s, lx, ly);
+      reset();
+    }
+    document.addEventListener("touchend", end, { passive: false });
+    document.addEventListener("touchcancel", end, { passive: false });
+  }
+  touchDrag();
 
   function modal(label, kids, focus) {
     var dialog = el("div", { "class": "pe-modal", role: "dialog", "aria-modal": "true", "aria-label": label }, [

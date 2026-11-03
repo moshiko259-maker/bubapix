@@ -24,7 +24,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 5)) {
+  if (!core || !(core.version >= 6)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -73,7 +73,7 @@
     frame: "צורה",
     frameNatural: "טבעית", frameWide: "קולנוע רחב", frameLandscape: "רוחבית", frameSquare: "ריבועית", framePortrait: "לאורך",
     earlier: "הזזה למקום הקודם", later: "הזזה למקום הבא", prevBtn: "→ קודם", nextBtn: "הבא ←", more: "⋯ עוד", drag: "גררו כדי להזיז",
-    replace: "החלפה", hide: "הסתרה", show: "הצגה", remove: "הסרה מהגלריה",
+    replace: "החלפה", alone: "לבד בשורה", aloneOff: "ביטול לבד בשורה", hide: "הסתרה", show: "הצגה", remove: "הסרה מהגלריה",
     add: "הוספת תמונה לגלריה",
     describe: "תיאור לעיוורים", noAlt: "אין תיאור לעיוורים", ok: "אישור",
     altEdit: "כתבו בקצרה מה רואים בתמונה. קוראי מסך מקריאים את זה לגולשים עיוורים.",
@@ -187,7 +187,7 @@
     frame: "Shape",
     frameNatural: "Natural", frameWide: "Cinema wide", frameLandscape: "Landscape", frameSquare: "Square", framePortrait: "Portrait",
     earlier: "Move to the previous place", later: "Move to the next place", prevBtn: "← Earlier", nextBtn: "Later →", more: "⋯ More", drag: "Drag to move",
-    replace: "Replace", hide: "Hide", show: "Show", remove: "Remove from gallery",
+    replace: "Replace", alone: "Alone in its row", aloneOff: "Undo alone in row", hide: "Hide", show: "Show", remove: "Remove from gallery",
     add: "Add a picture to the gallery",
     describe: "Description for blind visitors", noAlt: "No description for blind visitors", ok: "OK",
     altEdit: "Say briefly what the picture shows. Screen readers read it to blind visitors.",
@@ -790,7 +790,7 @@
         min: 10, max: 100,
       });
       item.addEventListener("dragstart", function (e) {
-        if (e.target && e.target.closest && e.target.closest(".pe-tools, .pe-dot")) { e.preventDefault(); return; }
+        if (e.target && e.target.closest && e.target.closest("button, select, input, textarea, label, .pe-dot, .pe-resize")) { e.preventDefault(); return; }
         posterDrag = slug; item.classList.add("is-dragging");
         try { e.dataTransfer.setData("text/plain", slug); e.dataTransfer.effectAllowed = "move"; } catch (x) { /* old browser */ }
       });
@@ -802,9 +802,8 @@
         if (!posterDrag || posterDrag === slug) return;
         var list = shownPosters().map(function (q) { return q.slug; });
         var from = list.indexOf(posterDrag);
+        var afterTarget = from < list.indexOf(slug); // takes the target's place
         list.splice(from, 1);
-        var rect = item.getBoundingClientRect();
-        var afterTarget = he ? e.clientX < rect.left + rect.width / 2 : e.clientX > rect.left + rect.width / 2;
         list.splice(list.indexOf(slug) + (afterTarget ? 1 : 0), 0, posterDrag);
         posterDrag = ""; reorderPosters(list); changed(); syncPage();
       });
@@ -1090,7 +1089,7 @@
 
   // A picture with its own phone size: its own line, that wide, centred (as on the site).
   function phoneLine(fig, media, pct) {
-    fig.style.flex = "1 1 100%"; fig.style.width = "100%"; fig.style.maxWidth = "none";
+    fig.style.setProperty("flex", "1 1 100%", "important"); fig.style.setProperty("width", "100%", "important"); fig.style.maxWidth = "none"; // as the site's pm-W rule (beats .mrow .jg-item)
     media.style.width = pct + "%"; media.style.marginInline = "auto";
   }
   function cell(item) {
@@ -1133,7 +1132,9 @@
           changed();
         }, g.project || "");
       }),
+      aloneButton(g, idx),
       button(T.hide, function () { g.visible = false; changed(); }),
+      button(T.remove, function () { data.gallery.splice(data.gallery.indexOf(g), 1); changed(); }, "pe-btn pe-danger"),
       button(T.describe, function () {
         core.describe(T, g.alt_he, g.alt_en, function (alts) { g.alt_he = alts.he; g.alt_en = alts.en; changed(); });
       }, "pe-btn pe-describe-btn"),
@@ -1151,15 +1152,14 @@
         capNote ? el("span", { "class": "jg-note", text: capNote }) : null,
       ]), media.nextSibling);
     }
-    fig.addEventListener("dragstart", function (e) { if (e.target && e.target.closest && e.target.closest(".pe-resize, .pe-tools")) { e.preventDefault(); return; } dragFrom = idx; fig.classList.add("is-dragging"); try { e.dataTransfer.setData("text/plain", String(idx)); e.dataTransfer.effectAllowed = "move"; } catch (x) { /* old browser */ } });
+    fig.addEventListener("dragstart", function (e) { if (e.target && e.target.closest && e.target.closest("button, select, input, textarea, label, .pe-dot, .pe-resize")) { e.preventDefault(); return; } dragFrom = idx; fig.classList.add("is-dragging"); try { e.dataTransfer.setData("text/plain", String(idx)); e.dataTransfer.effectAllowed = "move"; } catch (x) { /* old browser */ } });
     fig.addEventListener("dragend", function () { fig.classList.remove("is-dragging"); dragFrom = -1; });
     fig.addEventListener("dragover", function (e) { if (dragFrom >= 0 && dragFrom !== idx) { e.preventDefault(); fig.classList.add("is-target"); } });
     fig.addEventListener("dragleave", function () { fig.classList.remove("is-target"); });
     fig.addEventListener("drop", function (e) {
       e.preventDefault(); fig.classList.remove("is-target");
       if (dragFrom < 0 || dragFrom === idx) return;
-      var rect = fig.getBoundingClientRect();
-      var afterTarget = he ? e.clientX < rect.left + rect.width / 2 : e.clientX > rect.left + rect.width / 2;
+      var afterTarget = dragFrom < data.gallery.indexOf(g); // takes the target's place
       var moved = data.gallery.splice(dragFrom, 1)[0];
       var to = data.gallery.indexOf(g) + (afterTarget ? 1 : 0);
       data.gallery.splice(to, 0, moved);
@@ -1183,6 +1183,17 @@
     data.gallery[idx] = data.gallery[other];
     data.gallery[other] = tmp;
     changed();
+  }
+  // "Alone in its row": the whole row on this screen size (fw on computers, fw_m on phones).
+  function aloneButton(g, idx) {
+    var key = phone.matches ? "fw_m" : "fw", on = Number(g[key]) === 100;
+    var b = button(on ? T.aloneOff : T.alone, function () {
+      if (on) { delete g[key]; changed(); return; }
+      if (key === "fw" && !isFree()) startFree();
+      g[key] = 100; selected = idx; changed();
+    }, "pe-btn pe-alone-btn");
+    b.setAttribute("aria-pressed", String(on));
+    return b;
   }
   // Size: three clear buttons (and "automatic"), plus a handle to drag.
   function sizeButtons(g) {

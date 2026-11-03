@@ -752,7 +752,11 @@ function filterStatus(one, many, none) {
 }
 
 function work(ctx) {
-  const { t, data } = ctx;
+  const { t } = ctx;
+  // Projects hidden from this page only (in_work: false) keep their own page;
+  // the page editor lists them so they can be shown again.
+  const offPage = ctx.data.projects.filter((p) => p.inWork === false).map((p) => p.slug);
+  const data = { ...ctx.data, projects: ctx.data.projects.filter((p) => p.inWork !== false) };
   const link = makeLink(ctx);
   const used = data.categories.filter((c) => data.projects.some((p) => p.categories.some((pc) => pc.slug === c.slug)));
   const filters = used.length > 1 || (used.length === 1 && data.projects.some((p) => !p.categories.length))
@@ -786,13 +790,13 @@ function work(ctx) {
       : gallery(items, "jg-work");
   return layout(ctx, {
     // "Add a project" first, so it is not lost at the end of a long list.
-    edits: [[t.edit.newProject, ed.newProject], ...data.projects.map((p) => [t.edit.project.replace("{name}", p.title), ed.project(p.slug)])],
+    edits: [[t.edit.newProject, ed.newProject], ...ctx.data.projects.map((p) => [t.edit.project.replace("{name}", p.title), ed.project(p.slug)])],
     title: pageTitle(ctx, t.work.title),
     description: data.projects.length ? clip(`${t.work.title} — BubaPix: ${data.projects.map((p) => p.name).join(", ")}.`) : data.seoDescription,
     current: "work",
     pageEditor: "work",
     main: `
-    <div class="page" data-work-page>
+    <div class="page" data-work-page${offPage.length ? ` data-work-hidden="${e(offPage.join(" "))}"` : ""}>
       <header class="page-head"><h1 class="page-title" data-work-title data-ts="work/title">${e(t.work.title)}</h1></header>${filters}
       ${grid}${items.length && t.work.hint ? `
       <p class="page-hint bottom-hint" data-work-hint data-ts="work/hint">${e(t.work.hint)}</p>` : ""}
