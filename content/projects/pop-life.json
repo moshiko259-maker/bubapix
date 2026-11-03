@@ -3,7 +3,7 @@
   "title_he": "פופ לייף",
   "visible": true,
   "featured": true,
-  "order": 4,
+  "order": 2,
   "categories": [],
   "text_en": "",
   "text_he": "",
@@ -82,5 +82,6 @@
       ]
     }
   ],
-  "list_w": 49
+  "list_w": 49,
+  "poster_w": 49
 }
