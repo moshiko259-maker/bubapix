@@ -439,6 +439,10 @@ function contentFor(lang) {
         featured: p.featured !== false,
         // Shown in the homepage posters row (the owner can hide it there).
         inPosters: p.in_posters !== false,
+        // The homepage's own order and poster picture (set in the page editor there);
+        // without them the projects order and the cover are used.
+        posterOrder: Number(p.poster_order) || Number(p.order) || 99,
+        posterThumb: p.poster_image ? picture({ image: p.poster_image, alt_en: p.poster_alt_en || p.cover_alt_en, alt_he: p.poster_alt_he || p.cover_alt_he }, title, `${where} homepage poster`) : null,
         comments: p.comments !== false,
         categories: (Array.isArray(p.categories) ? p.categories : []).map((c) => catBySlug.get(c)).filter(Boolean),
         cover,
@@ -487,7 +491,11 @@ function contentFor(lang) {
   // Homepage projects row: one poster per project, shown from two projects
   // up. Those posters are not repeated in the gallery (the opening image
   // keeps its place at the top).
-  const posterList = projects.filter((p) => p.thumb && p.inPosters);
+  const posterList = projects
+    .filter((p) => (p.posterThumb || p.thumb) && p.inPosters)
+    .map((p, i) => ({ p, i }))
+    .sort((a, b) => a.p.posterOrder - b.p.posterOrder || a.i - b.i)
+    .map(({ p }) => (p.posterThumb ? { ...p, thumb: p.posterThumb } : p));
   const posters = posterList.length >= 2 ? posterList : [];
   for (const p of posters) if (!hero || p.thumb.src !== hero.src) seen.add(p.thumb.src);
   // Homepage gallery chosen in the admin (Homepage > Homepage gallery). A

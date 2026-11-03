@@ -1391,4 +1391,9 @@ html.ts-open body { padding-block-end: 10rem; }
 .pe-item[draggable="true"] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .pe-touch-drag { opacity: 0.85; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25); transition: none !important; pointer-events: none; }
 .pe-thumb-name { font-size: 0.85rem; text-align: center; margin-top: 0.25rem; }
-.pe-alone-btn[aria-pressed="true"] { background: var(--sand-hover); }
+.pe-tools .pe-alone-btn[aria-pressed="true"], .pe-alone-btn[aria-pressed="true"] { background: var(--sand-hover); color: #1d1b16; border-color: var(--sand-line); }
+/* Cut and paste in the page editors: the cut picture is dimmed; the others show "Paste here". */
+.pe-cut { outline: 3px dashed var(--sand-line); outline-offset: 2px; }
+.pe-cut > .jg-media { opacity: 0.45; }
+.pe-paste-bar { position: absolute; inset-inline: 0; bottom: 0.5rem; display: flex; justify-content: center; z-index: 6; pointer-events: none; }
+.pe-paste-bar .pe-btn { pointer-events: auto; }
