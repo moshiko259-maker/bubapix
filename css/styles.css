@@ -1403,3 +1403,8 @@ html.ts-open body { padding-block-end: 10rem; }
 .section-label { font-size: clamp(1.25rem, 2vw, 1.625rem); font-weight: 600; color: var(--ink); line-height: 1.25; }
 :lang(he) .button-large { letter-spacing: 0; }
 input[type="radio"], input[type="checkbox"] { accent-color: var(--ink); }
+/* Editors on touch screens (stage 2, research: touch targets of at least 44px). */
+@media (hover: none) {
+  .pe-btn, .pe-icon, .pe-select { min-height: 44px; font-size: 0.875rem; }
+  .pe-item .pe-btn { min-height: 44px; font-size: 0.8125rem; }
+}
