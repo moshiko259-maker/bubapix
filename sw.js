@@ -1,6 +1,6 @@
 // BubaPix: helper that lets the installed site open fast and work offline.
 "use strict";
-const CACHE = "bubapix-ebd58df37c2c";
+const CACHE = "bubapix-fc675cceb4f4";
 const HOME = new URL("./", self.location).href;
 // Shown when there is no connection and the page was never saved. A page is
 // never shown at another page's address (its links would break).
