@@ -1047,6 +1047,7 @@
       button(T.caption, function () { captionDialog(g); }, "pe-btn pe-caption-btn"),
       aloneButton(sec, grid, g),
     ].concat(cutTools(sec, g), [
+      button(T.hide, function () { g.visible = false; changed(); }),
       button(T.remove, function () { removeAt(sec, g); }, "pe-btn pe-danger"),
     ])));
     if (clip === g) fig.classList.add("pe-cut");

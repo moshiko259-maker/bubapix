@@ -1184,6 +1184,7 @@
       aloneButton(g, idx),
       clip === g ? button(T.cutCancel, function () { clip = null; render(); }, "pe-btn pe-cut-btn")
         : clip ? null : button(T.cut, function () { clip = g; setStatus(T.cutNote); render(); }, "pe-btn pe-cut-btn"),
+      button(T.hide, function () { g.visible = false; changed(); }),
       button(T.remove, function () { data.gallery.splice(data.gallery.indexOf(g), 1); changed(); }, "pe-btn pe-danger"),
       button(T.describe, function () {
         core.describe(T, g.alt_he, g.alt_en, function (alts) { g.alt_he = alts.he; g.alt_en = alts.en; changed(); });
