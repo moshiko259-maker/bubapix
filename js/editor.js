@@ -160,7 +160,7 @@
     freeMode: "חופשי: גודל לכל תמונה",
     frameTip: "לחצו על תמונה כדי לבחור אותה, ואז גררו את הנקודות שבמסגרת כדי לשנות גודל",
     posterReplace: "החלפת הפוסטר",
-    posterHide: "הורדה מהשורה",
+    postersNotLoaded: "חלק מהפוסטרים לא נטענו לעריכה (הם מוצגים כרגיל). רעננו את הדף כדי לערוך אותם.", posterHide: "הורדה מהשורה",
     posterShow: "הצגה בשורה",
     posterHiddenNote: "יוסתר מהשורה אחרי שמירה",
     postersHiddenTitle: "פוסטרים מוסתרים משורת הפרויקטים",
@@ -274,7 +274,7 @@
     freeMode: "Free: a size for each picture",
     frameTip: "Click a picture to select it, then drag the dots on its frame to resize",
     posterReplace: "Replace the poster",
-    posterHide: "Remove from the row",
+    postersNotLoaded: "Some posters could not be loaded for editing (they are shown as usual). Refresh the page to edit them.", posterHide: "Remove from the row",
     posterShow: "Show in the row",
     posterHiddenNote: "Hidden from the row after saving",
     postersHiddenTitle: "Posters hidden from the projects row",
@@ -371,16 +371,19 @@
     return api("/contents/content/projects?ref=" + encodeURIComponent(BRANCH))
       .then(function (items) {
         var files = (Array.isArray(items) ? items : []).filter(function (f) { return f.type === "file" && /\.json$/.test(f.name); });
+        // Each project file is read on its own (with one retry), so one failed
+        // read leaves only that poster out of editing, never all of them.
+        var get = function (f) { return api("/contents/" + encPath(f.path) + "?ref=" + encodeURIComponent(BRANCH)).catch(function () { return api("/contents/" + encPath(f.path) + "?ref=" + encodeURIComponent(BRANCH)); }); };
         return Promise.all(files.map(function (f) {
-          return api("/contents/" + encPath(f.path) + "?ref=" + encodeURIComponent(BRANCH)).then(function (res) {
+          return get(f).then(function (res) {
             var d = {};
             try { d = JSON.parse(b64ToUtf8(res.content)); } catch (e) { d = {}; }
             var slug = f.name.replace(/\.json$/, "");
             return { slug: slug, title_he: d.title_he || "", title_en: d.title_en || "", orig_he: d.title_he || "", orig_en: d.title_en || "", name: (he ? d.title_he || d.title_en : d.title_en || d.title_he) || slug, order: Number(d.poster_order) || Number(d.order) || 99, orig_order: Number(d.poster_order) || Number(d.order) || 99, poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, orig_poster_w: Number(d.poster_w) >= 10 ? Math.round(Number(d.poster_w)) : 0, poster_w_m: Number(d.poster_w_m) >= 20 ? Math.round(Number(d.poster_w_m)) : 0, orig_poster_w_m: Number(d.poster_w_m) >= 20 ? Math.round(Number(d.poster_w_m)) : 0, in_posters: d.in_posters !== false, orig_in_posters: d.in_posters !== false, origCover: d.poster_image || d.cover || "", cover: null, cap: capOf(d), origCap: JSON.stringify(capOf(d)) };
-          });
+          }).catch(function () { return null; });
         }));
       })
-      .then(function (list) { projects = list.sort(function (a, b) { return a.order - b.order; }); })
+      .then(function (list) { projects = list.filter(Boolean).sort(function (a, b) { return a.order - b.order; }); })
       .catch(function () { projects = []; });
   }
   function loadTexts() {
@@ -815,7 +818,10 @@
         posterDrag = ""; reorderPosters(list); changed(); syncPage();
       });
     });
-    if (posterOrig) { posterOrig.hidden = true; posterOrig.style.display = "none"; }
+    // Posters whose project could not be read stay visible as they are (never hidden by editing).
+    var missing = posterOrig ? posterOrig.querySelectorAll("[data-project]:not(.pe-poster)").length : 0;
+    if (posterOrig && !missing) { posterOrig.hidden = true; posterOrig.style.display = "none"; }
+    if (missing) setStatus(T.postersNotLoaded, "warn");
     drawPosters();
   }
   // Posters in the order of the projects (their "order" field).
@@ -860,12 +866,18 @@
       var h = share.reduce(function (acc, sh, k) { return acc + sh * (sh * 100 / posterEls[rw[k].slug].r); }, 0);
       rw.forEach(function (q, k) {
         var pe = posterEls[q.slug], it = pe.el;
-        it.style.flex = ""; it.style.width = ""; it.style.minWidth = ""; it.style.marginInline = "";
+        it.style.removeProperty("flex"); it.style.removeProperty("width"); it.style.minWidth = ""; it.style.marginInline = "";
         if (pe.media) { pe.media.style.aspectRatio = ""; pe.media.style.width = ""; pe.media.style.marginInline = ""; }
         it.style.maxWidth = "";
         // Phones: the poster's own line (poster_w_m), as on the site.
         if (phone.matches && q.poster_w_m >= 20 && pe.media) phoneLine(it, pe.media, q.poster_w_m);
-        else if (free && rw.length === 1) { it.style.flex = "none"; it.style.width = Math.min(100, f[0]) + "%"; it.style.marginInline = "auto"; }
+        else if (free && rw.length === 1) {
+          // Alone in its row: "important", or the gallery rule (.mrow .jg-item { flex-basis: 0 !important }) shrinks it to nothing.
+          var one = Math.min(100, f[0]) + "%", rr = pe.r || 1.5;
+          // Square and tall posters keep within the screen's height, as on the site (.mrow.n1 > .ar-*).
+          if (rr < 1.3) one = "min(" + one + ", calc(80vh * " + rr + "))";
+          it.style.setProperty("flex", "0 0 " + one, "important"); it.style.setProperty("width", one, "important"); it.style.marginInline = "auto";
+        }
         else if (free) { it.style.flex = Math.round(share[k] * 1000) + " 1 0"; it.style.minWidth = "0"; if (pe.media) pe.media.style.aspectRatio = String((share[k] * 100) / h); }
         r.appendChild(it);
       });
