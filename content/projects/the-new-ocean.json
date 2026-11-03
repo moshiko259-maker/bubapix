@@ -357,5 +357,11 @@
     }
   ],
   "list_w": 72,
-  "poster_w": 60
+  "poster_w": 60,
+  "poster_title_he": "הים החדש",
+  "poster_title_en": "The New Sea",
+  "poster_note_he": "סרט שנבחר להשתתף בפסטיבלים ותחרויות מוצג ביפן",
+  "poster_note_en": "A film selected to participate in festivals and competitions is shown in Japan",
+  "poster_caption": "everywhere",
+  "poster_caption_pos": "above"
 }
