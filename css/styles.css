@@ -6,7 +6,7 @@
    ========================================================== */
 
 :root {
-  --paper: #f7f6ef;       /* page background: almost white with a touch of cream (owner's choice C) */
+  --paper: #ffffff;       /* page background: white (owner's choice C, 4.11.2026; was #f7f6ef) */
   --paper-2: #ecebe3;     /* empty image frames, quiet panels */
   --ink: #16161d;         /* text */
   --ink-2: #4b4b57;       /* secondary text */

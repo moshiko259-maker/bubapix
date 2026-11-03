@@ -861,8 +861,8 @@ for (const [file, lang, start, desc] of [
       start_url: start,
       scope: "./",
       display: "standalone",
-      background_color: "#f7f6ef",
-      theme_color: "#f7f6ef",
+      background_color: "#ffffff",
+      theme_color: "#ffffff",
       icons: [
         { src: "assets/brand/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
         { src: "assets/brand/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
@@ -904,7 +904,7 @@ const HOME = new URL("./", self.location).href;
 // Shown when there is no connection and the page was never saved. A page is
 // never shown at another page's address (its links would break).
 const OFFLINE = \`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>BubaPix</title></head>
-<body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f6ef;color:#16161d;font-family:system-ui,sans-serif;text-align:center;padding:24px">
+<body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#ffffff;color:#16161d;font-family:system-ui,sans-serif;text-align:center;padding:24px">
 <div><p style="font-size:20px;font-weight:600;margin:0 0 8px">אין חיבור לאינטרנט</p><p style="margin:0 0 20px" lang="en" dir="ltr">You are offline</p>
 <a href="\${HOME}" style="color:#16161d">BubaPix</a></div></body></html>\`;
 self.addEventListener("install", () => self.skipWaiting());
