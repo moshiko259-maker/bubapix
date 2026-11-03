@@ -30,7 +30,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": false
     },
     {
       "image": "/assets/work/the-new-ocean-poster.jpg",
@@ -41,7 +41,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
+      "visible": false,
       "project": "the-new-ocean"
     },
     {
@@ -53,7 +53,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": false
     },
     {
       "image": "/assets/work/bubapix-letters-orange.png",
@@ -64,7 +64,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": false
     },
     {
       "image": "/assets/work/bubapix-letters-desert-family.png",
@@ -75,7 +75,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": false
     },
     {
       "image": "/assets/work/bubapix-letters-underwater-family.png",
@@ -97,7 +97,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": false
     },
     {
       "image": "/assets/work/bubapix-letters-sketch.png",
@@ -108,7 +108,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": false
     },
     {
       "image": "/assets/work/bubapix-letters-desert-family-2.png",
@@ -119,7 +119,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": false
     },
     {
       "image": "/assets/work/bubapix-logo-sketch-robot.jpg",
@@ -130,7 +130,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": false
     },
     {
       "image": "/assets/work/bubapix-letters-character-3d.png",
@@ -141,7 +141,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": false
     },
     {
       "image": "/assets/work/bubapix-letters-furry.png",
@@ -152,7 +152,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": false
     },
     {
       "image": "/assets/work/bubapix-letters-character-outline.png",
@@ -163,7 +163,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": false
     },
     {
       "image": "/assets/work/bubapix-letters-eyes-sketch.png",
@@ -174,7 +174,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true
+      "visible": false
     },
     {
       "image": "/assets/work/the-new-ocean-poster-boat.jpg",
@@ -185,7 +185,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
+      "visible": false,
       "project": "the-new-ocean"
     },
     {
@@ -197,7 +197,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
+      "visible": false,
       "project": "the-new-ocean"
     },
     {
@@ -209,7 +209,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
+      "visible": false,
       "project": "the-new-ocean"
     },
     {
@@ -221,7 +221,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
+      "visible": false,
       "project": "the-new-ocean"
     },
     {
@@ -233,7 +233,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
+      "visible": false,
       "project": "the-whites"
     },
     {
@@ -245,7 +245,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
+      "visible": false,
       "project": "the-whites"
     },
     {
@@ -257,7 +257,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
+      "visible": false,
       "project": "the-whites"
     },
     {
@@ -269,7 +269,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
+      "visible": false,
       "project": "bradley-and-the-grumples"
     },
     {
@@ -281,7 +281,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
+      "visible": false,
       "project": "pop-life"
     },
     {
@@ -293,7 +293,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
+      "visible": false,
       "project": "bradley-and-the-grumples"
     },
     {
@@ -305,7 +305,7 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
+      "visible": false,
       "project": "bradley-and-the-grumples"
     },
     {
@@ -317,12 +317,12 @@
       "note_en": "",
       "note_he": "",
       "caption": "hidden",
-      "visible": true,
+      "visible": false,
       "project": "bradley-and-the-grumples"
     },
     {
       "image": "/assets/work/shark-towel-boat.png",
-      "visible": true,
+      "visible": false,
       "alt_en": "A grinning shark tugs a striped towel from a small sailboat while an orange character shouts.",
       "alt_he": "כריש מחייך מושך מגבת מפוספסת מסירת מפרש קטנה, ודמות כתומה צועקת.",
       "title_en": "",
@@ -334,7 +334,7 @@
     },
     {
       "image": "/assets/work/yacht-trash.png",
-      "visible": true,
+      "visible": false,
       "alt_en": "Bottles, cans and plastic bags fall from a luxury yacht into clear turquoise water.",
       "alt_he": "בקבוקים, פחיות ושקיות ניילון נופלים מיאכטה מפוארת למים טורקיז צלולים.",
       "title_en": "",
@@ -346,7 +346,7 @@
     },
     {
       "image": "/assets/work/furry-characters-lineup.png",
-      "visible": true,
+      "visible": false,
       "alt_en": "Six furry characters of different shapes and colors stand in a row.",
       "alt_he": "שש דמויות פרוותיות בצורות ובצבעים שונים עומדות בשורה.",
       "title_en": "",
@@ -358,7 +358,7 @@
     },
     {
       "image": "/assets/work/white-fluffy-turnaround.png",
-      "visible": true,
+      "visible": false,
       "alt_en": "A white fluffy character with heavy eyebrows, seen from the front, side and back.",
       "alt_he": "דמות לבנה ופרוותית עם גבות עבות, מלפנים, מהצד ומאחור.",
       "title_en": "",
@@ -370,7 +370,7 @@
     },
     {
       "image": "/assets/work/can-octopus.png",
-      "visible": true,
+      "visible": false,
       "alt_en": "An octopus made from a crushed drink can rests on old tires on the sea floor.",
       "alt_he": "תמנון עשוי מפחית משקה מעוכה נח על צמיגים ישנים בקרקעית הים.",
       "title_en": "",
