@@ -447,7 +447,7 @@ function contentFor(lang) {
         // Width of its poster on the homepage (computers), set in the page editor.
         posterW: Number(p.poster_w) >= 10 && Number(p.poster_w) <= 100 ? Math.round(Number(p.poster_w)) : 0,
         // The same three sizes on phones (…_w_m), set in the page editor on a phone.
-        posterWm: phoneW(p.poster_w_m), listWm: phoneW(p.list_w_m), coverWm: phoneW(p.cover_w_m),
+        posterWm: phoneW(p.poster_w_m), listWm: phoneW(p.list_w_m), inWork: p.in_work !== false, coverWm: phoneW(p.cover_w_m),
         listW: Number(p.list_w) >= 10 && Number(p.list_w) <= 100 ? Math.round(Number(p.list_w)) : 0,
         coverW: Number(p.cover_w) >= 20 && Number(p.cover_w) < 100 ? Math.round(Number(p.cover_w)) : 0,
         // The picture that represents the project in galleries.
