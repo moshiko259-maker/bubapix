@@ -1397,3 +1397,9 @@ html.ts-open body { padding-block-end: 10rem; }
 .pe-cut > .jg-media { opacity: 0.45; }
 .pe-paste-bar { position: absolute; inset-inline: 0; bottom: 0.5rem; display: flex; justify-content: center; z-index: 6; pointer-events: none; }
 .pe-paste-bar .pe-btn { pointer-events: auto; }
+
+/* Editors on touch screens (stage 2, research: touch targets of at least 44px). */
+@media (hover: none) {
+  .pe-btn, .pe-icon, .pe-select { min-height: 44px; font-size: 0.875rem; }
+  .pe-item .pe-btn { min-height: 44px; font-size: 0.8125rem; }
+}
