@@ -99,7 +99,7 @@
     gallery: "תמונות",
     behind: "מאחורי הקלעים",
     earlier: "הזזה למקום הקודם", later: "הזזה למקום הבא", prevBtn: "→ קודם", nextBtn: "הבא ←", more: "⋯ עוד", drag: "גררו כדי לשנות את הסדר",
-    replace: "החלפה", cut: "גזירה", cutCancel: "ביטול גזירה", pasteHere: "הדבקה כאן", pasteEnd: "הדבקה בסוף", cutNote: "התמונה נגזרה. לחצו ״הדבקה כאן״ על התמונה שלפניה היא תיכנס, או ״הדבקה בסוף״.", alone: "לבד בשורה", aloneOff: "ביטול לבד בשורה", hide: "הסתרה", show: "הצגה", remove: "הסרה מהגלריה",
+    replace: "החלפה", cut: "גזירה", cutCancel: "ביטול גזירה", pasteHere: "הדבקה כאן", pasteEnd: "הדבקה בסוף", cutNote: "התמונה נגזרה. לחצו ״הדבקה כאן״ על התמונה שלפניה היא תיכנס, או ״הדבקה בסוף״.", alone: "לבד בשורה", aloneOff: "ביטול לבד בשורה", hide: "הסתרה", show: "הצגה", remove: "מחיקה",
     describe: "תיאור לעיוורים",
     noAlt: "אין תיאור לעיוורים",
     add: "הוספת תמונה",
@@ -210,7 +210,7 @@
     gallery: "Images",
     behind: "Behind the scenes",
     earlier: "Move to the previous place", later: "Move to the next place", prevBtn: "← Earlier", nextBtn: "Later →", more: "⋯ More", drag: "Drag to change the order",
-    replace: "Replace", cut: "Cut", cutCancel: "Cancel cut", pasteHere: "Paste here", pasteEnd: "Paste at the end", cutNote: "Picture cut. Press \"Paste here\" on the picture it should go before, or \"Paste at the end\".", alone: "Alone in its row", aloneOff: "Undo alone in row", hide: "Hide", show: "Show", remove: "Remove from gallery",
+    replace: "Replace", cut: "Cut", cutCancel: "Cancel cut", pasteHere: "Paste here", pasteEnd: "Paste at the end", cutNote: "Picture cut. Press \"Paste here\" on the picture it should go before, or \"Paste at the end\".", alone: "Alone in its row", aloneOff: "Undo alone in row", hide: "Hide", show: "Show", remove: "Delete",
     describe: "Description for blind visitors",
     noAlt: "No description for blind visitors",
     add: "Add a picture",
@@ -1047,7 +1047,6 @@
       button(T.caption, function () { captionDialog(g); }, "pe-btn pe-caption-btn"),
       aloneButton(sec, grid, g),
     ].concat(cutTools(sec, g), [
-      button(T.hide, function () { g.visible = false; changed(); }),
       button(T.remove, function () { removeAt(sec, g); }, "pe-btn pe-danger"),
     ])));
     if (clip === g) fig.classList.add("pe-cut");

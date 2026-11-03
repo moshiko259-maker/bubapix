@@ -73,7 +73,7 @@
     frame: "צורה",
     frameNatural: "טבעית", frameWide: "קולנוע רחב", frameLandscape: "רוחבית", frameSquare: "ריבועית", framePortrait: "לאורך",
     earlier: "הזזה למקום הקודם", later: "הזזה למקום הבא", prevBtn: "→ קודם", nextBtn: "הבא ←", more: "⋯ עוד", drag: "גררו כדי להזיז",
-    replace: "החלפה", cut: "גזירה", cutCancel: "ביטול גזירה", pasteHere: "הדבקה כאן", pasteEnd: "הדבקה בסוף", cutNote: "התמונה נגזרה. לחצו ״הדבקה כאן״ על התמונה שלפניה היא תיכנס, או ״הדבקה בסוף״.", alone: "לבד בשורה", aloneOff: "ביטול לבד בשורה", hide: "הסתרה", show: "הצגה", remove: "הסרה מהגלריה",
+    replace: "החלפה", cut: "גזירה", cutCancel: "ביטול גזירה", pasteHere: "הדבקה כאן", pasteEnd: "הדבקה בסוף", cutNote: "התמונה נגזרה. לחצו ״הדבקה כאן״ על התמונה שלפניה היא תיכנס, או ״הדבקה בסוף״.", alone: "לבד בשורה", aloneOff: "ביטול לבד בשורה", hide: "הסתרה", show: "הצגה", remove: "מחיקה",
     add: "הוספת תמונה לגלריה",
     describe: "תיאור לעיוורים", noAlt: "אין תיאור לעיוורים", ok: "אישור",
     altEdit: "כתבו בקצרה מה רואים בתמונה. קוראי מסך מקריאים את זה לגולשים עיוורים.",
@@ -160,7 +160,7 @@
     freeMode: "חופשי: גודל לכל תמונה",
     frameTip: "לחצו על תמונה כדי לבחור אותה, ואז גררו את הנקודות שבמסגרת כדי לשנות גודל",
     posterReplace: "החלפת הפוסטר",
-    posterHide: "הסתרה מהשורה",
+    posterHide: "הורדה מהשורה",
     posterShow: "הצגה בשורה",
     posterHiddenNote: "יוסתר מהשורה אחרי שמירה",
     postersHiddenTitle: "פוסטרים מוסתרים משורת הפרויקטים",
@@ -187,7 +187,7 @@
     frame: "Shape",
     frameNatural: "Natural", frameWide: "Cinema wide", frameLandscape: "Landscape", frameSquare: "Square", framePortrait: "Portrait",
     earlier: "Move to the previous place", later: "Move to the next place", prevBtn: "← Earlier", nextBtn: "Later →", more: "⋯ More", drag: "Drag to move",
-    replace: "Replace", cut: "Cut", cutCancel: "Cancel cut", pasteHere: "Paste here", pasteEnd: "Paste at the end", cutNote: "Picture cut. Press \"Paste here\" on the picture it should go before, or \"Paste at the end\".", alone: "Alone in its row", aloneOff: "Undo alone in row", hide: "Hide", show: "Show", remove: "Remove from gallery",
+    replace: "Replace", cut: "Cut", cutCancel: "Cancel cut", pasteHere: "Paste here", pasteEnd: "Paste at the end", cutNote: "Picture cut. Press \"Paste here\" on the picture it should go before, or \"Paste at the end\".", alone: "Alone in its row", aloneOff: "Undo alone in row", hide: "Hide", show: "Show", remove: "Delete",
     add: "Add a picture to the gallery",
     describe: "Description for blind visitors", noAlt: "No description for blind visitors", ok: "OK",
     altEdit: "Say briefly what the picture shows. Screen readers read it to blind visitors.",
@@ -274,7 +274,7 @@
     freeMode: "Free: a size for each picture",
     frameTip: "Click a picture to select it, then drag the dots on its frame to resize",
     posterReplace: "Replace the poster",
-    posterHide: "Hide from the row",
+    posterHide: "Remove from the row",
     posterShow: "Show in the row",
     posterHiddenNote: "Hidden from the row after saving",
     postersHiddenTitle: "Posters hidden from the projects row",
@@ -1184,7 +1184,6 @@
       aloneButton(g, idx),
       clip === g ? button(T.cutCancel, function () { clip = null; render(); }, "pe-btn pe-cut-btn")
         : clip ? null : button(T.cut, function () { clip = g; setStatus(T.cutNote); render(); }, "pe-btn pe-cut-btn"),
-      button(T.hide, function () { g.visible = false; changed(); }),
       button(T.remove, function () { data.gallery.splice(data.gallery.indexOf(g), 1); changed(); }, "pe-btn pe-danger"),
       button(T.describe, function () {
         core.describe(T, g.alt_he, g.alt_en, function (alts) { g.alt_he = alts.he; g.alt_en = alts.en; changed(); });
