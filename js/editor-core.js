@@ -19,6 +19,7 @@
  *   BubaCore.frame(box, o, T)                size by dragging a dot (computers): o.start, area, live, done, min, max
  *   BubaCore.saveFiles(opts)                 saving: check every file first, then write and verify (see below)
  *   BubaCore.saveErrorText(err)              the message for a save that was not verified
+ *   BubaCore.shrinkImage(file)               a picture chosen on this computer, made web-sized before it goes up
  *   (every editor window, class "pe-modal": keyboard focus moves into it, Tab stays
  *    inside it, and closing it brings focus back to where it was; see dialogFocus)
  *   BubaCore.version                         editors that need a newer copy load it again (a browser
@@ -26,7 +27,7 @@
  */
 (function () {
   "use strict";
-  var VERSION = 4;
+  var VERSION = 5;
   if (window.BubaCore && window.BubaCore.version >= VERSION) return;
 
   function el(tag, attrs, kids) {
@@ -504,8 +505,40 @@
       : "It is not clear whether the save worked: the connection to GitHub was cut and the file could not be checked (" + name + "). Nothing was sent again, so nothing is saved twice. Check the connection, reload the page and see whether the change is there before trying again.";
   }
 
+  // A picture chosen on this computer or phone, made web-sized before it is
+  // uploaded: the same rule as the admin panel (admin/config.yml,
+  // transformations): WebP, quality 85, at most 2400 px wide or high, the
+  // proportions kept, never enlarged. A picture already small enough (at most
+  // 2400 px and 1.5 MB) and GIFs (they can move) stay as they are; so does any
+  // picture whose new copy would not be smaller, or that this browser cannot
+  // convert. Resolves to a File (the same one, or the smaller copy).
+  var SHRINK_MAX = 2400, SHRINK_QUALITY = 0.85, SHRINK_KEEP_BYTES = 1.5 * 1024 * 1024;
+  function shrinkImage(file) {
+    if (!file || !/^image\/(jpeg|png|webp)$/i.test(file.type || "") || !window.createImageBitmap) return Promise.resolve(file);
+    return createImageBitmap(file, { imageOrientation: "from-image" }).then(function (bmp) {
+      var w = bmp.width, h = bmp.height, big = Math.max(w, h);
+      if (big <= SHRINK_MAX && file.size <= SHRINK_KEEP_BYTES) { if (bmp.close) bmp.close(); return file; }
+      var k = big > SHRINK_MAX ? SHRINK_MAX / big : 1;
+      var c = document.createElement("canvas");
+      c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+      var ctx = c.getContext("2d");
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(bmp, 0, 0, c.width, c.height);
+      if (bmp.close) bmp.close();
+      return new Promise(function (resolve) { c.toBlob(resolve, "image/webp", SHRINK_QUALITY); }).then(function (blob) {
+        // A browser without WebP output answers with a PNG: keep the original then.
+        if (!blob || blob.type !== "image/webp" || blob.size >= file.size) return file;
+        var name = String(file.name || "picture").replace(/\.[^.]+$/, "") + ".webp";
+        try { return new File([blob], name, { type: "image/webp", lastModified: Date.now() }); }
+        catch (e) { blob.name = name; return blob; }
+      });
+    }).catch(function () { return file; });
+  }
+  // Several files: each made web-sized, in the same order.
+  function shrinkImages(list) { return Promise.all(Array.prototype.map.call(list || [], shrinkImage)); }
+
   window.BubaCore = {
-    version: VERSION, saveFiles: saveFiles, saveErrorText: saveErrorText, blobSha: blobSha,
+    version: VERSION, saveFiles: saveFiles, saveErrorText: saveErrorText, blobSha: blobSha, shrinkImage: shrinkImage, shrinkImages: shrinkImages,
     el: el, button: button, token: token,
     utf8ToB64: utf8ToB64, b64ToUtf8: b64ToUtf8, readB64: readB64,
     github: github, loadStyles: loadStyles, history: history, siteWatch: siteWatch,
