@@ -13,7 +13,13 @@
   --line: rgba(22, 22, 29, 0.14);
   --field-line: #8a8a94;  /* borders of form fields: 3.16:1 on the page, 3.27:1 on a field (WCAG 1.4.11 asks 3:1) */
   --star-off: #767680;    /* a rating star not chosen: 4.15:1 on the page */
-  --accent: #2f3de0;      /* focus outline and active filter only */
+  --accent: #2f3de0;
+  /* Buttons and the editing bars: soft warm sand (owner's choice A, 3.11.2026).
+     Text on them 13.9:1; their outline 3.76:1 against the page (WCAG 1.4.11). */
+  --sand: #e9e2cf;
+  --sand-hover: #ddd3ba;
+  --sand-bar: #ece6d6;
+  --sand-line: #857d6e;      /* focus outline and active filter only */
   --logo-paper: var(--paper);
 
   --font-display: "Rubik", "Heebo", system-ui, sans-serif;
@@ -1349,3 +1355,33 @@ html.ts-open body { padding-block-end: 10rem; }
   .ts-font-wrap { position: static; }
   .ts-font-menu { inset-inline: 0.75rem; inset-block-end: calc(100% + 6px); width: auto; }
 }
+
+/* ---------- Soft buttons and editing bars (owner's choice A, 3.11.2026) ----------
+   Black buttons and bars became warm sand with a thin warm-grey outline: the
+   page's own cream tone. Text stays the dark ink (13.9:1 or more); the outline
+   keeps each button visible against the page (3.76:1). Selected filters and
+   the tools shown on top of pictures stay dark (they sit on pictures). */
+.button { color: var(--ink); background: var(--sand); border: 1.5px solid var(--sand-line); }
+.button:hover { background: var(--sand-hover); color: var(--ink); }
+/* The editing bar at the top of the page (owner only). */
+.pe-bar { background: var(--sand-bar); color: var(--ink); box-shadow: 0 6px 20px rgba(22, 22, 29, 0.12); border-bottom: 1px solid var(--sand-line); }
+.pe-bar .pe-btn, .pe-bar .pe-select, .pe-bar .pe-icon { background: var(--paper); color: var(--ink); border-color: var(--sand-line); }
+.pe-bar .pe-btn:hover, .pe-bar .pe-icon:hover { background: #fff; }
+.pe-bar .pe-primary { background: var(--sand); color: var(--ink); border-color: var(--sand-line); }
+.pe-bar .pe-primary:hover { background: var(--sand-hover); }
+.pe-bar .pe-ghost { background: transparent; }
+.pe-bar .pe-danger { border-color: #9b2318; }
+.pe-bar .pe-add-project { border-color: var(--sand-line); }
+.pe-bar .pe-status { opacity: 1; }
+.pe-bar .pe-status.is-warn { color: #7a4f00; }
+.pe-bar .pe-status.is-ok { color: #1d6431; }
+.pe-bar .pe-status.is-error { color: #9b2318; }
+/* The main button in the editor windows and tips. */
+.pe-modal-box .pe-primary, .pe-tip .pe-primary { background: var(--sand); color: var(--ink); border-color: var(--sand-line); }
+.pe-modal-box .pe-primary:hover, .pe-tip .pe-primary:hover { background: var(--sand-hover); }
+/* "Edit this page" panel (owner only). */
+.edit-bar details { background: var(--sand-bar); color: var(--ink); border: 1px solid var(--sand-line); box-shadow: 0 12px 40px rgba(22, 22, 29, 0.14); }
+.edit-bar a { color: var(--ink); background: rgba(22, 22, 29, 0.05); }
+.edit-bar a:hover { background: rgba(22, 22, 29, 0.1); }
+.edit-bar-off { color: var(--ink); border-color: var(--sand-line); }
+.edit-bar-page { background: var(--paper); border: 1px solid var(--sand-line); }

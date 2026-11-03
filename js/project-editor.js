@@ -67,7 +67,7 @@
     loading: "טוען את דף הפרויקט…",
     save: "שמירה",
     saving: "שומר…",
-    cancel: "יציאה בלי לשמור",
+    cancel: "יציאה בלי לשמור", backToView: "חזרה לתצוגה", backToViewTip: "אין שינויים: חוזרים לדף כפי שהגולשים רואים אותו",
     close: "סגירה",
     saved: "נשמר. אתר הבדיקה יתעדכן (האתר החי לא משתנה).",
     unsaved: "יש שינויים שלא נשמרו",
@@ -178,7 +178,7 @@
     loading: "Loading the project page…",
     save: "Save",
     saving: "Saving…",
-    cancel: "Leave without saving",
+    cancel: "Leave without saving", backToView: "Back to the page", backToViewTip: "No changes: back to the page as visitors see it",
     close: "Close",
     saved: "Saved. The test site will update (the live site does not change).",
     unsaved: "Unsaved changes",
@@ -369,11 +369,14 @@
   var saveBtn = button(T.save, save, "pe-btn pe-primary");
   var undoBtn = button("↶ " + T.undo, undo, "pe-btn", T.undoTip);
   undoBtn.disabled = true;
+  // "Leave without saving" while there are changes; with none, "Back to the page".
+  var exitBtn = button(T.cancel, quit, "pe-btn pe-ghost pe-exit");
+  function exitLabel() { var d = false; try { d = dirty(); } catch (e) { d = false; } var t = d ? T.cancel : T.backToView; if (exitBtn.textContent !== t) { exitBtn.textContent = t; exitBtn.title = d ? T.cancel : T.backToViewTip; } }
   var bar = el("div", { "class": "pe-bar", role: "region", "aria-label": T.title }, [
     el("strong", { "class": "pe-bar-title", text: T.title }),
     el("span", { "class": "pe-bar-layout" }, [button("? " + T.help, function () { showTip(true); }, "pe-btn pe-ghost"), histBtn]),
     status,
-    el("span", { "class": "pe-bar-actions" }, [undoBtn, saveBtn, button(T.cancel, quit, "pe-btn pe-ghost")]),
+    el("span", { "class": "pe-bar-actions" }, [undoBtn, saveBtn, exitBtn]),
   ]);
   // Phones: one row of buttons; the other choices open with "More".
   (function () {
@@ -395,7 +398,7 @@
   }
   // While saving, typing does not change the status or turn "Save" back on (no second save at the same time).
   var busy = false;
-  function refreshStatus() {
+  function refreshStatus() { exitLabel();
     if (busy) return;
     setStatus(dirty() ? T.unsaved : T.noChanges, dirty() ? "warn" : "");
     saveBtn.disabled = !dirty();
