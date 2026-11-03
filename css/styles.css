@@ -1047,6 +1047,8 @@ a.pe-btn { display: inline-flex; align-items: center; text-decoration: none; }
 .pe-item .pe-tools { position: absolute; inset-block-start: 0.4rem; inset-inline: 0.4rem; display: grid; grid-template-columns: 1fr 1fr; opacity: 0; transition: opacity 0.15s; }
 .pe-item .pe-tools .pe-icon { order: -1; }
 .pe-item:hover .pe-tools, .pe-item:focus-within .pe-tools { opacity: 1; }
+/* A title above the picture stays clickable: the tools move to the picture's bottom. */
+.pe-item:has(.jg-caption.cap-above) .pe-tools, .pe-poster:has(.jg-caption.cap-above) .pe-tools-top { inset-block-start: auto; inset-block-end: 0.4rem; }
 @media (hover: none) { .pe-item .pe-tools { opacity: 1; position: static; border-radius: 0 0 6px 6px; } }
 /* Touch: a tap only chooses a picture; its tools appear below it, never on it (U5). */
 @media (hover: none) {
@@ -1229,6 +1231,8 @@ h1.pe-editable { min-width: 4ch; }
 .pe-videos-sec h2.pe-editable, .pe-gal-head.pe-editable { min-width: 6ch; min-height: 1.4em; }
 .pe-textarea { min-height: 5.5em; padding: 0.5rem 0.6rem; resize: vertical; }
 .pe-item .pe-caption { pointer-events: none; }
+/* The title and text themselves open the text style bar (js/text-style.js). */
+.edit-mode .jg-caption [data-ts] { pointer-events: auto; cursor: text; }
 .pe-detail { display: grid; gap: 0.25rem; padding: 0.6rem; border: 1px dashed var(--line); border-radius: 10px; }
 .pe-detail dt.pe-editable, .pe-detail dd.pe-editable { display: block; min-height: 1.4em; }
 .pe-detail .pe-tools { width: max-content; max-width: 100%; margin-top: 0.3rem; }

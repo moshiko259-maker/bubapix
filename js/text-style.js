@@ -196,6 +196,8 @@
     var t = e.target;
     if (!t || !t.closest || t.closest(".ts-bar, .pe-modal, .pe-bar, .pe-tools, .pe-tip")) return;
     var node = t.closest("[data-ts]");
+    // A picture's title inside a link: choosing it never opens the link.
+    if (node && e.type === "click" && node.closest("a")) e.preventDefault();
     if (node) show(node);
     else if (e.type === "click" && current && !t.closest("button, a, input, select, label")) hide();
   }
