@@ -1397,3 +1397,9 @@ html.ts-open body { padding-block-end: 10rem; }
 .pe-cut > .jg-media { opacity: 0.45; }
 .pe-paste-bar { position: absolute; inset-inline: 0; bottom: 0.5rem; display: flex; justify-content: center; z-index: 6; pointer-events: none; }
 .pe-paste-bar .pe-btn { pointer-events: auto; }
+
+/* Look (stage 1, research): section headings a clear step above the text under them,
+   no letter-spacing in Hebrew buttons, form choices in the site's ink colour. */
+.section-label { font-size: clamp(1.25rem, 2vw, 1.625rem); font-weight: 600; color: var(--ink); line-height: 1.25; }
+:lang(he) .button-large { letter-spacing: 0; }
+input[type="radio"], input[type="checkbox"] { accent-color: var(--ink); }
