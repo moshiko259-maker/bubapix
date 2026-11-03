@@ -61,11 +61,9 @@
 .ar-300{flex-grow:300;flex-basis:calc(var(--row-h) * 3)}.ar-300 .jg-media{aspect-ratio:3}
 @media (min-width: 701px){
 .mrow>.fs-98{flex:none!important;width:98%;margin-inline:auto}
-.mrow>.fs-86{flex:none!important;width:86%;margin-inline:auto}
 .mrow>.fs-100{flex:none!important;width:100%;margin-inline:auto}
+.mrow>.fs-96{flex:none!important;width:96%;margin-inline:auto}
 .mrow>.fs-49{flex:none!important;width:49%;margin-inline:auto}
-.mrow>.fs-87{flex:none!important;width:87%;margin-inline:auto}
-.mrow>.fs-80{flex:none!important;width:80%;margin-inline:auto}
 .mrow>.fs-63{flex:none!important;width:63%;margin-inline:auto}
 .mrow>.fs-35{flex:none!important;width:35%;margin-inline:auto}
 .mrow>.fr-219-0_7{flex:219 1 0!important;min-width:0}.mrow>.fr-219-0_7 .jg-media{aspect-ratio:0.7}.mrow>.fr-219-0_7 .jg-media img{object-fit:cover}
