@@ -27,7 +27,7 @@
  */
 (function () {
   "use strict";
-  var VERSION = 7;
+  var VERSION = 8;
   if (window.BubaCore && window.BubaCore.version >= VERSION) return;
 
   function el(tag, attrs, kids) {
@@ -397,19 +397,43 @@
     // A picture that has no title yet: what is written will most likely be shown.
     var cur = g[pre + "caption"];
     where.value = cur && cur !== values[0] && values.indexOf(cur) >= 0 ? cur : (g[pre + "title_" + lang] || g[pre + "note_" + lang] ? values[0] : values[1] || values[0]);
+    // Above or under the picture (<pre>caption_pos: "above"; under when empty).
+    var he = lang === "he";
+    var pos = el("select", { "class": "pe-input", "data-cap-pos": "" }, [
+      el("option", { value: "", text: he ? "מתחת לתמונה" : "Under the picture" }),
+      el("option", { value: "above", text: he ? "מעל התמונה" : "Above the picture" }),
+    ]);
+    pos.value = g[pre + "caption_pos"] === "above" ? "above" : "";
     var close = modal(T.caption, { closeText: T.close, body: [
       el("label", {}, [document.createTextNode(T.captionTitle), title]),
       el("label", {}, [document.createTextNode(T.captionNote), note]),
       el("label", {}, [document.createTextNode(T.captionWhere), where]),
+      el("label", {}, [document.createTextNode(he ? "מיקום" : "Position"), pos]),
+      el("p", { "class": "pe-note", text: he ? "גופן, גודל ויישור: לוחצים על הכותרת או על התיאור בדף. העיצוב חל על כל הכותרות והתיאורים בדף." : "Font, size and alignment: click the title or the text on the page. The style applies to every picture title and text on the page." }),
       el("p", { "class": "pe-note", text: T.captionNoteHelp }),
       button(T.ok, function () {
         close();
         g[pre + "title_" + lang] = title.value.replace(/\s+/g, " ").trim();
         g[pre + "note_" + lang] = cleanText(note.value);
         g[pre + "caption"] = where.value;
+        if (pos.value === "above") g[pre + "caption_pos"] = "above"; else delete g[pre + "caption_pos"];
         done();
       }, "pe-btn pe-primary"),
     ] }, title);
+  }
+
+  // The title and text of a picture as visitors will see them, for the editors'
+  // live view: tag "figcaption" or "span"; page: the text-style kind ("home",
+  // "work", "project"); above: placed before media instead of after it.
+  function capNode(tag, t1, t2, page, above) {
+    return el(tag, { "class": "jg-caption pe-caption" + (above ? " cap-above" : "") }, [
+      t1 ? el("span", { "class": "jg-title", "data-ts": page + "/cap-title", text: t1 }) : null,
+      t2 ? el("span", { "class": "jg-note", "data-ts": page + "/cap-note", text: t2 }) : null,
+    ]);
+  }
+  function placeCap(node, media, above) {
+    var box = media.parentNode;
+    box.insertBefore(node, above ? media : media.nextSibling);
   }
 
   // A picture's size by dragging one of six dots (as in the other editors).
@@ -655,6 +679,6 @@
     el: el, button: button, token: token,
     utf8ToB64: utf8ToB64, b64ToUtf8: b64ToUtf8, readB64: readB64,
     github: github, loadStyles: loadStyles, history: history, siteWatch: siteWatch,
-    describe: describe, captionDialog: captionDialog, frame: frame,
+    describe: describe, captionDialog: captionDialog, capNode: capNode, placeCap: placeCap, frame: frame,
   };
 })();

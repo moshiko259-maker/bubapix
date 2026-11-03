@@ -30,7 +30,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 7)) {
+  if (!core || !(core.version >= 8)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -161,8 +161,8 @@
     videosNote: "הסרטון עצמו נשאר ביוטיוב; באתר נשמר רק הקישור. אזור בלי סרטונים לא מוצג באתר.",
     videoRemoved: "הסרטון הוסר מהדף (ביוטיוב הוא לא נמחק). אפשר לבטל עם ״ביטול פעולה״.",
     caption: "כותרת ותיאור", captionTitle: "כותרת לתמונה (לא חובה)", captionNote: "תיאור קצר (לא חובה)", captionWhere: "איפה להציג",
-    capHidden: "לא להציג (נשמר)", capProject: "מתחת לתמונה, בדף הפרויקט", capEverywhere: "מתחת לתמונה, גם בגלריה של דף הבית",
-    capCoverWork: "מתחת לתמונה, בעמוד הפרויקטים", capCoverProject: "מתחת לתמונת השער, בדף הפרויקט", capCoverBoth: "בשניהם (עמוד הפרויקטים ודף הפרויקט)",
+    capHidden: "לא להציג (נשמר)", capProject: "להציג בדף הפרויקט", capEverywhere: "להציג בדף הפרויקט וגם בגלריה של דף הבית",
+    capCoverWork: "להציג בעמוד הפרויקטים", capCoverProject: "להציג עם תמונת השער, בדף הפרויקט", capCoverBoth: "בשניהם (עמוד הפרויקטים ודף הפרויקט)",
     captionNoteHelp: "הכותרת והתיאור מתורגמים לאנגלית בשמירה. תיאור לעיוורים — בכפתור ״תיאור לעיוורים״.",
     galHeading: "כותרת לגלריה, למשל ״דמויות״ (ריק = ״תמונות״)", galHeadingBehind: "כותרת לאזור (ריק = ״מאחורי הקלעים״)",
     addDetails: "הוספת פרטים לדף", addDetail: "הוספת שורה", detailsHeading: "כותרת לאזור (ריק = ״פרטים״)",
@@ -272,8 +272,8 @@
     videosNote: "The video itself stays on YouTube; the site keeps only the link. An area without videos is not shown on the site.",
     videoRemoved: "The video was removed from the page (it is not deleted on YouTube). You can undo it.",
     caption: "Title and text", captionTitle: "Picture title (optional)", captionNote: "Short text (optional)", captionWhere: "Where to show it",
-    capHidden: "Not shown (kept)", capProject: "Under the picture, on the project page", capEverywhere: "Under the picture, also in the homepage gallery",
-    capCoverWork: "Under the picture, on the projects page", capCoverProject: "Under the cover, on the project page", capCoverBoth: "Both (projects page and project page)",
+    capHidden: "Not shown (kept)", capProject: "Show on the project page", capEverywhere: "Show on the project page and in the homepage gallery",
+    capCoverWork: "Show on the projects page", capCoverProject: "Show with the cover, on the project page", capCoverBoth: "Both (projects page and project page)",
     captionNoteHelp: "The title and text are translated to Hebrew on saving. The description for blind visitors is under \"Description for blind visitors\".",
     galHeading: "Heading for this gallery, e.g. \"Characters\" (empty = \"Images\")", galHeadingBehind: "Heading for this area (empty = \"Behind the scenes\")",
     addDetails: "Add details to the page", addDetail: "Add a line", detailsHeading: "Heading for this area (empty = \"Details\")",
@@ -673,7 +673,7 @@
       if (!data["cover_alt_" + lang]) fig.appendChild(el("span", { "class": "pe-missing", text: T.noAlt }));
       var ct = data["cover_title_" + lang] || "", cn = data["cover_note_" + lang] || "";
       if ((data.cover_caption === "project" || data.cover_caption === "both") && (ct || cn)) {
-        fig.insertBefore(el("figcaption", { "class": "jg-caption pe-caption" }, [ct ? el("span", { "class": "jg-title", text: ct }) : null, cn ? el("span", { "class": "jg-note", text: cn }) : null]), media.nextSibling);
+        core.placeCap(core.capNode("figcaption", ct, cn, "project", data.cover_caption_pos === "above"), media, data.cover_caption_pos === "above");
       }
       box.appendChild(fig);
     } else {
@@ -1071,12 +1071,7 @@
     });
     // A title and text shown under the picture (as visitors will see them).
     var capTitle = g["title_" + lang] || "", capNote = g["note_" + lang] || "";
-    if (g.caption && g.caption !== "hidden" && (capTitle || capNote)) {
-      fig.insertBefore(el("figcaption", { "class": "jg-caption pe-caption" }, [
-        capTitle ? el("span", { "class": "jg-title", text: capTitle }) : null,
-        capNote ? el("span", { "class": "jg-note", text: capNote }) : null,
-      ]), media.nextSibling);
-    }
+    if (g.caption && g.caption !== "hidden" && (capTitle || capNote)) core.placeCap(core.capNode("figcaption", capTitle, capNote, "project", g.caption_pos === "above"), media, g.caption_pos === "above");
     fig.setAttribute("aria-label", g["alt_" + lang] || g.image);
     return fig;
   }

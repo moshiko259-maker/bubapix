@@ -24,7 +24,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 7)) {
+  if (!core || !(core.version >= 8)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -78,7 +78,7 @@
     describe: "תיאור לעיוורים", noAlt: "אין תיאור לעיוורים", ok: "אישור",
     altEdit: "כתבו בקצרה מה רואים בתמונה. קוראי מסך מקריאים את זה לגולשים עיוורים.",
     caption: "כותרת ותיאור", captionTitle: "כותרת לתמונה (לא חובה)", captionNote: "תיאור קצר (לא חובה)", captionWhere: "איפה להציג",
-    capHidden: "לא להציג (נשמר)", capHome: "מתחת לתמונה, בגלריה של דף הבית", capShow: "מתחת לתמונה", capPoster: "מתחת לפוסטר",
+    capHidden: "לא להציג (נשמר)", capHome: "להציג בגלריה של דף הבית", capShow: "להציג", capPoster: "להציג עם הפוסטר",
     captionNoteHelp: "הכותרת והתיאור מתורגמים לאנגלית בשמירה. תיאור לעיוורים — בכפתור ״תיאור לעיוורים״.",
     hiddenTitle: "תמונות מוסתרות (נשמרות, לא מוצגות)",
     elsewhereTitle: "מוצגות במקום אחר בדף (פתיחה או שורת הפוסטרים), ולכן לא בגלריה",
@@ -192,7 +192,7 @@
     describe: "Description for blind visitors", noAlt: "No description for blind visitors", ok: "OK",
     altEdit: "Say briefly what the picture shows. Screen readers read it to blind visitors.",
     caption: "Title and text", captionTitle: "Picture title (optional)", captionNote: "Short text (optional)", captionWhere: "Where to show it",
-    capHidden: "Not shown (kept)", capHome: "Under the picture, in the homepage gallery", capShow: "Under the picture", capPoster: "Under the poster",
+    capHidden: "Not shown (kept)", capHome: "Show in the homepage gallery", capShow: "Show", capPoster: "Show with the poster",
     captionNoteHelp: "The title and text are translated to Hebrew on saving. The description for blind visitors is under \"Description for blind visitors\".",
     hiddenTitle: "Hidden pictures (kept, not shown)",
     elsewhereTitle: "Shown elsewhere on the page (opening or posters row), so not in the gallery",
@@ -352,7 +352,7 @@
   // A poster's "Title and text" (kept in the project's file; cap: the fields, origCap: as loaded).
   // The poster's title and text, and its description for blind visitors (the
   // project's cover_alt_*, the same picture).
-  var CAP_KEYS = ["poster_title_he", "poster_title_en", "poster_note_he", "poster_note_en", "poster_caption", "cover_alt_he", "cover_alt_en"];
+  var CAP_KEYS = ["poster_title_he", "poster_title_en", "poster_note_he", "poster_note_en", "poster_caption", "poster_caption_pos", "cover_alt_he", "cover_alt_en"];
   function capOf(d) { var c = {}; CAP_KEYS.forEach(function (k) { c[k] = d && typeof d[k] === "string" ? d[k] : ""; }); return c; }
   var pageAdds = {}; // project slug -> pictures to add to that project's page gallery
   var hasPageAdds = function () { return Object.keys(pageAdds).some(function (k) { return pageAdds[k].length; }); };
@@ -944,7 +944,11 @@
       // The caption the page was built with is replaced by the one being edited.
       Array.prototype.forEach.call(pe.el.querySelectorAll(".jg-caption"), function (n) { n.remove(); });
       var pt = p.cap["poster_title_" + lang] || "", pn = p.cap["poster_note_" + lang] || "";
-      if (p.cap.poster_caption === "everywhere" && (pt || pn) && pe.media) pe.el.insertBefore(el("span", { "class": "jg-caption pe-caption" }, [pt ? el("span", { "class": "jg-title", text: pt }) : null, pn ? el("span", { "class": "jg-note", text: pn }) : null]), pe.media.parentNode === pe.el ? pe.media.nextSibling : null);
+      if (p.cap.poster_caption === "everywhere" && (pt || pn) && pe.media) {
+        var pAbove = p.cap.poster_caption_pos === "above", pCap = core.capNode("span", pt, pn, "home", pAbove);
+        if (pe.media.parentNode === pe.el) core.placeCap(pCap, pe.media, pAbove);
+        else pe.el.insertBefore(pCap, pAbove ? pe.el.firstChild : null);
+      }
       pe.tools.appendChild(button(T.nextBtn, function () { movePoster(slug, 1); }, "pe-btn pe-move", T.later));
     });
     // "Paste at the end" under the posters while one is cut.
@@ -974,11 +978,12 @@
     Array.prototype.forEach.call(box.querySelectorAll(".jg-caption"), function (n) { n.remove(); });
     var t1 = o[pre + "title_" + lang] || "", t2 = o[pre + "note_" + lang] || "";
     if (o[pre + "caption"] !== "everywhere" || !(t1 || t2)) return;
-    var fig = box.querySelector("figure") || box;
-    fig.appendChild(el("figcaption", { "class": "jg-caption pe-caption" }, [
-      t1 ? el("span", { "class": "jg-title", text: t1 }) : null,
-      t2 ? el("span", { "class": "jg-note", text: t2 }) : null,
-    ]));
+    var above = o[pre + "caption_pos"] === "above";
+    var fig = box.querySelector(".jg-item") || box.querySelector("figure") || box;
+    var media = fig.querySelector(".jg-media");
+    var node = core.capNode(fig.tagName === "A" ? "span" : "figcaption", t1, t2, "home", above);
+    if (media && media.parentNode === fig) core.placeCap(node, media, above);
+    else fig.appendChild(node);
   }
   function syncPage() {
     // The sizes for this screen: phone sizes on a phone, computer sizes on a computer.
@@ -1211,12 +1216,7 @@
     else if (clip) fig.appendChild(el("div", { "class": "pe-paste-bar" }, [button(T.pasteHere, function () { pasteAt(g); }, "pe-btn pe-primary pe-paste-btn")]));
     // The title and text as visitors will see them (only when chosen to be shown).
     var capTitle = g["title_" + lang] || "", capNote = g["note_" + lang] || "";
-    if (g.caption === "everywhere" && (capTitle || capNote)) {
-      fig.insertBefore(el("figcaption", { "class": "jg-caption pe-caption" }, [
-        capTitle ? el("span", { "class": "jg-title", text: capTitle }) : null,
-        capNote ? el("span", { "class": "jg-note", text: capNote }) : null,
-      ]), media.nextSibling);
-    }
+    if (g.caption === "everywhere" && (capTitle || capNote)) core.placeCap(core.capNode("figcaption", capTitle, capNote, "home", g.caption_pos === "above"), media, g.caption_pos === "above");
     fig.addEventListener("dragstart", function (e) { if (e.target && e.target.closest && e.target.closest("button, select, input, textarea, label, .pe-dot, .pe-resize")) { e.preventDefault(); return; } dragFrom = idx; fig.classList.add("is-dragging"); try { e.dataTransfer.setData("text/plain", String(idx)); e.dataTransfer.effectAllowed = "move"; } catch (x) { /* old browser */ } });
     fig.addEventListener("dragend", function () { fig.classList.remove("is-dragging"); dragFrom = -1; });
     fig.addEventListener("dragover", function (e) { if (dragFrom >= 0 && dragFrom !== idx) { e.preventDefault(); fig.classList.add("is-target"); } });
@@ -1702,7 +1702,7 @@
             // The description is written only when changed here (the project's
             // own page edits it too).
             if (/^cover_alt_/.test(k)) { if (f.cap[k] !== (origCap[k] || "")) d[k] = f.cap[k]; return; }
-            if (f.cap[k] && f.cap[k] !== "hidden") d[k] = f.cap[k]; else if (k in d) d[k] = k === "poster_caption" ? "hidden" : "";
+            if (f.cap[k] && f.cap[k] !== "hidden") d[k] = f.cap[k]; else if (k === "poster_caption_pos") delete d[k]; else if (k in d) d[k] = k === "poster_caption" ? "hidden" : "";
           });
           return d;
         },

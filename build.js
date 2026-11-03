@@ -152,7 +152,7 @@ const captionOf = (obj, pre, lang, shown) => {
   const where = String(obj[`${pre}caption`] || "hidden");
   if (!shown.includes(where)) return null;
   const title = pick(obj, `${pre}title`, lang), note = pick(obj, `${pre}note`, lang);
-  return title || note ? { title, note, where } : null;
+  return title || note ? { title, note, where, above: obj[`${pre}caption_pos`] === "above" } : null;
 };
 const pick = (obj, key, lang) => {
   const own = String(obj[`${key}_${lang}`] || "").trim();
@@ -308,6 +308,8 @@ function contentFor(lang) {
     im.alt = pick(o, "alt", lang) || (im.caption !== "hidden" ? title : "") || fallbackAlt;
     im.title = title;
     im.note = pick(o, "note", lang);
+    // The title and text above the picture instead of under it (owner's choice).
+    im.captionAbove = o.caption_pos === "above";
     im.onHome = o.on_home === true;
     // Frame: "natural" keeps the picture's own shape (whole, never cropped).
     // Other frames fill a fixed shape; "focus" says which part stays in view.
@@ -487,7 +489,7 @@ function contentFor(lang) {
     seen.add(im.src);
     return { image: im, project, caption: captionOf(s, "feature_", lang, ["everywhere"]) };
   })();
-  const pictureCaption = (im) => (im.caption === "everywhere" && (im.title || im.note) ? { title: im.title, note: im.note } : null);
+  const pictureCaption = (im) => (im.caption === "everywhere" && (im.title || im.note) ? { title: im.title, note: im.note, above: im.captionAbove } : null);
   // Homepage projects row: one poster per project, shown from two projects
   // up. Those posters are not repeated in the gallery (the opening image
   // keeps its place at the top).

@@ -99,9 +99,11 @@ const linkOf = (ctx, ln) => (ln.external ? e(ln.href) : makeLink(ctx)(ln.path));
 // marked as Hebrew, so a screen reader reads it with a Hebrew voice.
 const heLang = (ctx, text) => (ctx.lang !== "he" && /[\u0590-\u05FF]/.test(String(text || "")) && !/[A-Za-z]/.test(String(text || "")) ? ' lang="he"' : "");
 
+// The owner's text style for picture titles and texts (js/text-style.js), one per page kind.
+const tsAttr = (page, kind) => (page ? ` data-ts="${page}/${kind}"` : "");
 // eager: the main picture of the first screen (loaded first). soon: also on the
 // first screen, loaded at once (never "lazy", which delays the first view).
-function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = false, eager = false, soon = false, viewer = false, external = false, sizes, extraClass = "" } = {}) {
+function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = false, eager = false, soon = false, viewer = false, external = false, sizes, extraClass = "", ts = "" } = {}) {
   const { cls, ratio } = ratioClass(im);
   const isLead = lead && ratio >= 1.2;
   const sz = sizes || (isLead ? FULL : "(max-width: 560px) 92vw, (max-width: 1100px) 46vw, 40vw");
@@ -110,17 +112,20 @@ function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = fa
   const same = caption && caption.title && String(im.alt || "").trim() === String(caption.title).trim();
   const picture = `<span class="jg-media">${img(ctx, same ? { ...im, alt: "" } : im, { sizes: sz, attrs: eager ? 'fetchpriority="high" decoding="async"' : soon ? 'decoding="async"' : 'loading="lazy" decoding="async"' })}</span>`;
   const capInner = caption && (caption.title || caption.note)
-    ? `${caption.title ? `<span class="jg-title"${heLang(ctx, caption.title)}>${e(caption.title)}</span>` : ""}${caption.note ? `<span class="jg-note">${e(caption.note)}</span>` : ""}`
+    ? `${caption.title ? `<span class="jg-title"${heLang(ctx, caption.title)}${tsAttr(ts, "cap-title")}>${e(caption.title)}</span>` : ""}${caption.note ? `<span class="jg-note"${tsAttr(ts, "cap-note")}>${e(caption.note)}</span>` : ""}`
     : "";
+  const above = !!(capInner && caption.above);
+  const capCls = `jg-caption${above ? " cap-above" : ""}`;
   const framed = FRAMES[im.frame] ? ` fit-cover focus-${im.focus || "center"}` : "";
   const classes = `jg-item ${cls}${isLead ? " is-lead" : ""}${framed}${extraClass ? " " + extraClass : ""}`;
   if (!href) {
-    return `<figure class="${classes}">${picture}${capInner ? `<figcaption class="jg-caption">${capInner}</figcaption>` : ""}</figure>`;
+    const cap = capInner ? `<figcaption class="${capCls}">${capInner}</figcaption>` : "";
+    return `<figure class="${classes}">${above ? cap + picture : picture + cap}</figure>`;
   }
   // The link's name (aria-label) hides the text shown under the picture, so a
   // screen reader also reads that text as the link's description.
   const capId = capInner ? `cap-${(ctx.capSeq = (ctx.capSeq || 0) + 1)}` : "";
-  return `<a class="${classes}" href="${href}"${label ? ` aria-label="${e(label)}"` : ""}${capId ? ` aria-describedby="${capId}"` : ""}${viewer ? " data-viewer" : ""}${external ? ' target="_blank" rel="noopener"' : ""}>${picture}${capInner ? `<span class="jg-caption" id="${capId}">${capInner}</span>` : ""}</a>`;
+  return `<a class="${classes}" href="${href}"${label ? ` aria-label="${e(label)}"` : ""}${capId ? ` aria-describedby="${capId}"` : ""}${viewer ? " data-viewer" : ""}${external ? ' target="_blank" rel="noopener"' : ""}>${above ? "" : picture}${capInner ? `<span class="${capCls}" id="${capId}">${capInner}</span>` : ""}${above ? picture : ""}</a>`;
 }
 
 function gallery(items, extraClass = "") {
@@ -580,6 +585,7 @@ function home(ctx) {
     const own = !linked(g) && g.image.link;
     return galleryItem(ctx, g.image, {
       caption: g.caption,
+      ts: "home",
       lead: n === 0,
       eager: n === 0,
       // Opens its project, or its own link; otherwise the picture opens large.
@@ -611,6 +617,7 @@ function home(ctx) {
         // On phones this picture fills the first screen: load it first.
         eager: true,
         caption: data.feature.caption,
+        ts: "home",
         sizes: lay.feature === "full" ? FULL : `(max-width: 700px) 92vw, ${{ medium: 900, large: 1120 }[lay.feature] || 640}px`,
       })
     : "";
@@ -660,7 +667,7 @@ function home(ctx) {
     <section class="section home-posters" aria-labelledby="posters-title">
       <h2 id="posters-title" class="visually-hidden">${e(t.nav.work)}</h2>
       <div class="mosaic poster-rows${lay.gap ? ` gap-${lay.gap}` : ""}" data-mosaic>${posterLayout.rows.map((row) => `
-        <div class="mrow n${row.length}">${row.map((p) => galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${p.name} — ${t.home.openProject}`, caption: p.posterCaption, sizes: `(max-width: 700px) 46vw, (max-width: 1440px) ${Math.ceil(92 / row.length * 1.1)}vw, ${Math.ceil(1328 / row.length * 1.1)}px`, extraClass: both(`poster${posterLayout.cls.get(p) ? " " + posterLayout.cls.get(p) : ""}`, pm(p.posterWm)) }).replace(/^<(a|figure) /, `<$1 data-project="${e(p.slug)}" data-srow="${posterPhoneRow(posterProjects, p)}" `)).join("")}</div>`).join("")}
+        <div class="mrow n${row.length}">${row.map((p) => galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${p.name} — ${t.home.openProject}`, caption: p.posterCaption, ts: "home", sizes: `(max-width: 700px) 46vw, (max-width: 1440px) ${Math.ceil(92 / row.length * 1.1)}vw, ${Math.ceil(1328 / row.length * 1.1)}px`, extraClass: both(`poster${posterLayout.cls.get(p) ? " " + posterLayout.cls.get(p) : ""}`, pm(p.posterWm)) }).replace(/^<(a|figure) /, `<$1 data-project="${e(p.slug)}" data-srow="${posterPhoneRow(posterProjects, p)}" `)).join("")}</div>`).join("")}
       </div>
     </section>`
     : "";
@@ -777,6 +784,7 @@ function work(ctx) {
       soon: i > 0 && i < 4,
       // The cover's own title and text when the owner chose to show them here; otherwise the project's name if chosen.
       caption: p.coverCaption && ["work", "both"].includes(p.coverCaption.where) ? p.coverCaption : p.titleInGallery ? { title: p.name, note: p.categories.map((c) => c.name).join(", ") } : null,
+      ts: "work",
       extraClass: both(free ? free.classes[i] : "", pm(p.listWm)),
       sizes: free ? free.sizes[i] : undefined,
     }).replace(/<a class="jg-item/, `<a data-categories="${e(p.categories.map((c) => c.slug).join(" "))}" class="jg-item`)
@@ -883,7 +891,8 @@ function projectPictures(ctx, list) {
       sizes,
       href: im.link ? linkOf(ctx, im.link) : ctx.assetBase + e(im.full || im.src),
       label: im.link ? im.alt : `${ctx.t.work.openImage}: ${im.alt}`,
-      caption: im.caption !== "hidden" ? { title: im.title, note: im.note } : null,
+      caption: im.caption !== "hidden" ? { title: im.title, note: im.note, above: im.captionAbove } : null,
+      ts: "project",
       viewer: !im.link,
       external: !!(im.link && im.link.external),
       extraClass: both(extraClass, pm(im.fwm)),
@@ -1035,9 +1044,12 @@ function project(ctx, p, prev, next) {
     freeRules.set(`cw-${p.coverW}`, `.cw-${p.coverW}{max-width:${p.coverW}%!important;margin-inline:auto}`);
   }
   if (p.cover) coverCls += pb(p.coverWm);
+  // The cover's own title and text on the project page, above or under it.
+  const coverCap = p.coverCaption && ["project", "both"].includes(p.coverCaption.where) ? p.coverCaption : null;
+  const coverCapHtml = coverCap ? `<figcaption class="jg-caption${coverCap.above ? " cap-above" : ""}">${coverCap.title ? `<span class="jg-title" data-ts="project/cap-title">${e(coverCap.title)}</span>` : ""}${coverCap.note ? `<span class="jg-note" data-ts="project/cap-note">${e(coverCap.note)}</span>` : ""}</figcaption>` : "";
   const cover = p.cover
     ? `
-      <figure class="project-cover${coverCls}"><a href="${ctx.assetBase}${e(p.cover.full || p.cover.src)}" data-viewer aria-label="${e(`${t.work.openImage}: ${p.cover.alt}`)}">${img(ctx, p.cover, { sizes: FULL, attrs: 'fetchpriority="high" decoding="async"' })}</a>${p.coverCaption && ["project", "both"].includes(p.coverCaption.where) ? `<figcaption class="jg-caption">${p.coverCaption.title ? `<span class="jg-title">${e(p.coverCaption.title)}</span>` : ""}${p.coverCaption.note ? `<span class="jg-note">${e(p.coverCaption.note)}</span>` : ""}</figcaption>` : ""}</figure>`
+      <figure class="project-cover${coverCls}">${coverCap && coverCap.above ? coverCapHtml : ""}<a href="${ctx.assetBase}${e(p.cover.full || p.cover.src)}" data-viewer aria-label="${e(`${t.work.openImage}: ${p.cover.alt}`)}">${img(ctx, p.cover, { sizes: FULL, attrs: 'fetchpriority="high" decoding="async"' })}</a>${coverCap && !coverCap.above ? coverCapHtml : ""}</figure>`
     : "";
   const synopsis = p.description
     ? `

@@ -29,7 +29,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 7)) {
+  if (!core || !(core.version >= 8)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -83,7 +83,7 @@
     nameOn: "השם מתחת לתמונה: מוצג", nameOff: "השם מתחת לתמונה: לא מוצג",
     caption: "כותרת ותיאור", captionTitle: "כותרת לתמונה (לא חובה)", captionNote: "תיאור קצר (לא חובה)", captionWhere: "איפה להציג", capHidden: "לא להציג (נשמר)",
     captionNoteHelp: "הכותרת והתיאור מתורגמים לאנגלית בשמירה. תיאור לעיוורים — בכפתור ״תיאור לעיוורים״.",
-    capCoverWork: "מתחת לתמונה, בעמוד הפרויקטים", capCoverProject: "מתחת לתמונת השער, בדף הפרויקט", capCoverBoth: "בשניהם (עמוד הפרויקטים ודף הפרויקט)",
+    capCoverWork: "להציג בעמוד הפרויקטים", capCoverProject: "להציג עם תמונת השער, בדף הפרויקט", capCoverBoth: "בשניהם (עמוד הפרויקטים ודף הפרויקט)",
     coverNote: "התמונה כאן היא תמונת השער של הפרויקט: היא מתחלפת גם בדף הפרויקט. בדף הבית היא משמשת כפוסטר רק אם לא נבחר שם פוסטר משלו.",
     pickTitle: "בחירת תמונה", pickUpload: "העלאה מהמחשב", pickLoading: "טוען תמונות…",
     altHe: "תיאור התמונה לעיוורים, עברית", altEn: "תיאור התמונה לעיוורים, אנגלית",
@@ -154,7 +154,7 @@
     nameOn: "Name under the picture: shown", nameOff: "Name under the picture: not shown",
     caption: "Title and text", captionTitle: "Picture title (optional)", captionNote: "Short text (optional)", captionWhere: "Where to show it", capHidden: "Not shown (kept)",
     captionNoteHelp: "The title and text are translated to Hebrew on saving. The description for blind visitors is under \"Description for blind visitors\".",
-    capCoverWork: "Under the picture, on the projects page", capCoverProject: "Under the cover, on the project page", capCoverBoth: "Both (projects page and project page)",
+    capCoverWork: "Show on the projects page", capCoverProject: "Show with the cover, on the project page", capCoverBoth: "Both (projects page and project page)",
     coverNote: "The picture here is the project's cover: it also changes on the project page. On the homepage it is the poster only when no poster of its own was chosen there.",
     pickTitle: "Choose a picture", pickUpload: "Upload from this computer", pickLoading: "Loading pictures…",
     altHe: "Description for blind visitors, Hebrew", altEn: "Description for blind visitors, English",
@@ -268,7 +268,7 @@
     });
   }
   // What this page sets in each project file (the rest of the file stays as it is now).
-  var PAGE_FIELDS = ["order", "list_w", "list_w_m", "cover", "cover_alt_he", "cover_alt_en", "title_in_gallery", "cover_title_he", "cover_title_en", "cover_note_he", "cover_note_en", "cover_caption", "categories", "in_work"];
+  var PAGE_FIELDS = ["order", "list_w", "list_w_m", "cover", "cover_alt_he", "cover_alt_en", "title_in_gallery", "cover_title_he", "cover_title_en", "cover_note_he", "cover_note_en", "cover_caption", "cover_caption_pos", "categories", "in_work"];
   function loadVersion(commitSha) {
     var at = function (path) {
       return api("/contents/" + encPath(path) + "?ref=" + encodeURIComponent(commitSha))
@@ -798,8 +798,8 @@
     // Under the picture as visitors will see it: the cover's own title and text when shown here, otherwise the name if chosen.
     var ct = d["cover_title_" + lang] || "", cn = d["cover_note_" + lang] || "";
     var ownCap = (d.cover_caption === "work" || d.cover_caption === "both") && (ct || cn);
-    if (ownCap) fig.insertBefore(el("figcaption", { "class": "jg-caption pe-caption" }, [ct ? el("span", { "class": "jg-title", text: ct }) : null, cn ? el("span", { "class": "jg-note", text: cn }) : null]), media.nextSibling);
-    else if (d.title_in_gallery === true && nameOf(p)) fig.insertBefore(el("figcaption", { "class": "jg-caption pe-caption" }, [el("span", { "class": "jg-title", text: nameOf(p) })]), media.nextSibling);
+    if (ownCap) core.placeCap(core.capNode("figcaption", ct, cn, "work", d.cover_caption_pos === "above"), media, d.cover_caption_pos === "above");
+    else if (d.title_in_gallery === true && nameOf(p)) core.placeCap(core.capNode("figcaption", nameOf(p), "", "work", false), media, false);
     fig.addEventListener("dragstart", function (e) {
       if (e.target && e.target.closest && e.target.closest("button, select, input, textarea, label, .pe-dot, .pe-resize")) { e.preventDefault(); return; }
       dragFrom = p; fig.classList.add("is-dragging");

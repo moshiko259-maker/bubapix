@@ -340,6 +340,12 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .focus-left .jg-media img, .product-media.focus-left img { object-position: 0% 50%; }
 .focus-right .jg-media img, .product-media.focus-right img { object-position: 100% 50%; }
 .jg-caption { display: block; padding-top: 0.7rem; }
+/* The title and text above the picture (owner's choice per picture). */
+.jg-caption.cap-above { padding-top: 0; padding-bottom: 0.6rem; }
+/* A title over the cover sits on the page, not in the cover's grey frame. */
+.project-cover > .jg-caption.cap-above { background: var(--paper); }
+/* A row where every title is above: the pictures still line up. */
+.mrow:has(.cap-above):not(:has(.jg-caption:not(.cap-above))) { align-items: flex-end; }
 .jg-title {
   display: block;
   font-family: var(--font-display);
@@ -978,6 +984,7 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
 .mosaic .jg-media { border-radius: 2px; }
 .mosaic .jg-media img { object-fit: cover; } /* the box already has the picture's own shape */
 .mosaic .jg-caption { padding: 0.4rem 0.1rem 0.6rem; }
+.mosaic .jg-caption.cap-above { padding: 0.2rem 0.1rem 0.4rem; }
 @media (max-width: 700px) {
   .mosaic { --mgap: 4px; }
   /* Without the script, rows of three or more wrap two by two. */

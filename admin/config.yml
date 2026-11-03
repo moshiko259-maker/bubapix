@@ -237,6 +237,13 @@ collections:
                       - { label: "Hidden (kept, not shown) / מוסתר (נשמר, לא מוצג)", value: hidden }
                       - { label: "On the project page only / בעמוד הפרויקט בלבד", value: project }
                       - { label: "Also under the image on the homepage / גם מתחת לתמונה בדף הבית", value: everywhere }
+                  - name: caption_pos
+                    label: "Title and note: above or under the picture / כותרת והערה: מעל או מתחת לתמונה"
+                    widget: select
+                    required: false
+                    options:
+                      - { label: "Under the picture / מתחת לתמונה", value: "" }
+                      - { label: "Above the picture / מעל התמונה", value: above }
                   - { name: on_home, label: "Also show this image in the homepage gallery / להציג גם בגלריה של דף הבית", widget: boolean, default: false, required: false }
                   - name: frame
                     label: "Frame shape / צורת המסגרת"
@@ -700,6 +707,13 @@ collections:
                 options:
                   - { label: "No (kept, not shown) / לא (נשמר, לא מוצג)", value: hidden }
                   - { label: "Yes / כן", value: everywhere }
+              - name: caption_pos
+                label: "Title and note: above or under the picture / כותרת והערה: מעל או מתחת לתמונה"
+                widget: select
+                required: false
+                options:
+                  - { label: "Under the picture / מתחת לתמונה", value: "" }
+                  - { label: "Above the picture / מעל התמונה", value: above }
               - name: frame
                 label: "Frame shape / צורת המסגרת"
                 widget: select
