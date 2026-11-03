@@ -854,8 +854,11 @@
       rw.forEach(function (q, k) {
         var pe = posterEls[q.slug], it = pe.el;
         it.style.flex = ""; it.style.width = ""; it.style.minWidth = ""; it.style.marginInline = "";
-        if (pe.media) pe.media.style.aspectRatio = "";
-        if (free && rw.length === 1) { it.style.flex = "none"; it.style.width = Math.min(100, f[0]) + "%"; it.style.marginInline = "auto"; }
+        if (pe.media) { pe.media.style.aspectRatio = ""; pe.media.style.width = ""; pe.media.style.marginInline = ""; }
+        it.style.maxWidth = "";
+        // Phones: the poster's own line (poster_w_m), as on the site.
+        if (phone.matches && q.poster_w_m >= 20 && pe.media) phoneLine(it, pe.media, q.poster_w_m);
+        else if (free && rw.length === 1) { it.style.flex = "none"; it.style.width = Math.min(100, f[0]) + "%"; it.style.marginInline = "auto"; }
         else if (free) { it.style.flex = Math.round(share[k] * 1000) + " 1 0"; it.style.minWidth = "0"; if (pe.media) pe.media.style.aspectRatio = String((share[k] * 100) / h); }
         r.appendChild(it);
       });
@@ -883,6 +886,20 @@
         ? button(T.posterShow, function () { p.in_posters = true; changed(); syncPage(); })
         : button(T.posterHide, function () { p.in_posters = false; changed(); syncPage(); }, "pe-btn pe-danger"));
       if (p.in_posters === false) pe.tools.appendChild(el("span", { "class": "pe-tools-label", text: T.posterHiddenNote }));
+      // "Alone in its row" for this poster on this screen size (poster_w on computers, poster_w_m on phones).
+      if (p.in_posters !== false) {
+        var pk = phone.matches ? "poster_w_m" : "poster_w", pOn = Number(p[pk]) === 100;
+        var ab = button(pOn ? T.aloneOff : T.alone, function () {
+          if (pOn) { p[pk] = 0; changed(); syncPage(); return; }
+          if (pk === "poster_w" && !postersFree()) {
+            var bw = posterBox.getBoundingClientRect().width || 1;
+            shownPosters().forEach(function (q) { var n = posterEls[q.slug].el; if (q !== p) q.poster_w = Math.max(10, Math.min(100, Math.round(n.getBoundingClientRect().width / bw * 100))); });
+          }
+          p[pk] = 100; changed(); syncPage();
+        }, "pe-btn pe-alone-btn");
+        ab.setAttribute("aria-pressed", String(pOn));
+        pe.tools.appendChild(ab);
+      }
       if (p.poster_w) pe.tools.appendChild(button(T.posterAuto, function () { projects.forEach(function (q) { q.poster_w = 0; }); changed(); syncPage(); }));
       if (!p.cap) p.cap = capOf(null);
       pe.tools.appendChild(button(T.caption, function () {
