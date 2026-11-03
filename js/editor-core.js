@@ -27,7 +27,7 @@
  */
 (function () {
   "use strict";
-  var VERSION = 8;
+  var VERSION = 9;
   if (window.BubaCore && window.BubaCore.version >= VERSION) return;
 
   function el(tag, attrs, kids) {
@@ -345,6 +345,35 @@
       if (n === node || !n.getBoundingClientRect) return;
       var w = n.getBoundingClientRect().width;
       if (w > 0) set(n, Math.max(10, Math.min(100, Math.round(w / (area || 1) * 100))));
+    });
+  }
+  // After a resize (computers): the site fills every row of several pictures to
+  // the full width (src/render.js freeClasses: widths over 100 squeezed, under 100
+  // stretched). So a resized picture whose row did not add up to 100 did not keep
+  // its width: the last picture of a gallery, with nothing after it to fill the
+  // row, jumped back. Now the other pictures of its row share the rest of the row.
+  // nodes: the gallery's pictures in page order; get(n): width in % (none: 33,
+  // as the site); set(n, w): writes one; node: the resized picture (width set).
+  function fillRow(nodes, node, get, set) {
+    nodes = Array.prototype.slice.call(nodes);
+    var at = nodes.indexOf(node);
+    if (at < 0) return;
+    var w = nodes.map(function (n) { return Number(get(n)) || 33; });
+    var rows = [], row = [], sum = 0;
+    w.forEach(function (f, i) {
+      if (row.length && sum + f > 106) { rows.push(row); row = []; sum = 0; }
+      row.push(i); sum += f;
+    });
+    if (row.length) rows.push(row);
+    var mine = rows.filter(function (r) { return r.indexOf(at) >= 0; })[0];
+    if (!mine || mine.length < 2) return; // alone in its row: shown at its own width
+    var others = mine.filter(function (i) { return i !== at; });
+    var rest = 100 - w[at], have = others.reduce(function (a, i) { return a + w[i]; }, 0);
+    if (rest < 10 * others.length || !have) return;
+    var left = rest;
+    others.forEach(function (i, k) {
+      var v = k === others.length - 1 ? Math.max(10, left) : Math.max(10, Math.round(w[i] / have * rest));
+      left -= v; set(nodes[i], v);
     });
   }
   function liveWidth(node, pct) {
@@ -675,7 +704,7 @@
   function shrinkImages(list) { return Promise.all(Array.prototype.map.call(list || [], shrinkImage)); }
 
   window.BubaCore = {
-    version: VERSION, liveWidth: liveWidth, rowWidths: rowWidths, saveFiles: saveFiles, saveErrorText: saveErrorText, blobSha: blobSha, shrinkImage: shrinkImage, shrinkImages: shrinkImages,
+    version: VERSION, liveWidth: liveWidth, rowWidths: rowWidths, fillRow: fillRow, saveFiles: saveFiles, saveErrorText: saveErrorText, blobSha: blobSha, shrinkImage: shrinkImage, shrinkImages: shrinkImages,
     el: el, button: button, token: token,
     utf8ToB64: utf8ToB64, b64ToUtf8: b64ToUtf8, readB64: readB64,
     github: github, loadStyles: loadStyles, history: history, siteWatch: siteWatch,

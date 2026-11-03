@@ -24,7 +24,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 8)) {
+  if (!core || !(core.version >= 9)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -1179,7 +1179,10 @@
       done: function (pct) {
         if (!isFree()) startFree();
         core.rowWidths(fig, editArea.getBoundingClientRect().width, function (n, w) { var o = data.gallery[Number(n.getAttribute("data-idx"))]; if (o && o !== g) o.fw = w; });
-        g.fw = pct; selected = idx; changed();
+        g.fw = pct;
+        var gal = function (n) { return data.gallery[Number(n.getAttribute("data-idx"))]; };
+        core.fillRow(editArea.querySelectorAll(".pe-mosaic .pe-item"), fig, function (n) { var o = gal(n); return o && o.fw; }, function (n, w) { var o = gal(n); if (o) o.fw = w; });
+        selected = idx; changed();
       },
       min: 10, max: 100, selectedNow: selected === idx,
     });

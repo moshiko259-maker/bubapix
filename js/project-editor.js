@@ -30,7 +30,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 8)) {
+  if (!core || !(core.version >= 9)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -1026,7 +1026,9 @@
           });
         }
         core.rowWidths(fig, grid.getBoundingClientRect().width, function (n, w) { if (n.__pic && n.__pic !== g) n.__pic.fw = w; });
-        g.fw = pct; selected = g; changed();
+        g.fw = pct;
+        core.fillRow(grid.querySelectorAll(".pe-item"), fig, function (n) { return n.__pic && n.__pic.fw; }, function (n, w) { if (n.__pic) n.__pic.fw = w; });
+        selected = g; changed();
       },
       selectedNow: selected === g,
     });
