@@ -17,6 +17,7 @@
  *   BubaCore.describe(T, he, en, done)       "Description for blind visitors" window
  *   BubaCore.captionDialog(T, g, lang, choices, done, pre)  "Title and text" window for a picture
  *   BubaCore.frame(box, o, T)                size by dragging a dot (computers): o.start, area, live, done, min, max
+ *   BubaCore.aligner(opts)                   one width for several marked pictures (see aligner below)
  *   BubaCore.saveFiles(opts)                 saving: check every file first, then write and verify (see below)
  *   BubaCore.saveErrorText(err)              the message for a save that was not verified
  *   BubaCore.shrinkImage(file)               a picture chosen on this computer, made web-sized before it goes up
@@ -27,7 +28,7 @@
  */
 (function () {
   "use strict";
-  var VERSION = 9;
+  var VERSION = 10; // 10: aligner (one width for several marked pictures)
   if (window.BubaCore && window.BubaCore.version >= VERSION) return;
 
   function el(tag, attrs, kids) {
@@ -703,11 +704,110 @@
   // Several files: each made web-sized, in the same order.
   function shrinkImages(list) { return Promise.all(Array.prototype.map.call(list || [], shrinkImage)); }
 
+  // ---------- one width for several pictures (marked by hand) ----------
+  // Every editor: mark pictures, choose one as the source, and "Match the source
+  // width" gives all marked pictures its width on this screen size. Only by hand;
+  // nothing is saved until the editor's "Save". The marks live in this tab only.
+  var ALIGN_TEXT = {
+    he: {
+      posters: { mark: "סימון ליישור", unmark: "ביטול סימון", one: "סומן פוסטר אחד ליישור. סמנו עוד פוסטר אחד לפחות.", barPc: "{n} פוסטרים מסומנים. יקבלו את הרוחב במחשב של:", barPhone: "{n} פוסטרים מסומנים. יקבלו את הרוחב בטלפון של:", source: "הפוסטר שהרוחב שלו יועתק", go: "השוואה לרוחב המקור", clear: "ניקוי הסימון", auto: "רגיל, שניים בשורה", pairs: "רוחב 53 ומטה: הפוסטרים יעמדו בזוגות, ולא כל אחד לבד בשורה.", done: "כל {n} הפוסטרים המסומנים ברוחב {w}%.", doneAuto: "כל {n} הפוסטרים המסומנים חזרו לסידור הרגיל בטלפון (שניים בשורה).", same: "כל הפוסטרים המסומנים כבר באותו רוחב. לא שונה דבר." },
+      pictures: { mark: "סימון ליישור", unmark: "ביטול סימון", one: "סומנה תמונה אחת ליישור. סמנו עוד תמונה אחת לפחות.", barPc: "{n} תמונות מסומנות. יקבלו את הרוחב במחשב של:", barPhone: "{n} תמונות מסומנות. יקבלו את הרוחב בטלפון של:", source: "התמונה שהרוחב שלה יועתק", go: "השוואה לרוחב המקור", clear: "ניקוי הסימון", auto: "רגיל", pairs: "רוחב 53 ומטה: התמונות יעמדו בזוגות, ולא כל אחת לבד בשורה.", done: "כל {n} התמונות המסומנות ברוחב {w}%.", doneAuto: "כל {n} התמונות המסומנות חזרו לסידור הרגיל בטלפון.", same: "כל התמונות המסומנות כבר באותו רוחב. לא שונה דבר." },
+    },
+    en: {
+      posters: { mark: "Mark to align", unmark: "Unmark", one: "One poster marked to align. Mark at least one more.", barPc: "{n} posters marked. They will get the desktop width of:", barPhone: "{n} posters marked. They will get the phone width of:", source: "The poster whose width is copied", go: "Match the source width", clear: "Clear marks", auto: "Usual, two in a row", pairs: "Width 53 or less: the posters will appear in pairs, not each alone in its row.", done: "All {n} marked posters are now {w}% wide.", doneAuto: "All {n} marked posters are back to the usual phone layout (two in a row).", same: "All marked posters already have the same width. Nothing changed." },
+      pictures: { mark: "Mark to align", unmark: "Unmark", one: "One picture marked to align. Mark at least one more.", barPc: "{n} pictures marked. They will get the desktop width of:", barPhone: "{n} pictures marked. They will get the phone width of:", source: "The picture whose width is copied", go: "Match the source width", clear: "Clear marks", auto: "Usual", pairs: "Width 53 or less: the pictures will appear in pairs, not each alone in its row.", done: "All {n} marked pictures are now {w}% wide.", doneAuto: "All {n} marked pictures are back to the usual phone layout.", same: "All marked pictures already have the same width. Nothing changed." },
+    },
+  };
+  // opts:
+  //   id        a name for this group of pictures (the bar's data-align)
+  //   lang      "he" or "en";  noun: "posters" or "pictures" (the words used)
+  //   phone()   true on a phone: the phone width is copied, otherwise the computer width
+  //   items()   the pictures that can be marked now, in page order: [{ key, name }]
+  //             (a picture that is no longer there leaves the marks by itself)
+  //   width(key)  its width now on this screen size in %; 0 = no own width (the usual layout)
+  //   apply(keys, w)  give these pictures width w (0 = no own width); the editor
+  //             records the change (undo) and draws again, before this returns
+  //   redraw()  draw again after a mark changed
+  //   status(text, same)  show the message after matching (the editor adds "unsaved";
+  //             same = true: nothing changed, so not that)
+  //   pairs     true for rows of pictures: 53% or less puts two in one row (src/render.js freeClasses, 106)
+  // Returns: has(key), button(key) → the mark button, mark(node, key) → the orange
+  // frame (class pe-marked), bar() → the bar to put above the pictures (or null).
+  function aligner(opts) {
+    var A = (ALIGN_TEXT[opts.lang === "he" ? "he" : "en"])[opts.noun === "posters" ? "posters" : "pictures"];
+    var marks = [], source = null;
+    function present() {
+      var list = opts.items() || [];
+      marks = marks.filter(function (k) { return list.some(function (it) { return it.key === k; }); });
+      return list.filter(function (it) { return marks.indexOf(it.key) >= 0; });
+    }
+    function has(key) { return marks.indexOf(key) >= 0 && (opts.items() || []).some(function (it) { return it.key === key; }); }
+    function short(name) { name = String(name || ""); return name.length > 40 ? name.slice(0, 39) + "…" : name; }
+    function match() {
+      var marked = present();
+      var src = marked.filter(function (it) { return it.key === source; })[0];
+      if (!src || marked.length < 2) return;
+      var w = opts.width(src.key), pc = !opts.phone();
+      var same = marked.every(function (it) { return opts.width(it.key) === w; });
+      // The marks go first: apply() draws the page again, without the orange frames.
+      marks = []; source = null;
+      // Already one width: nothing changes (and nothing to save).
+      if (same) { opts.redraw(); opts.status(A.same, true); return; }
+      opts.apply(marked.map(function (it) { return it.key; }), w);
+      var msg = w ? A.done.replace("{n}", marked.length).replace("{w}", w) : A.doneAuto.replace("{n}", marked.length);
+      if (opts.pairs && pc && w && w <= 53) msg += " " + A.pairs;
+      opts.status(msg.replace(/\.$/, "")); // no full stop before the editor's " · unsaved"
+    }
+    return {
+      has: has,
+      button: function (key) {
+        var on = has(key);
+        var b = button(on ? A.unmark : A.mark, function () {
+          var at = marks.indexOf(key);
+          if (at >= 0) marks.splice(at, 1); else marks.push(key);
+          opts.redraw();
+        }, "pe-btn pe-align-btn");
+        b.setAttribute("aria-pressed", String(on));
+        return b;
+      },
+      mark: function (node, key) { if (node) node.classList.toggle("pe-marked", has(key)); },
+      bar: function () {
+        var marked = present();
+        if (!marked.length) return null;
+        var clear = button(A.clear, function () { marks = []; source = null; opts.redraw(); }, "pe-btn");
+        var bar = el("div", { "class": "pe-tools pe-align-bar", role: "group", "aria-label": A.go, "data-align": opts.id || "" });
+        if (marked.length < 2) {
+          bar.appendChild(el("span", { "class": "pe-tools-label", text: A.one }));
+          bar.appendChild(clear);
+          return bar;
+        }
+        if (!marked.some(function (it) { return it.key === source; })) source = marked[0].key;
+        var pc = !opts.phone();
+        bar.appendChild(el("span", { "class": "pe-tools-label", text: (pc ? A.barPc : A.barPhone).replace("{n}", marked.length) }));
+        var sel = el("select", { "class": "pe-select", "aria-label": A.source, title: A.source });
+        marked.forEach(function (it, i) {
+          var w = opts.width(it.key);
+          var o = el("option", { value: String(i), text: short(it.name) + " · " + (w ? w + "%" : A.auto) });
+          if (it.key === source) o.selected = true;
+          sel.appendChild(o);
+        });
+        sel.addEventListener("change", function () { var it = marked[Number(sel.value)]; if (it) source = it.key; opts.redraw(); });
+        bar.appendChild(sel);
+        bar.appendChild(button(A.go, match, "pe-btn pe-primary"));
+        bar.appendChild(clear);
+        var w = opts.width(source);
+        if (opts.pairs && pc && w && w <= 53) bar.appendChild(el("p", { "class": "pe-align-warn", role: "status", text: A.pairs }));
+        return bar;
+      },
+    };
+  }
+
   window.BubaCore = {
     version: VERSION, liveWidth: liveWidth, rowWidths: rowWidths, fillRow: fillRow, saveFiles: saveFiles, saveErrorText: saveErrorText, blobSha: blobSha, shrinkImage: shrinkImage, shrinkImages: shrinkImages,
     el: el, button: button, token: token,
     utf8ToB64: utf8ToB64, b64ToUtf8: b64ToUtf8, readB64: readB64,
     github: github, loadStyles: loadStyles, history: history, siteWatch: siteWatch,
     describe: describe, captionDialog: captionDialog, capNode: capNode, placeCap: placeCap, frame: frame,
+    aligner: aligner,
   };
 })();

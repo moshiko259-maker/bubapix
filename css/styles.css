@@ -1290,13 +1290,15 @@ h1.pe-editable { min-width: 4ch; }
 .pe-poster .pe-tools { opacity: 0; transition: opacity 0.15s; }
 .pe-poster:hover .pe-tools, .pe-poster:focus-within .pe-tools, .pe-poster.pe-off .pe-tools { opacity: 1; }
 @media (hover: none) { .pe-poster .pe-tools { opacity: 1; } }
-/* One width for several posters: the marked posters and the bar above them (js/editor.js drawAlignBar). */
+/* One width for several pictures: the marked pictures and the bar above them (js/editor-core.js aligner):
+   homepage posters and gallery, Projects page, project pages, team photos. */
 /* The orange mark is its own thin layer 4px inside the edge, not the outline: the outline is the
    selection frame (blue, or dashed on hover), so both show together. Clicks pass through it;
-   the poster's buttons and resize dots stay above it. */
-.pe-poster.pe-marked::after { content: ""; position: absolute; inset: 4px; z-index: 1; border: 3px solid #e0892b; border-radius: 2px; pointer-events: none; }
-.pe-poster.pe-marked .pe-missing { z-index: 2; }
-@media (hover: none) { .pe-poster.pe-marked .pe-tools.pe-tools-top { position: relative; inset: auto; z-index: 2; } } /* inset: auto = the same place as before (static) */
+   the picture's buttons, labels and resize dots stay above it. */
+.pe-poster.pe-marked::after, .pe-item.pe-marked::after, .pe-photo-box.pe-marked::after { content: ""; position: absolute; inset: 4px; z-index: 1; border: 3px solid #e0892b; border-radius: 2px; pointer-events: none; }
+.pe-marked > .pe-missing, .pe-marked > .pe-badge, .pe-marked > .pe-work-name, .pe-item.pe-marked > .pe-tools { z-index: 2; }
+/* Touch screens: the tools are in the flow (static) under the picture; lifted above the layer in the same place. */
+@media (hover: none) { .pe-poster.pe-marked .pe-tools.pe-tools-top, .pe-item.pe-marked > .pe-tools { position: relative; inset: auto; z-index: 2; } } /* inset: auto = the same place as before (static) */
 .pe-tools .pe-align-btn[aria-pressed="true"] { background: #e0892b; color: #1d1b16; border-color: #e0892b; }
 .pe-tools.pe-align-bar { align-items: center; margin: 0 0 0.6rem; }
 .pe-align-bar .pe-select { max-width: 100%; }
