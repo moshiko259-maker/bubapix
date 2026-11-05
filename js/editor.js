@@ -95,6 +95,18 @@
     posterSizeNote: "פוסטרים: גודל — לוחצים על פוסטר וגוררים נקודה כחולה (במחשב). סדר — גוררים פוסטר או חצים. הסדר כאן הוא של דף הבית בלבד.",
     posterTouchNote: "פוסטרים: נוגעים בפוסטר כדי לבחור אותו, ואז ״→ קודם״ או ״הבא ←״ לשינוי הסדר. הסדר כאן הוא של דף הבית בלבד. גודל: גוררים נקודה כחולה (לא בטלפון).",
     posterAuto: "גודל אוטומטי לכל הפוסטרים",
+    alignMark: "סימון ליישור",
+    alignUnmark: "ביטול סימון",
+    alignOne: "סומן פוסטר אחד ליישור. סמנו עוד פוסטר אחד לפחות.",
+    alignBarPc: "{n} פוסטרים מסומנים. יקבלו את הרוחב במחשב של:",
+    alignBarPhone: "{n} פוסטרים מסומנים. יקבלו את הרוחב בטלפון של:",
+    alignSource: "הפוסטר שהרוחב שלו יועתק",
+    alignGo: "השוואה לרוחב המקור",
+    alignClear: "ניקוי הסימון",
+    alignAuto: "רגיל, שניים בשורה",
+    alignPairs: "רוחב 53 ומטה: הפוסטרים יעמדו בזוגות, ולא כל אחד לבד בשורה.",
+    alignDone: "כל {n} הפוסטרים המסומנים ברוחב {w}%.",
+    alignDoneAuto: "כל {n} הפוסטרים המסומנים חזרו לסידור הרגיל בטלפון (שניים בשורה).",
     pickTitle: "בחירת תמונה",
     pickUpload: "העלאה מהמחשב",
     pickLoading: "טוען תמונות…",
@@ -209,6 +221,18 @@
     posterSizeNote: "Posters: size — click a poster and drag a blue dot (on computers). Order — drag a poster or use the arrows. This order is for the homepage only.",
     posterTouchNote: "Posters: tap a poster to choose it, then \"← Earlier\" or \"Later →\" to change the order. This order is for the homepage only. Size: drag a blue dot (not on phones).",
     posterAuto: "Automatic size for all posters",
+    alignMark: "Mark to align",
+    alignUnmark: "Unmark",
+    alignOne: "One poster marked to align. Mark at least one more.",
+    alignBarPc: "{n} posters marked. They will get the desktop width of:",
+    alignBarPhone: "{n} posters marked. They will get the phone width of:",
+    alignSource: "The poster whose width is copied",
+    alignGo: "Match the source width",
+    alignClear: "Clear marks",
+    alignAuto: "Usual, two in a row",
+    alignPairs: "Width 53 or less: the posters will appear in pairs, not each alone in its row.",
+    alignDone: "All {n} marked posters are now {w}% wide.",
+    alignDoneAuto: "All {n} marked posters are back to the usual phone layout (two in a row).",
     pickTitle: "Choose a picture",
     pickUpload: "Upload from this computer",
     pickLoading: "Loading pictures…",
@@ -743,6 +767,8 @@
   // ---------- posters row: each poster is a project's cover ----------
   var posterEls = {}; // slug -> { el, media, original }
   var posterBox = null, posterOrig = null, posterDrag = "", posterClip = "";
+  // Posters marked to get one width (this tab only, never saved), and the one whose width is copied.
+  var posterMarks = [], alignSource = "";
   function setupPosters() {
     posterOrig = document.querySelector(".home-posters [data-mosaic]");
     if (posterOrig) {
@@ -918,7 +944,17 @@
         }, "pe-btn pe-alone-btn");
         ab.setAttribute("aria-pressed", String(pOn));
         pe.tools.appendChild(ab);
+        // Mark to align: marked posters can then all get one poster's width (the bar above the posters).
+        var isMarked = posterMarks.indexOf(slug) >= 0;
+        var mb = button(isMarked ? T.alignUnmark : T.alignMark, function () {
+          var at = posterMarks.indexOf(slug);
+          if (at >= 0) posterMarks.splice(at, 1); else posterMarks.push(slug);
+          drawPosters();
+        }, "pe-btn pe-align-btn");
+        mb.setAttribute("aria-pressed", String(isMarked));
+        pe.tools.appendChild(mb);
       }
+      pe.el.classList.toggle("pe-marked", p.in_posters !== false && posterMarks.indexOf(slug) >= 0);
       // Cut and paste for posters: the order of the homepage posters.
       Array.prototype.forEach.call(pe.el.querySelectorAll(":scope > .pe-paste-bar"), function (n) { n.remove(); });
       pe.el.classList.toggle("pe-cut", posterClip === slug);
@@ -959,7 +995,65 @@
       list.push(posterClip); posterClip = "";
       reorderPosters(list); changed(); syncPage();
     }, "pe-btn pe-primary pe-paste-btn")]), posterBox.nextSibling);
+    drawAlignBar();
     layoutPosters();
+  }
+
+  // ---------- one width for several posters ----------
+  // Only by hand: nothing changes until "Match the source width" is pressed,
+  // and nothing is saved until "Save". Computers copy poster_w, phones poster_w_m
+  // (the size for the screen being used, like "Alone in its row").
+  function alignKey() { return phone.matches ? "poster_w_m" : "poster_w"; }
+  // A poster's width now on this screen size, in % of the row. Computers without
+  // free sizes yet: the width it is shown at. Phones: 0 = no own size (two in a row).
+  function posterWidthNow(q) {
+    if (alignKey() === "poster_w_m") return Number(q.poster_w_m) >= 20 ? Number(q.poster_w_m) : 0;
+    if (Number(q.poster_w) >= 10) return Number(q.poster_w);
+    var bw = posterBox ? posterBox.getBoundingClientRect().width || 1 : 1;
+    return Math.max(10, Math.min(100, Math.round(posterEls[q.slug].el.getBoundingClientRect().width / bw * 100)));
+  }
+  function markedPosters() {
+    return shownPosters().filter(function (q) { return q.in_posters !== false && posterMarks.indexOf(q.slug) >= 0; });
+  }
+  function drawAlignBar() {
+    if (!posterBox || !posterBox.parentNode) return;
+    var old = posterBox.parentNode.querySelector(".pe-align-bar");
+    if (old) old.remove();
+    var marked = markedPosters();
+    posterMarks = marked.map(function (q) { return q.slug; }); // a hidden poster leaves the marks
+    if (!marked.length) return;
+    var bar = el("div", { "class": "pe-tools pe-align-bar", role: "group", "aria-label": T.alignGo });
+    if (marked.length < 2) {
+      bar.appendChild(el("span", { "class": "pe-tools-label", text: T.alignOne }));
+      bar.appendChild(button(T.alignClear, function () { posterMarks = []; drawPosters(); }, "pe-btn"));
+      posterBox.parentNode.insertBefore(bar, posterBox);
+      return;
+    }
+    if (posterMarks.indexOf(alignSource) < 0) alignSource = posterMarks[0];
+    var pc = alignKey() === "poster_w";
+    var widthText = function (q) { var w = posterWidthNow(q); return w ? w + "%" : T.alignAuto; };
+    bar.appendChild(el("span", { "class": "pe-tools-label", text: (pc ? T.alignBarPc : T.alignBarPhone).replace("{n}", marked.length) }));
+    bar.appendChild(select(T.alignSource, alignSource, marked.map(function (q) { return [q.slug, displayName(q) + " · " + widthText(q)]; }), function (v) { alignSource = v; drawPosters(); }));
+    bar.appendChild(button(T.alignGo, alignPosters, "pe-btn pe-primary"));
+    bar.appendChild(button(T.alignClear, function () { posterMarks = []; drawPosters(); }, "pe-btn"));
+    var src = marked.filter(function (q) { return q.slug === alignSource; })[0];
+    // Rows of the site: two posters of 53% or less share a row (src/render.js freeClasses, 106).
+    if (pc && src && posterWidthNow(src) <= 53) bar.appendChild(el("p", { "class": "pe-align-warn", role: "status", text: T.alignPairs }));
+    posterBox.parentNode.insertBefore(bar, posterBox);
+  }
+  function alignPosters() {
+    var marked = markedPosters(), pk = alignKey();
+    var src = marked.filter(function (q) { return q.slug === alignSource; })[0];
+    if (!src || marked.length < 2) return;
+    var w = posterWidthNow(src);
+    // Computers, first free size: every other poster keeps the width it is shown at (as a first resize does).
+    if (pk === "poster_w" && !postersFree()) shownPosters().forEach(function (q) { q.poster_w = posterWidthNow(q); });
+    marked.forEach(function (q) { q[pk] = w; });
+    posterMarks = [];
+    changed(); syncPage();
+    var msg = w ? T.alignDone.replace("{n}", marked.length).replace("{w}", w) : T.alignDoneAuto.replace("{n}", marked.length);
+    if (pk === "poster_w" && w <= 53) msg += " " + T.alignPairs;
+    setStatus(msg.replace(/\.$/, "") + " · " + T.unsaved, "warn"); // no full stop before the "·"
   }
 
   // Brings the opening and the toolbar in line with the state (after undo

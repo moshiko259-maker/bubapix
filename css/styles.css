@@ -1290,6 +1290,17 @@ h1.pe-editable { min-width: 4ch; }
 .pe-poster .pe-tools { opacity: 0; transition: opacity 0.15s; }
 .pe-poster:hover .pe-tools, .pe-poster:focus-within .pe-tools, .pe-poster.pe-off .pe-tools { opacity: 1; }
 @media (hover: none) { .pe-poster .pe-tools { opacity: 1; } }
+/* One width for several posters: the marked posters and the bar above them (js/editor.js drawAlignBar). */
+/* The orange mark is its own thin layer 4px inside the edge, not the outline: the outline is the
+   selection frame (blue, or dashed on hover), so both show together. Clicks pass through it;
+   the poster's buttons and resize dots stay above it. */
+.pe-poster.pe-marked::after { content: ""; position: absolute; inset: 4px; z-index: 1; border: 3px solid #e0892b; border-radius: 2px; pointer-events: none; }
+.pe-poster.pe-marked .pe-missing { z-index: 2; }
+@media (hover: none) { .pe-poster.pe-marked .pe-tools.pe-tools-top { position: relative; inset: auto; z-index: 2; } } /* inset: auto = the same place as before (static) */
+.pe-tools .pe-align-btn[aria-pressed="true"] { background: #e0892b; color: #1d1b16; border-color: #e0892b; }
+.pe-tools.pe-align-bar { align-items: center; margin: 0 0 0.6rem; }
+.pe-align-bar .pe-select { max-width: 100%; }
+.pe-align-warn { flex-basis: 100%; margin: 0; padding: 0 0.35rem; font-size: 0.8125rem; font-weight: 600; color: #ffd27a; }
 
 /* ---------- Page editor: selection frame with dots (resize) ---------- */
 .pe-framed { position: relative; }
