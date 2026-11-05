@@ -29,7 +29,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 9)) {
+  if (!core || !(core.version >= 10)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -477,6 +477,34 @@
   var selected = null, dragFrom = null;
   var widthOf = function (p) { var w = Number(p.data.list_w); return w >= 10 && w <= 100 ? w : 0; };
   function isFree() { return state.list.some(function (p) { return widthOf(p); }); }
+  // One width for several marked projects (js/editor-core.js aligner): list_w on computers, list_w_m on phones.
+  function shownWork() { return state ? state.list.filter(function (p) { return p.data.cover && p.data.in_work !== false; }) : []; }
+  function figOf(p) { return Array.prototype.filter.call(area.querySelectorAll(".pe-gal .pe-item"), function (n) { return n.__p === p; })[0]; }
+  // The width a project's picture is shown at now, in % of the grid (before free sizes are on).
+  function shownWidth(p) {
+    var n = figOf(p), g = area.querySelector(".pe-gal");
+    var gw = g ? g.getBoundingClientRect().width || 1 : 1;
+    return n ? Math.max(10, Math.min(100, Math.round(n.getBoundingClientRect().width / gw * 100))) : 33;
+  }
+  var align = core.aligner({
+    id: "work", lang: lang, noun: "pictures",
+    phone: function () { return narrow.matches; },
+    items: function () { return shownWork().map(function (p) { return { key: p, name: nameOf(p) }; }); },
+    width: function (p) {
+      if (narrow.matches) return Number(p.data.list_w_m) >= 20 ? Number(p.data.list_w_m) : 0;
+      return widthOf(p) || shownWidth(p);
+    },
+    apply: function (list, w) {
+      var key = narrow.matches ? "list_w_m" : "list_w";
+      // Computers, first free size: every other project keeps the width it is shown at (as a first resize does).
+      if (key === "list_w" && !isFree()) shownWork().forEach(function (p) { p.data.list_w = shownWidth(p); });
+      list.forEach(function (p) { if (w) p.data[key] = w; else delete p.data[key]; });
+      changed();
+    },
+    redraw: function () { render(); },
+    status: function (msg, same) { if (same) setStatus(msg); else setStatus(msg + " · " + T.unsaved, "warn"); },
+    pairs: true,
+  });
   function sameWidth() {
     if (!isFree()) return "auto";
     for (var n = 1; n <= 4; n++) if (state.list.every(function (p) { return widthOf(p) === Math.floor(100 / n); })) return String(n);
@@ -536,6 +564,9 @@
       items.forEach(function (it) { grid.appendChild(cell(it, grid)); });
     }
     area.appendChild(grid);
+    // The bar goes above the grid once the grid is on the page (the widths shown are measured on it).
+    var alignBar = align.bar();
+    if (alignBar) area.insertBefore(alignBar, grid);
     if (clip) area.appendChild(el("div", { "class": "pe-add" }, [button(T.pasteEnd, function () { pasteAt(null); }, "pe-btn pe-primary pe-paste-btn")]));
     var off = state.list.filter(function (p) { return p.data.in_work === false; });
     if (off.length) {
@@ -767,6 +798,7 @@
       selectedNow: selected === p.slug,
     });
     fig.__p = p;
+    align.mark(fig, p);
     if (clip === p) fig.classList.add("pe-cut");
     else if (clip) fig.appendChild(el("div", { "class": "pe-paste-bar" }, [button(T.pasteHere, function () { pasteAt(p); }, "pe-btn pe-primary pe-paste-btn")]));
     if (uploads[norm(d.cover)]) fig.appendChild(el("span", { "class": "pe-badge", text: T.newBadge }));
@@ -793,6 +825,7 @@
       // Which categories this project is in (content/projects/<slug>.json, categories).
       button(T.catsBtn, function (e) { pickCats(p, e.currentTarget); }, "pe-btn pe-cats-btn"),
       aloneButton(fig, grid, p),
+      align.button(p),
       clip === p ? button(T.cutCancel, function () { clip = null; render(); }, "pe-btn pe-cut-btn")
         : clip ? null : button(T.cut, function () { clip = p; setStatus(T.cutNote); render(); }, "pe-btn pe-cut-btn"),
       button(T.hideWork, function () { d.in_work = false; changed(); }, "pe-btn pe-danger"),
