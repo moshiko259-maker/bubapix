@@ -30,7 +30,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 9)) {
+  if (!core || !(core.version >= 10)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -632,7 +632,59 @@
     if (!videoSlot.childNodes.length) videoSlot.remove();
     if (adds.length) area.appendChild(el("div", { "class": "pe-add" }, adds));
     if (hiddenGroups) area.appendChild(el("p", { "class": "pe-note pe-proj-note", text: T.hiddenSections.replace("{n}", hiddenGroups) }));
+    // The bar for marked pictures: above the first gallery with a marked picture
+    // (once the galleries are on the page: the widths shown are measured on them).
+    var alignBar = align.bar();
+    if (alignBar) {
+      var firstMarked = Array.prototype.filter.call(area.querySelectorAll(".pe-gal .pe-item"), function (n) { return align.has(n.__pic); })[0];
+      var markedGrid = firstMarked && firstMarked.closest(".pe-gal");
+      if (markedGrid) markedGrid.parentNode.insertBefore(alignBar, markedGrid);
+    }
   }
+  // ---------- one width for several marked pictures (js/editor-core.js aligner) ----------
+  // All galleries of this page: fw on computers, fw_m on phones.
+  function gallerySecs() {
+    return data ? data.sections.filter(function (sec) { return sec && (sec.type === "gallery" || sec.type === "behind") && sec.hidden !== true && Array.isArray(sec.images); }) : [];
+  }
+  function shownPics(sec) { return sec.images.filter(function (g) { return g && g.image && g.visible !== false; }); }
+  function picFig(g) { return Array.prototype.filter.call(area.querySelectorAll(".pe-gal .pe-item"), function (n) { return n.__pic === g; })[0]; }
+  // The width a picture is shown at now, in % of its gallery (before free sizes are on).
+  function picShownWidth(g) {
+    var n = picFig(g), grid = n && n.closest(".pe-gal");
+    var gw = grid ? grid.getBoundingClientRect().width || 1 : 1;
+    return n ? Math.max(10, Math.min(100, Math.round(n.getBoundingClientRect().width / gw * 100))) : 33;
+  }
+  function picName(g) {
+    var otherLang = lang === "he" ? "en" : "he";
+    var t = g["title_" + lang] || g["alt_" + lang] || g["title_" + otherLang] || g["alt_" + otherLang];
+    return t || String(g.image || "").split("/").pop();
+  }
+  var align = core.aligner({
+    id: "project", lang: lang, noun: "pictures",
+    phone: function () { return narrow.matches; },
+    items: function () {
+      var out = [];
+      gallerySecs().forEach(function (sec) { shownPics(sec).forEach(function (g) { out.push({ key: g, name: picName(g) }); }); });
+      return out;
+    },
+    width: function (g) {
+      if (narrow.matches) return Number(g.fw_m) >= 20 ? Number(g.fw_m) : 0;
+      return Number(g.fw) >= 10 ? Number(g.fw) : picShownWidth(g);
+    },
+    apply: function (list, w) {
+      var key = narrow.matches ? "fw_m" : "fw";
+      // Computers, a gallery's first free size: its other pictures keep the width they are shown at.
+      if (key === "fw") gallerySecs().forEach(function (sec) {
+        if (isFree(sec) || !sec.images.some(function (g) { return list.indexOf(g) >= 0; })) return;
+        shownPics(sec).forEach(function (g) { g.fw = picShownWidth(g); });
+      });
+      list.forEach(function (g) { if (w) g[key] = w; else delete g[key]; });
+      changed();
+    },
+    redraw: function () { render(); },
+    status: function (msg, same) { if (same) setStatus(msg); else setStatus(msg + " · " + T.unsaved, "warn"); },
+    pairs: true,
+  });
 
   function coverBlock() {
     var box = el("section", { "class": "project-section pe-cover-sec" }, [el("h2", { "class": "section-label", text: T.coverTitle })]);
@@ -1033,6 +1085,7 @@
       selectedNow: selected === g,
     });
     fig.__pic = g;
+    align.mark(fig, g);
     if (uploads[norm(g.image)]) fig.appendChild(el("span", { "class": "pe-badge", text: T.newBadge }));
     if (!g["alt_" + lang]) fig.appendChild(el("span", { "class": "pe-missing", text: T.noAlt }));
     touchPick(fig, g);
@@ -1048,6 +1101,7 @@
       }),
       button(T.caption, function () { captionDialog(g); }, "pe-btn pe-caption-btn"),
       aloneButton(sec, grid, g),
+      align.button(g),
     ].concat(cutTools(sec, g), [
       button(T.hide, function () { g.visible = false; changed(); }),
       button(T.remove, function () { removeAt(sec, g); }, "pe-btn pe-danger"),
