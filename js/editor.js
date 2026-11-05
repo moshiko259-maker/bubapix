@@ -24,7 +24,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 9)) {
+  if (!core || !(core.version >= 10)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -95,18 +95,6 @@
     posterSizeNote: "פוסטרים: גודל — לוחצים על פוסטר וגוררים נקודה כחולה (במחשב). סדר — גוררים פוסטר או חצים. הסדר כאן הוא של דף הבית בלבד.",
     posterTouchNote: "פוסטרים: נוגעים בפוסטר כדי לבחור אותו, ואז ״→ קודם״ או ״הבא ←״ לשינוי הסדר. הסדר כאן הוא של דף הבית בלבד. גודל: גוררים נקודה כחולה (לא בטלפון).",
     posterAuto: "גודל אוטומטי לכל הפוסטרים",
-    alignMark: "סימון ליישור",
-    alignUnmark: "ביטול סימון",
-    alignOne: "סומן פוסטר אחד ליישור. סמנו עוד פוסטר אחד לפחות.",
-    alignBarPc: "{n} פוסטרים מסומנים. יקבלו את הרוחב במחשב של:",
-    alignBarPhone: "{n} פוסטרים מסומנים. יקבלו את הרוחב בטלפון של:",
-    alignSource: "הפוסטר שהרוחב שלו יועתק",
-    alignGo: "השוואה לרוחב המקור",
-    alignClear: "ניקוי הסימון",
-    alignAuto: "רגיל, שניים בשורה",
-    alignPairs: "רוחב 53 ומטה: הפוסטרים יעמדו בזוגות, ולא כל אחד לבד בשורה.",
-    alignDone: "כל {n} הפוסטרים המסומנים ברוחב {w}%.",
-    alignDoneAuto: "כל {n} הפוסטרים המסומנים חזרו לסידור הרגיל בטלפון (שניים בשורה).",
     pickTitle: "בחירת תמונה",
     pickUpload: "העלאה מהמחשב",
     pickLoading: "טוען תמונות…",
@@ -221,18 +209,6 @@
     posterSizeNote: "Posters: size — click a poster and drag a blue dot (on computers). Order — drag a poster or use the arrows. This order is for the homepage only.",
     posterTouchNote: "Posters: tap a poster to choose it, then \"← Earlier\" or \"Later →\" to change the order. This order is for the homepage only. Size: drag a blue dot (not on phones).",
     posterAuto: "Automatic size for all posters",
-    alignMark: "Mark to align",
-    alignUnmark: "Unmark",
-    alignOne: "One poster marked to align. Mark at least one more.",
-    alignBarPc: "{n} posters marked. They will get the desktop width of:",
-    alignBarPhone: "{n} posters marked. They will get the phone width of:",
-    alignSource: "The poster whose width is copied",
-    alignGo: "Match the source width",
-    alignClear: "Clear marks",
-    alignAuto: "Usual, two in a row",
-    alignPairs: "Width 53 or less: the posters will appear in pairs, not each alone in its row.",
-    alignDone: "All {n} marked posters are now {w}% wide.",
-    alignDoneAuto: "All {n} marked posters are back to the usual phone layout (two in a row).",
     pickTitle: "Choose a picture",
     pickUpload: "Upload from this computer",
     pickLoading: "Loading pictures…",
@@ -767,8 +743,6 @@
   // ---------- posters row: each poster is a project's cover ----------
   var posterEls = {}; // slug -> { el, media, original }
   var posterBox = null, posterOrig = null, posterDrag = "", posterClip = "";
-  // Posters marked to get one width (this tab only, never saved), and the one whose width is copied.
-  var posterMarks = [], alignSource = "";
   function setupPosters() {
     posterOrig = document.querySelector(".home-posters [data-mosaic]");
     if (posterOrig) {
@@ -899,9 +873,9 @@
         if (phone.matches && q.poster_w_m >= 20 && pe.media) phoneLine(it, pe.media, q.poster_w_m);
         else if (free && rw.length === 1) {
           // Alone in its row: "important", or the gallery rule (.mrow .jg-item { flex-basis: 0 !important }) shrinks it to nothing.
-          var one = Math.min(100, f[0]) + "%", rr = pe.r || 1.5;
-          // Square and tall posters keep within the screen's height, as on the site (.mrow.n1 > .ar-*).
-          if (rr < 1.3) one = "min(" + one + ", calc(80vh * " + rr + "))";
+          // A chosen width decides, also for square and tall posters, as on the site (build.js:
+          // the screen-height limit .mrow.n1 > .ar-* is only for pictures without a chosen width).
+          var one = Math.min(100, f[0]) + "%";
           it.style.setProperty("flex", "0 0 " + one, "important"); it.style.setProperty("width", one, "important"); it.style.marginInline = "auto";
         }
         else if (free) { it.style.flex = Math.round(share[k] * 1000) + " 1 0"; it.style.minWidth = "0"; if (pe.media) pe.media.style.aspectRatio = String((share[k] * 100) / h); }
@@ -945,16 +919,9 @@
         ab.setAttribute("aria-pressed", String(pOn));
         pe.tools.appendChild(ab);
         // Mark to align: marked posters can then all get one poster's width (the bar above the posters).
-        var isMarked = posterMarks.indexOf(slug) >= 0;
-        var mb = button(isMarked ? T.alignUnmark : T.alignMark, function () {
-          var at = posterMarks.indexOf(slug);
-          if (at >= 0) posterMarks.splice(at, 1); else posterMarks.push(slug);
-          drawPosters();
-        }, "pe-btn pe-align-btn");
-        mb.setAttribute("aria-pressed", String(isMarked));
-        pe.tools.appendChild(mb);
+        pe.tools.appendChild(posterAlign.button(slug));
       }
-      pe.el.classList.toggle("pe-marked", p.in_posters !== false && posterMarks.indexOf(slug) >= 0);
+      posterAlign.mark(pe.el, slug);
       // Cut and paste for posters: the order of the homepage posters.
       Array.prototype.forEach.call(pe.el.querySelectorAll(":scope > .pe-paste-bar"), function (n) { n.remove(); });
       pe.el.classList.toggle("pe-cut", posterClip === slug);
@@ -995,66 +962,73 @@
       list.push(posterClip); posterClip = "";
       reorderPosters(list); changed(); syncPage();
     }, "pe-btn pe-primary pe-paste-btn")]), posterBox.nextSibling);
-    drawAlignBar();
+    // The bar for marked posters, above the posters (js/editor-core.js aligner).
+    if (posterBox && posterBox.parentNode) {
+      var oldBar = posterBox.parentNode.querySelector('.pe-align-bar[data-align="posters"]');
+      if (oldBar) oldBar.remove();
+      var pBar = posterAlign.bar();
+      if (pBar) posterBox.parentNode.insertBefore(pBar, posterBox);
+    }
     layoutPosters();
   }
 
-  // ---------- one width for several posters ----------
-  // Only by hand: nothing changes until "Match the source width" is pressed,
-  // and nothing is saved until "Save". Computers copy poster_w, phones poster_w_m
-  // (the size for the screen being used, like "Alone in its row").
-  function alignKey() { return phone.matches ? "poster_w_m" : "poster_w"; }
+  // ---------- one width for several marked pictures (js/editor-core.js aligner) ----------
+  // Only by hand: nothing changes until "Match the source width" is pressed, and
+  // nothing is saved until "Save". The size for the screen being used, like
+  // "Alone in its row": posters poster_w / poster_w_m, the gallery fw / fw_m.
   // A poster's width now on this screen size, in % of the row. Computers without
   // free sizes yet: the width it is shown at. Phones: 0 = no own size (two in a row).
   function posterWidthNow(q) {
-    if (alignKey() === "poster_w_m") return Number(q.poster_w_m) >= 20 ? Number(q.poster_w_m) : 0;
+    if (phone.matches) return Number(q.poster_w_m) >= 20 ? Number(q.poster_w_m) : 0;
     if (Number(q.poster_w) >= 10) return Number(q.poster_w);
     var bw = posterBox ? posterBox.getBoundingClientRect().width || 1 : 1;
     return Math.max(10, Math.min(100, Math.round(posterEls[q.slug].el.getBoundingClientRect().width / bw * 100)));
   }
-  function markedPosters() {
-    return shownPosters().filter(function (q) { return q.in_posters !== false && posterMarks.indexOf(q.slug) >= 0; });
+  var posterAlign = core.aligner({
+    id: "posters", lang: lang, noun: "posters",
+    phone: function () { return phone.matches; },
+    items: function () { return shownPosters().filter(function (q) { return q.in_posters !== false; }).map(function (q) { return { key: q.slug, name: displayName(q) }; }); },
+    width: function (slug) { var q = projects.filter(function (x) { return x.slug === slug; })[0]; return q ? posterWidthNow(q) : 0; },
+    apply: function (slugs, w) {
+      var pk = phone.matches ? "poster_w_m" : "poster_w";
+      // Computers, first free size: every other poster keeps the width it is shown at (as a first resize does).
+      if (pk === "poster_w" && !postersFree()) shownPosters().forEach(function (q) { q.poster_w = posterWidthNow(q); });
+      shownPosters().forEach(function (q) { if (slugs.indexOf(q.slug) >= 0) q[pk] = w; });
+      changed(); syncPage();
+    },
+    redraw: function () { drawPosters(); },
+    status: function (msg, same) { if (same) setStatus(msg); else setStatus(msg + " · " + T.unsaved, "warn"); },
+    pairs: true,
+  });
+  // The homepage gallery (under the posters): the pictures shown now, kept by render().
+  var galShown = [];
+  function galFig(g) { return editArea.querySelector('.pe-mosaic .pe-item[data-idx="' + data.gallery.indexOf(g) + '"]'); }
+  function galWidthNow(g) {
+    if (phone.matches) return Number(g.fw_m) >= 20 ? Number(g.fw_m) : 0;
+    if (Number(g.fw) >= 10) return Number(g.fw);
+    var n = galFig(g), aw = editArea.getBoundingClientRect().width || 1;
+    return n ? Math.max(10, Math.min(100, Math.round(n.getBoundingClientRect().width / aw * 100))) : 33;
   }
-  function drawAlignBar() {
-    if (!posterBox || !posterBox.parentNode) return;
-    var old = posterBox.parentNode.querySelector(".pe-align-bar");
-    if (old) old.remove();
-    var marked = markedPosters();
-    posterMarks = marked.map(function (q) { return q.slug; }); // a hidden poster leaves the marks
-    if (!marked.length) return;
-    var bar = el("div", { "class": "pe-tools pe-align-bar", role: "group", "aria-label": T.alignGo });
-    if (marked.length < 2) {
-      bar.appendChild(el("span", { "class": "pe-tools-label", text: T.alignOne }));
-      bar.appendChild(button(T.alignClear, function () { posterMarks = []; drawPosters(); }, "pe-btn"));
-      posterBox.parentNode.insertBefore(bar, posterBox);
-      return;
-    }
-    if (posterMarks.indexOf(alignSource) < 0) alignSource = posterMarks[0];
-    var pc = alignKey() === "poster_w";
-    var widthText = function (q) { var w = posterWidthNow(q); return w ? w + "%" : T.alignAuto; };
-    bar.appendChild(el("span", { "class": "pe-tools-label", text: (pc ? T.alignBarPc : T.alignBarPhone).replace("{n}", marked.length) }));
-    bar.appendChild(select(T.alignSource, alignSource, marked.map(function (q) { return [q.slug, displayName(q) + " · " + widthText(q)]; }), function (v) { alignSource = v; drawPosters(); }));
-    bar.appendChild(button(T.alignGo, alignPosters, "pe-btn pe-primary"));
-    bar.appendChild(button(T.alignClear, function () { posterMarks = []; drawPosters(); }, "pe-btn"));
-    var src = marked.filter(function (q) { return q.slug === alignSource; })[0];
-    // Rows of the site: two posters of 53% or less share a row (src/render.js freeClasses, 106).
-    if (pc && src && posterWidthNow(src) <= 53) bar.appendChild(el("p", { "class": "pe-align-warn", role: "status", text: T.alignPairs }));
-    posterBox.parentNode.insertBefore(bar, posterBox);
+  function galName(g) {
+    var o = lang === "he" ? "en" : "he";
+    return g["title_" + lang] || g["alt_" + lang] || g["title_" + o] || g["alt_" + o] || String(g.image || "").split("/").pop();
   }
-  function alignPosters() {
-    var marked = markedPosters(), pk = alignKey();
-    var src = marked.filter(function (q) { return q.slug === alignSource; })[0];
-    if (!src || marked.length < 2) return;
-    var w = posterWidthNow(src);
-    // Computers, first free size: every other poster keeps the width it is shown at (as a first resize does).
-    if (pk === "poster_w" && !postersFree()) shownPosters().forEach(function (q) { q.poster_w = posterWidthNow(q); });
-    marked.forEach(function (q) { q[pk] = w; });
-    posterMarks = [];
-    changed(); syncPage();
-    var msg = w ? T.alignDone.replace("{n}", marked.length).replace("{w}", w) : T.alignDoneAuto.replace("{n}", marked.length);
-    if (pk === "poster_w" && w <= 53) msg += " " + T.alignPairs;
-    setStatus(msg.replace(/\.$/, "") + " · " + T.unsaved, "warn"); // no full stop before the "·"
-  }
+  var galAlign = core.aligner({
+    id: "gallery", lang: lang, noun: "pictures",
+    phone: function () { return phone.matches; },
+    items: function () { return galShown.map(function (it) { return { key: it.g, name: galName(it.g) }; }); },
+    width: galWidthNow,
+    apply: function (list, w) {
+      var key = phone.matches ? "fw_m" : "fw";
+      // Computers, first free size: the other pictures keep the size they look now (as a first resize does).
+      if (key === "fw" && !isFree()) startFree();
+      list.forEach(function (g) { if (w) g[key] = w; else delete g[key]; });
+      changed();
+    },
+    redraw: function () { render(); },
+    status: function (msg, same) { if (same) setStatus(msg); else setStatus(msg + " · " + T.unsaved, "warn"); },
+    pairs: true,
+  });
 
   // Brings the opening and the toolbar in line with the state (after undo
   // or after loading an earlier version).
@@ -1197,6 +1171,7 @@
       seen[p] = true;
       shown.push({ g: g, idx: idx, r: ratioOf(g) });
     });
+    galShown = shown; // the pictures that can be marked to align (galAlign)
 
     var cols = Number(data.gallery_columns) || 0, ph = Number(data.gallery_phone) || 0;
     var freeOn = isFree() && !phone.matches;
@@ -1215,6 +1190,9 @@
       box.appendChild(r);
     });
     editArea.appendChild(box);
+    // The bar for marked gallery pictures, above the gallery (once it is on the page: the widths shown are measured on it).
+    var gBar = galAlign.bar();
+    if (gBar) editArea.insertBefore(gBar, box);
     if (clip) editArea.appendChild(el("div", { "class": "pe-add" }, [button(T.pasteEnd, function () { pasteAt(null); }, "pe-btn pe-primary pe-paste-btn")]));
     editArea.appendChild(el("div", { "class": "pe-add" }, [button("+ " + T.add, function () {
       pick(function (paths, alts, choice) {
@@ -1281,6 +1259,7 @@
       min: 10, max: 100, selectedNow: selected === idx,
     });
     touchPick(fig, g);
+    galAlign.mark(fig, g);
     // Arrows follow the reading direction: "earlier" points right in Hebrew.
     fig.appendChild(el("div", { "class": "pe-tools" }, [
       button(T.prevBtn, function () { move(idx, -1); }, "pe-btn pe-move", T.earlier),
@@ -1296,6 +1275,7 @@
         }, g.project || "");
       }),
       aloneButton(g, idx),
+      galAlign.button(g),
       clip === g ? button(T.cutCancel, function () { clip = null; render(); }, "pe-btn pe-cut-btn")
         : clip ? null : button(T.cut, function () { clip = g; setStatus(T.cutNote); render(); }, "pe-btn pe-cut-btn"),
       button(T.hide, function () { g.visible = false; changed(); }),
