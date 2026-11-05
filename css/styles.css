@@ -19,7 +19,7 @@
   --sand: #e9e2cf;
   --sand-hover: #ddd3ba;
   --sand-bar: #ece6d6;
-  --sand-line: #857d6e;      /* focus outline and active filter only */
+  --sand-line: #857d6e;      /* outline of buttons and editing bars (focus rings use --accent, the active filter --ink) */
   --logo-paper: var(--paper);
 
   --font-display: "Rubik", "Heebo", system-ui, sans-serif;
@@ -48,6 +48,12 @@ body {
   text-rendering: optimizeLegibility;
 }
 :lang(he) body { line-height: 1.7; }
+
+/* Phones: no grey flash on a tap (buttons and links show their own hover
+   colour instead), and no wait for a possible double-tap zoom on controls.
+   Scrolling and pinch zoom still work; editor handles keep touch-action: none. */
+html { -webkit-tap-highlight-color: transparent; }
+a, button, summary, label, input, select, textarea, [role="button"] { touch-action: manipulation; }
 
 img, video, iframe { display: block; max-width: 100%; }
 img { height: auto; }
@@ -242,6 +248,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   font-size: clamp(1.625rem, 3.6vw, 2.75rem);
   line-height: 1.15;
   color: var(--ink);
+  text-wrap: balance; /* lines of even length: no single word left alone on the last line */
 }
 .home-cta { flex: none; }
 @media (max-width: 560px) {
@@ -700,7 +707,6 @@ a.jg-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px;
   justify-content: center;
 }
 .button:hover { background: #2b2b36; color: var(--paper); }
-.button:disabled { opacity: 0.6; cursor: progress; }
 .form-status { margin: 0; min-height: 1.6em; }
 .form-status.is-ok { color: #1d6b3a; }
 .form-status.is-error { color: #a1271b; }

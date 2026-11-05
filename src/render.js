@@ -98,6 +98,9 @@ const linkOf = (ctx, ln) => (ln.external ? e(ln.href) : makeLink(ctx)(ln.path));
 // A Hebrew-only name on an English page (a project without an English name):
 // marked as Hebrew, so a screen reader reads it with a Hebrew voice.
 const heLang = (ctx, text) => (ctx.lang !== "he" && /[\u0590-\u05FF]/.test(String(text || "")) && !/[A-Za-z]/.test(String(text || "")) ? ' lang="he"' : "");
+// The brand name in shown text, kept as is by automatic translation tools.
+// Takes text that is already escaped (e()), so it adds no markup of its own.
+const noTranslate = (html) => String(html).replace(/BubaPix/g, '<span translate="no">BubaPix</span>');
 
 // The owner's text style for picture titles and texts (js/text-style.js), one per page kind.
 const tsAttr = (page, kind) => (page ? ` data-ts="${page}/${kind}"` : "");
@@ -111,8 +114,16 @@ function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = fa
   // twice by screen readers: the picture then counts as decorative (alt="").
   const same = caption && caption.title && String(im.alt || "").trim() === String(caption.title).trim();
   const picture = `<span class="jg-media">${img(ctx, same ? { ...im, alt: "" } : im, { sizes: sz, attrs: eager ? 'fetchpriority="high" decoding="async"' : soon ? 'decoding="async"' : 'loading="lazy" decoding="async"' })}</span>`;
-  const capInner = caption && (caption.title || caption.note)
-    ? `${caption.title ? `<span class="jg-title"${heLang(ctx, caption.title)}${tsAttr(ts, "cap-title")}>${e(caption.title)}</span>` : ""}${caption.note ? `<span class="jg-note"${tsAttr(ts, "cap-note")}>${e(caption.note)}</span>` : ""}`
+  // The link's name (aria-label) hides the text shown with the picture, so a
+  // screen reader reads that text as the link's description. When the name
+  // already holds the title, the description is the note alone: the title is
+  // read once. Otherwise the description is the whole caption, as before.
+  const hasCap = !!(caption && (caption.title || caption.note));
+  const titleInLabel = !!(href && hasCap && caption.title && String(label).includes(String(caption.title).trim()));
+  const nextId = () => `cap-${(ctx.capSeq = (ctx.capSeq || 0) + 1)}`;
+  const noteId = titleInLabel && caption.note ? nextId() : "";
+  const capInner = hasCap
+    ? `${caption.title ? `<span class="jg-title"${heLang(ctx, caption.title)}${tsAttr(ts, "cap-title")}>${e(caption.title)}</span>` : ""}${caption.note ? `<span class="jg-note"${noteId ? ` id="${noteId}"` : ""}${tsAttr(ts, "cap-note")}>${e(caption.note)}</span>` : ""}`
     : "";
   const above = !!(capInner && caption.above);
   const capCls = `jg-caption${above ? " cap-above" : ""}`;
@@ -122,10 +133,9 @@ function galleryItem(ctx, im, { href = "", label = "", caption = null, lead = fa
     const cap = capInner ? `<figcaption class="${capCls}">${capInner}</figcaption>` : "";
     return `<figure class="${classes}">${above ? cap + picture : picture + cap}</figure>`;
   }
-  // The link's name (aria-label) hides the text shown under the picture, so a
-  // screen reader also reads that text as the link's description.
-  const capId = capInner ? `cap-${(ctx.capSeq = (ctx.capSeq || 0) + 1)}` : "";
-  return `<a class="${classes}" href="${href}"${label ? ` aria-label="${e(label)}"` : ""}${capId ? ` aria-describedby="${capId}"` : ""}${viewer ? " data-viewer" : ""}${external ? ' target="_blank" rel="noopener"' : ""}>${above ? "" : picture}${capInner ? `<span class="${capCls}" id="${capId}">${capInner}</span>` : ""}${above ? picture : ""}</a>`;
+  const capId = capInner && !titleInLabel ? nextId() : "";
+  const descId = titleInLabel ? noteId : capId;
+  return `<a class="${classes}" href="${href}"${label ? ` aria-label="${e(label)}"` : ""}${descId ? ` aria-describedby="${descId}"` : ""}${viewer ? " data-viewer" : ""}${external ? ' target="_blank" rel="noopener"' : ""}>${above ? "" : picture}${capInner ? `<span class="${capCls}"${capId ? ` id="${capId}"` : ""}>${capInner}</span>` : ""}${above ? picture : ""}</a>`;
 }
 
 function gallery(items, extraClass = "") {
@@ -291,7 +301,7 @@ ${(lang === "he" ? ["heebo-hebrew", "rubik-hebrew", "heebo-latin", "rubik-latin"
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu" data-open="${e(t.a11y.menuOpen)}" data-close="${e(t.a11y.menuClose)}" hidden>${e(t.a11y.menuOpen)}</button>
       <ul class="menu" id="menu">
         ${navItems}
-        <li><a class="lang-switch" href="${otherHref}" hreflang="${otherLang}" lang="${otherLang}" title="${e(t.nav.switchTitle)}" data-lang="${otherLang}">${e(t.nav.switchLabel)}</a></li>
+        <li><a class="lang-switch" href="${otherHref}" hreflang="${otherLang}" lang="${otherLang}" data-lang="${otherLang}">${e(t.nav.switchLabel)}</a></li>
       </ul>
     </nav>
   </header>
@@ -315,10 +325,10 @@ ${data.participation.ideas ? `
     </nav>
     ${footerContact(ctx)}
     ${installButton(ctx)}
-    ${t.footer.ai ? `<p class="footer-ai">${e(t.footer.ai)}</p>` : ""}
+    ${t.footer.ai ? `<p class="footer-ai">${noTranslate(e(t.footer.ai))}</p>` : ""}
     <div class="footer-meta">
       <a class="lang-switch" href="${otherHref}" hreflang="${otherLang}" lang="${otherLang}" data-lang="${otherLang}">${e(t.nav.switchLabel)}</a>
-      <p>&copy; <span data-year>${new Date().getFullYear()}</span> BubaPix</p>
+      <p>&copy; <span data-year>${new Date().getFullYear()}</span> <span translate="no">BubaPix</span></p>
       <a href="#main">${e(t.footer.top)}</a>
     </div>
   </footer>
@@ -590,7 +600,9 @@ function home(ctx) {
       eager: n === 0,
       // Opens its project, or its own link; otherwise the picture opens large.
       href: linked(g) ? link(`work/${g.project.slug}/`) : own ? linkOf(ctx, g.image.link) : ctx.assetBase + e(g.image.full || g.image.src),
-      label: linked(g) ? `${g.project.name} — ${t.home.openProject}` : own ? g.image.alt : `${t.work.openImage}: ${g.image.alt}`,
+      // The link's name starts with the title shown on screen, when there is one,
+      // so a screen reader says what is written (WCAG 2.5.3).
+      label: linked(g) ? `${(g.caption && g.caption.title) || g.project.name} — ${t.home.openProject}` : own ? g.image.alt : `${t.work.openImage}: ${g.image.alt}`,
       external: !!(own && g.image.link.external),
       viewer: !linked(g) && !own,
       sizes: rowLen === 1 && share === 1 ? FULL : `(max-width: 700px) ${phoneLen(n) > 1 ? 46 : 92}vw, (max-width: 1440px) ${Math.ceil(92 * share)}vw, ${Math.ceil(1328 * share)}px`,
@@ -612,7 +624,7 @@ function home(ctx) {
   const feature = data.feature
     ? galleryItem(ctx, data.feature.image, {
         href: data.feature.project ? link(`work/${data.feature.project.slug}/`) : ctx.assetBase + e(data.feature.image.full || data.feature.image.src),
-        label: data.feature.project ? `${data.feature.project.name} — ${t.home.openProject}` : `${t.work.openImage}: ${data.feature.image.alt}`,
+        label: data.feature.project ? `${(data.feature.caption && data.feature.caption.title) || data.feature.project.name} — ${t.home.openProject}` : `${t.work.openImage}: ${data.feature.image.alt}`,
         viewer: !data.feature.project,
         // On phones this picture fills the first screen: load it first.
         eager: true,
