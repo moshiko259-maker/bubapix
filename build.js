@@ -813,7 +813,13 @@ outputs.set(
       .sort((a, b) => a - b)
       .map((r) => `.ar-${r}{flex-grow:${r};flex-basis:calc(var(--row-h) * ${r / 100})}.ar-${r} .jg-media{aspect-ratio:${r / 100}}` +
         // A narrow picture alone in its row: centred, about one screen high at most.
-        (r < 130 ? `\n.mrow.n1>.ar-${r}{flex:none!important;width:min(100%,calc(80vh * ${r / 100}));margin-inline:auto}` : ""))
+        // On computers only without a chosen width: a picture with a free size from the
+        // page editor (fs-W, see src/render.js freeClasses) keeps that width, so square and
+        // tall pictures line up with the others. Phones: as before.
+        (r < 130
+          ? `\n@media (max-width: 700px){.mrow.n1>.ar-${r}{flex:none!important;width:min(100%,calc(80vh * ${r / 100}));margin-inline:auto}}` +
+            `\n@media (min-width: 701px){.mrow.n1>.ar-${r}:not([class*=" fs-"]){flex:none!important;width:min(100%,calc(80vh * ${r / 100}));margin-inline:auto}}`
+          : ""))
       .join("\n") +
     "\n" +
     // Free sizes chosen in the page editor: computers only (phones keep the
