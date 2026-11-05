@@ -44,7 +44,7 @@
   // An older copy of the shared file (kept by the browser) lacks what this
   // editor needs (core.version): then it is loaded again, past the browser's copy.
   var core = window.BubaCore;
-  if (!core || !(core.version >= 7)) {
+  if (!core || !(core.version >= 10)) {
     if (window.__bubapixCoreLoading) return;
     var tries = window.__bubapixCoreTries = (window.__bubapixCoreTries || 0) + 1;
     var me = document.currentScript, lb = document.querySelector("[data-page-editor]");
@@ -460,10 +460,29 @@
     }, T);
     return box;
   }
+  // One width for several marked photos of a list (js/editor-core.js aligner):
+  // <photo>_w on computers, <photo>_w_m on phones; no own width = the item's full width (100).
+  function photoAligner(L) {
+    if (L.align) return L.align;
+    var wKey = function () { return L.photo + (wide.matches ? "_w" : "_w_m"); };
+    var list = function () { return (Array.isArray(state.file[L.field]) ? state.file[L.field] : []).filter(function (it) { return it && it[L.photo]; }); };
+    L.align = core.aligner({
+      id: "list-" + L.field, lang: lang, noun: "pictures",
+      phone: function () { return !wide.matches; },
+      items: function () { return list().map(function (it, i) { return { key: it, name: it[keyOf(L, L.subs[0], lang)] || it[keyOf(L, L.subs[0], other)] || String(i + 1) }; }); },
+      width: function (it) { var w = Number(it[wKey()]); return w >= 20 && w < 100 ? w : 100; },
+      apply: function (items, w) { var k = wKey(); items.forEach(function (it) { if (!w || w >= 100) delete it[k]; else it[k] = w; }); changed(); },
+      redraw: function () { drawLists(); },
+      status: function (msg, same) { if (same) setStatus(msg); else setStatus(msg + " · " + T.unsaved, "warn"); },
+      pairs: false, // each photo has its own column: no shared rows
+    });
+    return L.align;
+  }
   function drawLists() {
     lists.forEach(function (L) {
       var items = Array.isArray(state.file[L.field]) ? state.file[L.field] : (state.file[L.field] = []);
       L.node.textContent = "";
+      var al = L.photo && L.photoSize ? photoAligner(L) : null;
       items.forEach(function (it, i) {
         var li = L.tpl.cloneNode(true);
         li.setAttribute("data-ed-item", String(i));
@@ -478,6 +497,7 @@
           var pic = picture(it[L.photo]);
           // Size by dragging a dot (computers): kept as <field>_w, % of the item's width.
           if (L.photoSize) pic = photoFrame(it, L, pic);
+          if (al) al.mark(pic, it);
           li.insertBefore(pic, li.firstChild);
           if (uploads[norm(it[L.photo])]) li.insertBefore(el("span", { "class": "pe-badge pe-new", text: T.newBadge }), pic.nextSibling);
         }
@@ -509,6 +529,7 @@
             pickPicture(function (path) { it[L.photo] = "/" + path; changed(); });
           }, "pe-btn"));
           if (it[L.photo] && !L.photoMain) tools.push(button(T.photoRemove, function () { it[L.photo] = ""; changed(); setStatus(T.photoRemoved, "warn"); }, "pe-btn"));
+          if (al && it[L.photo]) tools.push(al.button(it));
         }
         li.appendChild(el("div", { "class": "pe-tools pe-list-tools" }, tools));
         // Dragging starts only from the item's frame, so selecting text with the mouse still works.
@@ -531,6 +552,13 @@
         });
         L.node.appendChild(li);
       });
+      // The bar for marked photos: above the list.
+      if (al) {
+        var oldBar = L.node.parentNode.querySelector('.pe-align-bar[data-align="list-' + L.field + '"]');
+        if (oldBar) oldBar.remove();
+        var alignBar = al.bar();
+        if (alignBar) L.node.parentNode.insertBefore(alignBar, L.node);
+      }
       var addBox = L.node.nextElementSibling && L.node.nextElementSibling.classList.contains("pe-add") ? L.node.nextElementSibling : null;
       if (!addBox) {
         addBox = el("div", { "class": "pe-add" }, [button("+ " + (L.photoMain ? T.photoAdd : T.add), function () {
