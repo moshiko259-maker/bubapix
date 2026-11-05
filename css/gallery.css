@@ -84,10 +84,6 @@
 @media (min-width: 701px){
 .mrow>.fs-64{flex:none!important;width:64%;margin-inline:auto}
 .mrow>.fs-72{flex:none!important;width:72%;margin-inline:auto}
-.mrow>.fs-73{flex:none!important;width:73%;margin-inline:auto}
-.mrow>.fs-74{flex:none!important;width:74%;margin-inline:auto}
-.mrow>.fs-75{flex:none!important;width:75%;margin-inline:auto}
-.mrow>.fs-76{flex:none!important;width:76%;margin-inline:auto}
 .mrow>.fr-219-0_7{flex:219 1 0!important;min-width:0}.mrow>.fr-219-0_7 .jg-media{aspect-ratio:0.7}.mrow>.fr-219-0_7 .jg-media img{object-fit:cover}
 .mrow>.fr-563-1_81{flex:563 1 0!important;min-width:0}.mrow>.fr-563-1_81 .jg-media{aspect-ratio:1.81}.mrow>.fr-563-1_81 .jg-media img{object-fit:cover}
 .mrow>.fs-100{flex:none!important;width:100%;margin-inline:auto}
