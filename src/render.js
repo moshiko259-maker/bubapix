@@ -663,6 +663,13 @@ function home(ctx) {
     const r = Math.floor(i / 2), size = list.length % 2 && i === last ? 1 : 2;
     return `${r}:${size}`;
   };
+  // How wide a poster is shown on a phone (vw), so the browser loads a file that
+  // wide: half the screen in a pair, the whole line alone (an odd last one), or
+  // its own phone size on its own line (pm-W: W% of the 92vw row).
+  const posterPhoneVw = (list, p) => {
+    if (p.posterWm) return Math.ceil(92 * Math.min(100, p.posterWm) / 100);
+    return posterPhoneRow(list, p).endsWith(":1") ? 92 : 46;
+  };
   // Projects: one poster per project; each opens its own project page.
   // Shown from two projects up (with one, it would repeat the opening image).
   const posterProjects = data.posters;
@@ -679,7 +686,7 @@ function home(ctx) {
     <section class="section home-posters" aria-labelledby="posters-title">
       <h2 id="posters-title" class="visually-hidden">${e(t.nav.work)}</h2>
       <div class="mosaic poster-rows${lay.gap ? ` gap-${lay.gap}` : ""}" data-mosaic>${posterLayout.rows.map((row) => `
-        <div class="mrow n${row.length}">${row.map((p) => galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${(p.posterCaption && p.posterCaption.title) || p.name} — ${t.home.openProject}`, caption: p.posterCaption, ts: "home", sizes: `(max-width: 700px) 46vw, (max-width: 1440px) ${Math.ceil(92 / row.length * 1.1)}vw, ${Math.ceil(1328 / row.length * 1.1)}px`, extraClass: both(`poster${posterLayout.cls.get(p) ? " " + posterLayout.cls.get(p) : ""}`, pm(p.posterWm)) }).replace(/^<(a|figure) /, `<$1 data-project="${e(p.slug)}" data-srow="${posterPhoneRow(posterProjects, p)}" `)).join("")}</div>`).join("")}
+        <div class="mrow n${row.length}">${row.map((p) => galleryItem(ctx, p.thumb, { href: link(`work/${p.slug}/`), label: `${(p.posterCaption && p.posterCaption.title) || p.name} — ${t.home.openProject}`, caption: p.posterCaption, ts: "home", sizes: `(max-width: 700px) ${posterPhoneVw(posterProjects, p)}vw, (max-width: 1440px) ${Math.ceil(92 / row.length * 1.1)}vw, ${Math.ceil(1328 / row.length * 1.1)}px`, extraClass: both(`poster${posterLayout.cls.get(p) ? " " + posterLayout.cls.get(p) : ""}`, pm(p.posterWm)) }).replace(/^<(a|figure) /, `<$1 data-project="${e(p.slug)}" data-srow="${posterPhoneRow(posterProjects, p)}" `)).join("")}</div>`).join("")}
       </div>
     </section>`
     : "";
@@ -876,10 +883,10 @@ function freeClasses(list) {
       const cls = `fs-${w}`;
       freeRules.set(cls, `.mrow>.${cls}{flex:none!important;width:${w}%;margin-inline:auto}`);
       classes[r[0]] = cls;
-      // An upright picture alone in its row is also limited by the screen
-      // height (80vh, see build.js); its width is then at most that.
-      const ar = ratioClass(list[r[0]]).ratio;
-      sizes[r[0]] = ar < 1.3 && w >= 50 ? `(max-width: 700px) 92vw, ${Math.ceil(80 * ar)}vh` : sizeOf(w / 100);
+      // Its chosen width decides on computers, also for square and tall
+      // pictures (build.js: the screen-height limit is only for pictures
+      // without a free size), so the browser loads a file that wide.
+      sizes[r[0]] = sizeOf(w / 100);
       continue;
     }
     const total = f.reduce((a, b) => a + b, 0);
